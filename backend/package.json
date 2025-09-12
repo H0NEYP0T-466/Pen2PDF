@@ -1,21 +1,21 @@
 {
-  "name": "backend",
+  "name": "pen2pdf-backend",
   "version": "1.0.0",
+  "description": "Backend for Pen2PDF - Image to PDF converter using Gemini AI",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "node index.js"
   },
-  "keywords": [],
+  "keywords": ["express", "gemini", "pdf", "ocr", "commonjs"],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "axios": "^1.12.1",
-    "body-parser": "^2.2.0",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "pdfkit": "^0.17.2"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pdfkit": "^0.15.0"
   }
 }

@@ -1,34 +1,15 @@
 {
-  "name": "pen2pdf",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "pen2pdf-commonjs",
+  "version": "1.0.0",
+  "description": "Full-stack Node.js + React app for converting images to PDF using CommonJS",
+  "main": "backend/index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "start-backend": "cd backend && node index.js",
+    "start-frontend": "cd frontend-commonjs && npm run dev",
+    "install-all": "cd backend && npm install && cd ../frontend-commonjs && npm install",
+    "dev": "echo 'Run npm run start-backend and npm run start-frontend in separate terminals'"
   },
-  "dependencies": {
-    "@google/genai": "^1.19.0",
-    "@google/generative-ai": "^0.24.1",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^3.0.2",
-    "mammoth": "^1.10.0",
-    "pdf-parse": "^1.1.1",
-    "pdfjs-dist": "^5.4.149",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.33.0",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
-    "@vitejs/plugin-react": "^5.0.0",
-    "eslint": "^9.33.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^16.3.0",
-    "vite": "^7.1.2"
-  }
+  "keywords": ["pdf", "ocr", "gemini", "image-to-text", "commonjs"],
+  "author": "",
+  "license": "ISC"
 }
