@@ -5,13 +5,9 @@ import html2pdf from "html2pdf.js";
 import "./App.css";
 
 /*
-Changes:
-- Removed '# Source: filename' headers.
-- Added Markdown download button (raw text).
-- PDF export now preserves spacing using white-space: pre-wrap.
-- Removed previous heading spacing cleanup feature.
-- Page scroll locked on extracted screen; only textarea scrolls.
-- Removed source heading injection so unwanted lines like "Source WhatsApplmage ..." won't appear on new extractions.
+Changes in this version:
+- ONLY reverted PDF export styling to normal flow (removed white-space: pre-wrap additions).
+- No other logic or UI changes.
 */
 
 function App() {
@@ -64,7 +60,7 @@ function App() {
         )
         .map((f) => {
           if (f.type.startsWith("image/")) f._previewUrl = URL.createObjectURL(f);
-          return f;
+            return f;
         });
       if (!enhanced.length) return;
       setFiles((prev) => [...prev, ...enhanced]);
@@ -216,10 +212,8 @@ function App() {
           { headers: { "Content-Type": "multipart/form-data" } }
         );
         const text = (response?.data?.text || "").trimEnd();
-
         combined += (i === 0 ? "" : "\n\n") + text;
       }
-      // Remove any stray "Source ..." lines if server inserted them:
       combined = combined.replace(/^\s*Source\s+WhatsApp.*$/gim, "");
       setExtractedText(combined);
       setExtracted(true);
@@ -236,9 +230,7 @@ function App() {
 
   const handleDownloadPDF = async () => {
     try {
-      // Keep markdown formatting but preserve spacing
       const html = marked.parse(extractedText || "");
-
       const el = document.createElement("div");
       el.className = "printable-light";
       el.innerHTML = `
@@ -249,14 +241,12 @@ function App() {
             color: #111827;
             background: #ffffff;
             font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans';
-            white-space: pre-wrap;
           }
           .printable-light h1, .printable-light h2, .printable-light h3, .printable-light h4 {
             color: #111827;
             margin: 0 0 12px 0;
             line-height: 1.25;
             font-weight: 700;
-            white-space: pre-wrap;
           }
           .printable-light h1 { font-size: 26px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
           .printable-light h2 { font-size: 20px; margin-top: 16px; }
@@ -265,17 +255,15 @@ function App() {
             font-size: 12.5pt;
             line-height: 1.6;
             color: #111827;
-            white-space: pre-wrap;
           }
           .printable-light ul, .printable-light ol { padding-left: 22px; }
           .printable-light strong { font-weight: 700; color: #000; }
           .printable-light hr { border: none; border-top: 1px solid #e5e7eb; margin: 18px 0; }
           .printable-light code { background:#f3f4f6; padding:2px 4px; border-radius:4px; font-size:90%; }
-          .printable-light pre code { display:block; padding:14px; white-space:pre-wrap; }
+          .printable-light pre code { display:block; padding:14px; }
         </style>
         ${html}
       `;
-
       document.body.appendChild(el);
       const opt = {
         margin: [24, 28, 28, 28],
@@ -454,60 +442,60 @@ function App() {
             />
           </div>
 
-            <div className="right-panel">
-              <h2>Tools</h2>
+          <div className="right-panel">
+            <h2>Tools</h2>
 
-              <div className="toolbar">
-                <button onClick={() => applyHeading(1)} className="btn block">
-                  H1
-                </button>
-                <button onClick={() => applyHeading(2)} className="btn block">
-                  H2
-                </button>
-                <button onClick={toggleBold} className="btn block">
-                  Bold
-                </button>
-              </div>
-
-              <div className="option-group">
-                <label htmlFor="replaceInput">Replace selected text</label>
-                <input
-                  id="replaceInput"
-                  type="text"
-                  value={replaceWith}
-                  onChange={(e) => setReplaceWith(e.target.value)}
-                  placeholder="Replacement text"
-                  className="input"
-                />
-                <button className="btn block" onClick={replaceSelection}>
-                  Apply
-                </button>
-              </div>
-
-              <hr className="divider" />
-
-              <div className="option-group">
-                <button
-                  className="btn primary block"
-                  onClick={handleDownloadPDF}
-                >
-                  Download PDF
-                </button>
-                <button
-                  className="btn outline block"
-                  onClick={handleDownloadMarkdown}
-                >
-                  Download Markdown
-                </button>
-                <button className="btn subtle block" onClick={resetToUpload}>
-                  Back to Uploads
-                </button>
-              </div>
-
-              <div className="footer-note">
-                Pen2PDF • Spacing preserved • Markdown export
-              </div>
+            <div className="toolbar">
+              <button onClick={() => applyHeading(1)} className="btn block">
+                H1
+              </button>
+              <button onClick={() => applyHeading(2)} className="btn block">
+                H2
+              </button>
+              <button onClick={toggleBold} className="btn block">
+                Bold
+              </button>
             </div>
+
+            <div className="option-group">
+              <label htmlFor="replaceInput">Replace selected text</label>
+              <input
+                id="replaceInput"
+                type="text"
+                value={replaceWith}
+                onChange={(e) => setReplaceWith(e.target.value)}
+                placeholder="Replacement text"
+                className="input"
+              />
+              <button className="btn block" onClick={replaceSelection}>
+                Apply
+              </button>
+            </div>
+
+            <hr className="divider" />
+
+            <div className="option-group">
+              <button
+                className="btn primary block"
+                onClick={handleDownloadPDF}
+              >
+                Download PDF
+              </button>
+              <button
+                className="btn outline block"
+                onClick={handleDownloadMarkdown}
+              >
+                Download Markdown
+              </button>
+              <button className="btn subtle block" onClick={resetToUpload}>
+                Back to Uploads
+              </button>
+            </div>
+
+            <div className="footer-note">
+              Pen2PDF • Spacing normal • Markdown export
+            </div>
+          </div>
         </div>
       )}
     </div>
