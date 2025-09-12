@@ -1,50 +1,126 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import axios from "axios";
 import { marked } from "marked";
 import html2pdf from "html2pdf.js";
 import "./App.css";
 
+/*
+Changes:
+- Removed '# Source: filename' headers.
+- Added Markdown download button (raw text).
+- PDF export now preserves spacing using white-space: pre-wrap.
+- Removed previous heading spacing cleanup feature.
+- Page scroll locked on extracted screen; only textarea scrolls.
+- Removed source heading injection so unwanted lines like "Source WhatsApplmage ..." won't appear on new extractions.
+*/
+
 function App() {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [dragActive, setDragActive] = useState(false);
   const [extracted, setExtracted] = useState(false);
   const [extractedText, setExtractedText] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Toolbar helpers
   const [replaceWith, setReplaceWith] = useState("");
   const textareaRef = useRef(null);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-    setExtracted(false);
-    setExtractedText("");
+  // Lock body scroll when extracted screen active
+  useEffect(() => {
+    if (extracted) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [extracted]);
+
+  // Cleanup object URLs
+  useEffect(() => {
+    return () => {
+      files.forEach((f) => {
+        if (f._previewUrl) URL.revokeObjectURL(f._previewUrl);
+      });
+    };
+  }, [files]);
+
+  const acceptMime =
+    ".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,image/*";
+
+  const addFiles = useCallback(
+    (incoming) => {
+      const list = Array.from(incoming || []);
+      if (!list.length) return;
+      const existingKey = new Set(
+        files.map((f) => `${f.name}:${f.size}:${f.lastModified}`)
+      );
+      const enhanced = list
+        .filter(
+          (f) => !existingKey.has(`${f.name}:${f.size}:${f.lastModified}`)
+        )
+        .map((f) => {
+          if (f.type.startsWith("image/")) f._previewUrl = URL.createObjectURL(f);
+          return f;
+        });
+      if (!enhanced.length) return;
+      setFiles((prev) => [...prev, ...enhanced]);
+    },
+    [files]
+  );
+
+  const handleFileInput = (e) => {
+    addFiles(e.target.files);
+    e.target.value = "";
   };
 
-  const handleExtract = async () => {
-    if (!file) return;
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.target === e.currentTarget) setDragActive(false);
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    addFiles(e.dataTransfer.files);
+  };
 
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("file", file);
+  const removeFile = (idx) => {
+    setFiles((prev) => {
+      const clone = [...prev];
+      const f = clone[idx];
+      if (f?._previewUrl) URL.revokeObjectURL(f._previewUrl);
+      clone.splice(idx, 1);
+      return clone;
+    });
+  };
 
-      const response = await axios.post(
-        "http://localhost:8000/textExtract",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+  const moveFile = (idx, dir) => {
+    setFiles((prev) => {
+      const target = idx + dir;
+      if (target < 0 || target >= prev.length) return prev;
+      const clone = [...prev];
+      [clone[idx], clone[target]] = [clone[target], clone[idx]];
+      return clone;
+    });
+  };
 
-      setExtractedText(response.data.text || "");
-      setExtracted(true);
-    } catch (error) {
-      console.error("There was an error!", error);
-      alert(
-        error?.response?.data?.error ||
-          "Extraction failed. Check server logs for details."
-      );
-    } finally {
-      setLoading(false);
-    }
+  const resetToUpload = () => {
+    setExtracted(false);
+    setExtractedText("");
   };
 
   const getSelectionRange = () => {
@@ -58,27 +134,18 @@ function App() {
     if (!ta) return;
     const value = extractedText;
     const { start, end } = getSelectionRange();
-
-    // Find full line boundaries for selection
     const lineStart = value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
     let lineEnd = value.indexOf("\n", end);
     if (lineEnd === -1) lineEnd = value.length;
-
     const selectedBlock = value.slice(lineStart, lineEnd);
     const lines = selectedBlock.split("\n").map((line) => {
-      // Remove existing heading markers (up to 3 leading spaces then #... )
       const stripped = line.replace(/^\s{0,3}(#{1,6}\s+)?/, "");
-      if (stripped.trim() === "") return ""; // keep empty lines empty
+      if (stripped.trim() === "") return "";
       return `${"#".repeat(level)} ${stripped}`;
     });
-
     const newBlock = lines.join("\n");
-    const newText =
-      value.slice(0, lineStart) + newBlock + value.slice(lineEnd);
-
+    const newText = value.slice(0, lineStart) + newBlock + value.slice(lineEnd);
     setExtractedText(newText);
-
-    // Try to preserve selection roughly
     setTimeout(() => {
       ta.focus();
       ta.setSelectionRange(lineStart, lineStart + newBlock.length);
@@ -94,20 +161,15 @@ function App() {
       alert("Select some text to bold.");
       return;
     }
-
     const sel = value.slice(start, end);
     let newSel;
-
-    // If already wrapped in **...**, unwrap; else wrap.
     if (/^\*\*[\s\S]*\*\*$/.test(sel)) {
       newSel = sel.replace(/^\*\*([\s\S]*)\*\*$/, "$1");
     } else {
       newSel = `**${sel}**`;
     }
-
     const newText = value.slice(0, start) + newSel + value.slice(end);
     setExtractedText(newText);
-
     setTimeout(() => {
       ta.focus();
       ta.setSelectionRange(start, start + newSel.length);
@@ -119,11 +181,9 @@ function App() {
     if (!ta) return;
     const value = extractedText;
     const { start, end } = getSelectionRange();
-
     const newText =
       value.slice(0, start) + (replaceWith ?? "") + value.slice(end);
     setExtractedText(newText);
-
     setTimeout(() => {
       ta.focus();
       const nextPos = start + (replaceWith?.length || 0);
@@ -131,30 +191,101 @@ function App() {
     }, 0);
   };
 
+  const formatBytes = (bytes) => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  };
+
+  const handleExtract = async () => {
+    if (!files.length) return;
+    setLoading(true);
+    setExtracted(false);
+    setExtractedText("");
+    try {
+      let combined = "";
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const formData = new FormData();
+        formData.append("file", f);
+        const response = await axios.post(
+          "http://localhost:8000/textExtract",
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+        const text = (response?.data?.text || "").trimEnd();
+
+        combined += (i === 0 ? "" : "\n\n") + text;
+      }
+      // Remove any stray "Source ..." lines if server inserted them:
+      combined = combined.replace(/^\s*Source\s+WhatsApp.*$/gim, "");
+      setExtractedText(combined);
+      setExtracted(true);
+    } catch (error) {
+      console.error("Extraction error:", error);
+      alert(
+        error?.response?.data?.error ||
+          "Extraction failed for one of the files. Check server logs."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDownloadPDF = async () => {
     try {
-      // Convert Markdown to HTML
+      // Keep markdown formatting but preserve spacing
       const html = marked.parse(extractedText || "");
 
-      // Create a detached element for pdf rendering
       const el = document.createElement("div");
-      el.className = "printable";
-      el.innerHTML = html;
+      el.className = "printable-light";
+      el.innerHTML = `
+        <style>
+          .printable-light {
+            max-width: 850px;
+            padding: 28px 32px;
+            color: #111827;
+            background: #ffffff;
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans';
+            white-space: pre-wrap;
+          }
+          .printable-light h1, .printable-light h2, .printable-light h3, .printable-light h4 {
+            color: #111827;
+            margin: 0 0 12px 0;
+            line-height: 1.25;
+            font-weight: 700;
+            white-space: pre-wrap;
+          }
+          .printable-light h1 { font-size: 26px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
+          .printable-light h2 { font-size: 20px; margin-top: 16px; }
+          .printable-light h3 { font-size: 17px; margin-top: 12px; }
+          .printable-light p, .printable-light li {
+            font-size: 12.5pt;
+            line-height: 1.6;
+            color: #111827;
+            white-space: pre-wrap;
+          }
+          .printable-light ul, .printable-light ol { padding-left: 22px; }
+          .printable-light strong { font-weight: 700; color: #000; }
+          .printable-light hr { border: none; border-top: 1px solid #e5e7eb; margin: 18px 0; }
+          .printable-light code { background:#f3f4f6; padding:2px 4px; border-radius:4px; font-size:90%; }
+          .printable-light pre code { display:block; padding:14px; white-space:pre-wrap; }
+        </style>
+        ${html}
+      `;
 
-      // Add default print styling for headings/paragraphs
       document.body.appendChild(el);
-
       const opt = {
-        margin: [20, 24, 20, 24], // top, left, bottom, right (pt)
+        margin: [24, 28, 28, 28],
         filename: "Pen2PDF.pdf",
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
         jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] },
+        pagebreak: { mode: ["css", "legacy"] }
       };
-
       await html2pdf().set(opt).from(el).save();
-
       document.body.removeChild(el);
     } catch (e) {
       console.error("PDF download failed:", e);
@@ -162,10 +293,39 @@ function App() {
     }
   };
 
+  const handleDownloadMarkdown = () => {
+    try {
+      const blob = new Blob([extractedText], {
+        type: "text/markdown;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Pen2PDF.md";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Markdown download failed:", e);
+      alert("Failed to download markdown.");
+    }
+  };
+
+  const brandClick = () => {
+    if (extracted) {
+      resetToUpload();
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="app">
       <nav className="navbar">
-        <h1>Pen2PDF</h1>
+        <h1 onClick={brandClick} title="Go to upload page">
+          Pen2PDF
+        </h1>
       </nav>
 
       {!extracted ? (
@@ -173,70 +333,181 @@ function App() {
           <input
             type="file"
             id="fileUpload"
-            onChange={handleFileChange}
-            accept=".pdf,.ppt,.pptx,image/*"
+            multiple
+            onChange={handleFileInput}
+            accept={acceptMime}
             className="file-input"
           />
-          <label htmlFor="fileUpload" className="upload-area">
-            {file ? file.name : "Click or Drag to Upload File"}
+
+          <label
+            htmlFor="fileUpload"
+            className={`upload-area ${dragActive ? "drag-active" : ""}`}
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <strong>Click to browse</strong> or drag & drop files here
+            <div className="upload-hint">
+              Supported: PDF, PPT, PPTX, Images (PNG/JPG/WebP). Google Slides:
+              export as PPTX or PDF first.
+            </div>
+            <div className="upload-hint">
+              Add multiple files; reorder them before extraction.
+            </div>
           </label>
-          {file && (
-            <button
-              className="extract-button"
-              onClick={handleExtract}
-              disabled={loading}
-            >
-              {loading ? "Extracting..." : "Extract"}
-            </button>
+
+          {!!files.length && (
+            <>
+              <div className="files-list">
+                {files.map((f, i) => (
+                  <div key={i} className="file-item">
+                    {f.type.startsWith("image/") ? (
+                      <img
+                        src={f._previewUrl}
+                        alt={f.name}
+                        className="file-thumb"
+                      />
+                    ) : (
+                      <div className="file-thumb">
+                        {f.name.split(".").pop().toUpperCase()}
+                      </div>
+                    )}
+                    <div className="file-meta">
+                      <div className="file-name">{f.name}</div>
+                      <div className="file-size">{formatBytes(f.size)}</div>
+                    </div>
+                    <div className="file-actions">
+                      <div className="reorder-group">
+                        <button
+                          className="btn outline"
+                          disabled={i === 0}
+                          onClick={() => moveFile(i, -1)}
+                          title="Move up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          className="btn outline"
+                          disabled={i === files.length - 1}
+                          onClick={() => moveFile(i, +1)}
+                          title="Move down"
+                        >
+                          ↓
+                        </button>
+                      </div>
+                      <button
+                        className="btn danger"
+                        onClick={() => removeFile(i)}
+                        title="Remove file"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="actions-row">
+                <button
+                  className="btn subtle"
+                  onClick={() => setFiles([])}
+                  disabled={loading}
+                >
+                  Clear All
+                </button>
+                <button
+                  className="btn primary"
+                  onClick={handleExtract}
+                  disabled={!files.length || loading}
+                >
+                  {loading ? "Extracting..." : "Extract All"}
+                </button>
+              </div>
+              <div className="helper-text">
+                Extraction runs sequentially. Raw text combined exactly—no file
+                source headings inserted.
+              </div>
+            </>
           )}
         </div>
       ) : (
         <div className="extracted-panel">
           <div className="left-panel">
-            <h2>Extracted Text (Editable)</h2>
+            <div className="panel-header">
+              <button
+                className="back-btn"
+                onClick={resetToUpload}
+                title="Back to upload"
+              >
+                ←
+              </button>
+              <h2>Extracted Text (Editable)</h2>
+            </div>
+
             <textarea
               ref={textareaRef}
               className="text-editor"
               value={extractedText}
               onChange={(e) => setExtractedText(e.target.value)}
-              placeholder="Extracted text appears here. You can edit freely."
+              placeholder="Extracted text appears here."
             />
           </div>
 
-          <div className="right-panel">
-            <h2>Text Options</h2>
+            <div className="right-panel">
+              <h2>Tools</h2>
 
-            <div className="toolbar">
-              <button onClick={() => applyHeading(1)} title="Set selected lines as H1">
-                Main Heading (H1)
-              </button>
-              <button onClick={() => applyHeading(2)} title="Set selected lines as H2">
-                Sub Heading (H2)
-              </button>
-              <button onClick={toggleBold} title="Toggle bold on selection">
-                Bold
-              </button>
-            </div>
+              <div className="toolbar">
+                <button onClick={() => applyHeading(1)} className="btn block">
+                  H1
+                </button>
+                <button onClick={() => applyHeading(2)} className="btn block">
+                  H2
+                </button>
+                <button onClick={toggleBold} className="btn block">
+                  Bold
+                </button>
+              </div>
 
-            <div className="option-group">
-              <label htmlFor="replaceInput">Change selected text:</label>
-              <input
-                id="replaceInput"
-                type="text"
-                value={replaceWith}
-                onChange={(e) => setReplaceWith(e.target.value)}
-                placeholder="Replacement text"
-                className="replace-input"
-              />
-              <button onClick={replaceSelection}>Apply</button>
-            </div>
+              <div className="option-group">
+                <label htmlFor="replaceInput">Replace selected text</label>
+                <input
+                  id="replaceInput"
+                  type="text"
+                  value={replaceWith}
+                  onChange={(e) => setReplaceWith(e.target.value)}
+                  placeholder="Replacement text"
+                  className="input"
+                />
+                <button className="btn block" onClick={replaceSelection}>
+                  Apply
+                </button>
+              </div>
 
-            <div className="option-group">
-              <button className="download-button" onClick={handleDownloadPDF}>
-                Download to PDF
-              </button>
+              <hr className="divider" />
+
+              <div className="option-group">
+                <button
+                  className="btn primary block"
+                  onClick={handleDownloadPDF}
+                >
+                  Download PDF
+                </button>
+                <button
+                  className="btn outline block"
+                  onClick={handleDownloadMarkdown}
+                >
+                  Download Markdown
+                </button>
+                <button className="btn subtle block" onClick={resetToUpload}>
+                  Back to Uploads
+                </button>
+              </div>
+
+              <div className="footer-note">
+                Pen2PDF • Spacing preserved • Markdown export
+              </div>
             </div>
-          </div>
         </div>
       )}
     </div>
