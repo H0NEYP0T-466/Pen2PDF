@@ -25,46 +25,16 @@ function App() {
     setIsProcessing(true);
     
     try {
-      // Process the file to extract text
+      // Process the file and extract text using Gemini API
       const extractedText = await processFile(file);
       
-      // Simulate AI processing for text cleaning and spell correction
-      // In a real implementation, this would call Gemini/GPT/Claude API
-      const cleanedText = await simulateAIProcessing(extractedText);
-      
-      setExtractedText(cleanedText);
+      setExtractedText(extractedText);
       setIsProcessing(false);
     } catch (error) {
       console.error('Error processing file:', error);
-      alert('Error processing file. Please try again.');
+      alert(`Error processing file: ${error.message}`);
       setIsProcessing(false);
     }
-  };
-
-  const simulateAIProcessing = async (text) => {
-    // Simulate AI API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In a real implementation, this would send text to AI API for:
-    // - Spell correction
-    // - Grammar improvement
-    // - Suggest headings/subheadings
-    // - Preserve handwriting content even if sloppy
-    
-    // For demo purposes, add some cleaned text with suggested headings
-    return `Introduction
-    
-${text}
-
-Key Features
-- File upload support for multiple formats
-- Text extraction from images and documents
-- Inline text editing capabilities
-- Heading markup functionality
-- PDF export with proper formatting
-
-Conclusion
-The extracted text has been processed and cleaned for better readability.`;
   };
 
   const handleDemo = async () => {
