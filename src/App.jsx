@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
+import axios from 'axios'
 import "./App.css";
 
 function App() {
@@ -6,6 +7,16 @@ function App() {
   const [extracted, setExtracted] = useState(false);
   const [heading, setHeading] = useState("h1");
   const [isBold, setIsBold] = useState(false);
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/').then(response => {
+      console.log(response.data);
+    }).catch(error => {
+      console.error('There was an error!', error);
+    });
+
+    console.log("Frontend is Successfully connected to Backend");
+  }, []);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
