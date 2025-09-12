@@ -1,4 +1,4 @@
-import { processContentWithGemini } from './gemini.js';
+import { processContentWithGemini } from '../../backend/utils/gemini.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 
