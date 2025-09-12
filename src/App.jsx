@@ -67,6 +67,40 @@ Conclusion
 The extracted text has been processed and cleaned for better readability.`;
   };
 
+  const handleDemo = async () => {
+    // Create a mock file object for demo
+    const mockFile = {
+      name: 'demo-document.txt',
+      size: 1024,
+      type: 'text/plain'
+    };
+    
+    setUploadedFile(mockFile);
+    setIsProcessing(true);
+    
+    // Simulate processing with sample text
+    setTimeout(() => {
+      const demoText = `Introduction
+
+This is a demonstration of the Pen2PDF application showing text extraction and editing capabilities.
+
+Key Features
+The application supports multiple file formats including PDF, DOCX, and images with OCR processing.
+
+Text Editing
+You can click on any word to edit it inline. Select text and mark it as headings using the editing panel.
+
+Export Functionality  
+Once you finish editing, export your document as a PDF using the download button.
+
+Conclusion
+This demo showcases the clean, dark-themed interface and powerful text processing features of Pen2PDF.`;
+      
+      setExtractedText(demoText);
+      setIsProcessing(false);
+    }, 1500);
+  };
+
   const handleTextEdit = (wordIndex, newWord) => {
     const words = extractedText.split(' ');
     words[wordIndex] = newWord;
@@ -98,6 +132,7 @@ The extracted text has been processed and cleaned for better readability.`;
         <UploadComponent 
           onFileUpload={handleFileUpload}
           uploadedFile={uploadedFile}
+          onDemo={handleDemo}
         />
 
         {/* Processing Status */}
