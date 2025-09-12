@@ -22,7 +22,7 @@ extract every word from this i just need this in text format nothing else
 `;
 
    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-pro",
       config: {
         systemInstruction: systemInstruction
       },
