@@ -13,6 +13,9 @@ dist
 dist-ssr
 *.local
 
+# CommonJS Frontend Build Output
+frontend-commonjs/public/bundle.js
+
 .vscode/*
 !.vscode/extensions.json
 .idea
