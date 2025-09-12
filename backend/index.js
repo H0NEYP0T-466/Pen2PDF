@@ -1,11 +1,15 @@
 const express = require('express');
-const app = express();
 const cors = require('cors');
-app.use(cors());
-app.use(express.json());
+const fileUpload = require('express-fileupload');
 const { generateRES } = require('./controller/controller');
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(fileUpload()); // ✅ enable file uploads
+
 app.get('/', (req, res) => {
+  console.log("Frontend call received at backend");
   res.send('Hello World!');
 });
 

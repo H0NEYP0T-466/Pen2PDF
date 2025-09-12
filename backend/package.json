@@ -14,6 +14,7 @@
     "@google/genai": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "express-fileupload": "^1.5.2"
   }
 }
