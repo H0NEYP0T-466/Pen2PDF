@@ -10,14 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.2",
     "mammoth": "^1.10.0",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^5.4.149",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "tesseract.js": "^6.0.1"
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
