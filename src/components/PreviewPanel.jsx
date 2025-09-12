@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
-function PreviewPanel({ extractedText, onTextEdit }) {
+function PreviewPanel({ extractedText, onTextEdit, onTextSelect }) {
   const [editingWord, setEditingWord] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const previewRef = useRef(null);
 
   const handleWordClick = (wordIndex, word) => {
     setEditingWord(wordIndex);
@@ -27,6 +28,15 @@ function PreviewPanel({ extractedText, onTextEdit }) {
       handleEditSave();
     } else if (e.key === 'Escape') {
       handleEditCancel();
+    }
+  };
+
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    
+    if (selectedText && onTextSelect) {
+      onTextSelect(selectedText);
     }
   };
 
@@ -81,7 +91,7 @@ function PreviewPanel({ extractedText, onTextEdit }) {
         <h2 className="panel-title">Text Preview</h2>
       </div>
       
-      <div className="preview-content">
+      <div className="preview-content" ref={previewRef} onMouseUp={handleTextSelection}>
         {renderText()}
       </div>
       

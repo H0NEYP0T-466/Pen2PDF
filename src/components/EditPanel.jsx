@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
-function EditPanel({ extractedText, onTextUpdate, onHeadingMark }) {
-  const [selectedText, setSelectedText] = useState('');
+function EditPanel({ extractedText, selectedText, onTextUpdate, onHeadingMark }) {
   const [findText, setFindText] = useState('');
   const [replaceText, setReplaceText] = useState('');
 
@@ -17,7 +16,6 @@ function EditPanel({ extractedText, onTextUpdate, onHeadingMark }) {
   const handleHeadingMark = (level) => {
     if (selectedText) {
       onHeadingMark(selectedText, level);
-      setSelectedText('');
     }
   };
 

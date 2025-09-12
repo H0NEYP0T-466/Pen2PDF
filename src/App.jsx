@@ -4,12 +4,14 @@ import UploadComponent from './components/UploadComponent';
 import PreviewPanel from './components/PreviewPanel';
 import EditPanel from './components/EditPanel';
 import ExportButton from './components/ExportButton';
+import { processFile } from './utils/fileProcessor';
 
 function App() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [extractedText, setExtractedText] = useState('');
   const [headings, setHeadings] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
 
   const handleFileUpload = async (file) => {
     setUploadedFile(file);
@@ -23,32 +25,46 @@ function App() {
     setIsProcessing(true);
     
     try {
-      // TODO: Replace with actual API call to Gemini
-      // For now, simulate API call with placeholder text
-      setTimeout(() => {
-        const mockText = `Sample Extracted Text
-
-This is a demonstration of the Pen2PDF application. In a real implementation, this text would be extracted from your uploaded file using the Gemini API.
-
-Key Features:
-- File upload for PDF, JPG, PNG, PPTX
-- Text extraction using AI
-- Inline word editing
-- Heading markup (H1, H2, H3)
-- PDF export functionality
-
-You can click on any word in this preview to edit it inline. You can also select text and mark it as different heading levels using the editing tools on the right.
-
-The final edited text can be exported as a PDF document for download.`;
-        
-        setExtractedText(mockText);
-        setIsProcessing(false);
-      }, 2000);
+      // Process the file to extract text
+      const extractedText = await processFile(file);
+      
+      // Simulate AI processing for text cleaning and spell correction
+      // In a real implementation, this would call Gemini/GPT/Claude API
+      const cleanedText = await simulateAIProcessing(extractedText);
+      
+      setExtractedText(cleanedText);
+      setIsProcessing(false);
     } catch (error) {
       console.error('Error processing file:', error);
       alert('Error processing file. Please try again.');
       setIsProcessing(false);
     }
+  };
+
+  const simulateAIProcessing = async (text) => {
+    // Simulate AI API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // In a real implementation, this would send text to AI API for:
+    // - Spell correction
+    // - Grammar improvement
+    // - Suggest headings/subheadings
+    // - Preserve handwriting content even if sloppy
+    
+    // For demo purposes, add some cleaned text with suggested headings
+    return `Introduction
+    
+${text}
+
+Key Features
+- File upload support for multiple formats
+- Text extraction from images and documents
+- Inline text editing capabilities
+- Heading markup functionality
+- PDF export with proper formatting
+
+Conclusion
+The extracted text has been processed and cleaned for better readability.`;
   };
 
   const handleTextEdit = (wordIndex, newWord) => {
@@ -61,11 +77,16 @@ The final edited text can be exported as a PDF document for download.`;
     setExtractedText(newText);
   };
 
+  const handleTextSelect = (text) => {
+    setSelectedText(text);
+  };
+
   const handleHeadingMark = (selectedText, level) => {
     setHeadings(prev => ({
       ...prev,
       [selectedText]: level
     }));
+    setSelectedText(''); // Clear selection after marking
   };
 
   return (
@@ -96,9 +117,11 @@ The final edited text can be exported as a PDF document for download.`;
             <PreviewPanel 
               extractedText={extractedText}
               onTextEdit={handleTextEdit}
+              onTextSelect={handleTextSelect}
             />
             <EditPanel 
               extractedText={extractedText}
+              selectedText={selectedText}
               onTextUpdate={handleTextUpdate}
               onHeadingMark={handleHeadingMark}
             />
