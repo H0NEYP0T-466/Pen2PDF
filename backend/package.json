@@ -10,10 +10,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@google/genai": "^1.19.0",
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.12.1",
+    "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "pdfkit": "^0.17.2"
   }
 }

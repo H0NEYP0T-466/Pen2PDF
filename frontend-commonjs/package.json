@@ -1,0 +1,25 @@
+{
+  "name": "pen2pdf-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Pen2PDF application using CommonJS",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "browserify src/index.js -o public/bundle.js -t babelify",
+    "start": "http-server public -p 3000 -o",
+    "dev": "npm run build && npm start"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "babelify": "^10.0.0",
+    "@babel/core": "^7.22.0",
+    "@babel/preset-react": "^7.22.0",
+    "http-server": "^14.1.1"
+  },
+  "babel": {
+    "presets": ["@babel/preset-react"]
+  }
+}

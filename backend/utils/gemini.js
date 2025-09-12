@@ -1,11 +1,9 @@
 // geminiClient.js
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_APIKEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_APIKEY);
 
 // SYSTEM_PROMPT must be defined here, outside the function
 const SYSTEM_PROMPT = `
@@ -23,25 +21,28 @@ Extract every word; just return the text format.
 
 async function processContentWithGemini(content, mimeType = null) {
   try {
-    let input;
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    let prompt;
     if (mimeType && mimeType.startsWith('image/')) {
-      input = [
-        { text: SYSTEM_PROMPT },
-        { inlineData: { data: content, mimeType } },
+      prompt = [
+        SYSTEM_PROMPT,
+        {
+          inlineData: {
+            data: content,
+            mimeType: mimeType
+          }
+        }
       ];
     } else {
-      input = [
-        { text: SYSTEM_PROMPT },
-        { text: content },
-      ];
+      prompt = `${SYSTEM_PROMPT}\n\nText to process:\n${content}`;
     }
 
-    const result = await genAI.responses.create({
-      model: 'gemini-2.5-flash',
-      input,
-    });
-
-    return result?.output?.[0]?.content?.[0]?.text || '';
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text || '';
   } catch (err) {
     console.error('Gemini API error:', err);
     throw new Error(`Failed to process content with Gemini: ${err.message}`);
