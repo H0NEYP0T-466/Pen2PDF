@@ -5,9 +5,11 @@ import html2pdf from "html2pdf.js";
 import "./App.css";
 
 /*
-Changes in this version:
-- ONLY reverted PDF export styling to normal flow (removed white-space: pre-wrap additions).
-- No other logic or UI changes.
+New additions in this version:
+- Added "manualMode" state to distinguish between backend extraction vs manual blank document.
+- Added a "Start with blank document" button on the upload page.
+- Added startBlankDocument() which opens the extracted editor empty (no backend calls).
+- Footer now reflects manual mode.
 */
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const [replaceWith, setReplaceWith] = useState("");
+  const [manualMode, setManualMode] = useState(false); // NEW: track manual (blank) mode
+
   const textareaRef = useRef(null);
 
   // Lock body scroll when extracted screen active
@@ -60,7 +64,7 @@ function App() {
         )
         .map((f) => {
           if (f.type.startsWith("image/")) f._previewUrl = URL.createObjectURL(f);
-            return f;
+          return f;
         });
       if (!enhanced.length) return;
       setFiles((prev) => [...prev, ...enhanced]);
@@ -117,6 +121,14 @@ function App() {
   const resetToUpload = () => {
     setExtracted(false);
     setExtractedText("");
+    setManualMode(false);
+  };
+
+  const startBlankDocument = () => {
+    // Enter manual mode with an empty document (no backend usage)
+    setManualMode(true);
+    setExtractedText("");
+    setExtracted(true);
   };
 
   const getSelectionRange = () => {
@@ -200,6 +212,7 @@ function App() {
     setLoading(true);
     setExtracted(false);
     setExtractedText("");
+    setManualMode(false); // We are using backend extraction now
     try {
       let combined = "";
       for (let i = 0; i < files.length; i++) {
@@ -208,7 +221,7 @@ function App() {
         formData.append("file", f);
         const response = await axios.post(
           "http://localhost:8000/textExtract",
-          formData,
+            formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
         const text = (response?.data?.text || "").trimEnd();
@@ -327,23 +340,23 @@ function App() {
             className="file-input"
           />
 
-          <label
-            htmlFor="fileUpload"
-            className={`upload-area ${dragActive ? "drag-active" : ""}`}
-            onDragEnter={handleDragEnter}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <strong>Click to browse</strong> or drag & drop files here
-            <div className="upload-hint">
-              Supported: PDF, PPT, PPTX, Images (PNG/JPG/WebP). Google Slides:
-              export as PPTX or PDF first.
-            </div>
-            <div className="upload-hint">
-              Add multiple files; reorder them before extraction.
-            </div>
-          </label>
+            <label
+              htmlFor="fileUpload"
+              className={`upload-area ${dragActive ? "drag-active" : ""}`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <strong>Click to browse</strong> or drag & drop files here
+              <div className="upload-hint">
+                Supported: PDF, PPT, PPTX, Images (PNG/JPG/WebP). Google Slides:
+                export as PPTX or PDF first.
+              </div>
+              <div className="upload-hint">
+                Add multiple files; reorder them before extraction.
+              </div>
+            </label>
 
           {!!files.length && (
             <>
@@ -411,12 +424,32 @@ function App() {
                 >
                   {loading ? "Extracting..." : "Extract All"}
                 </button>
+                <button
+                  className="btn outline"
+                  onClick={startBlankDocument}
+                  disabled={loading}
+                  title="Create a blank editable document (no backend)"
+                >
+                  Blank Document
+                </button>
               </div>
               <div className="helper-text">
                 Extraction runs sequentially. Raw text combined exactly—no file
                 source headings inserted.
               </div>
             </>
+          )}
+
+          {!files.length && (
+            <div className="actions-row">
+              <button
+                className="btn outline"
+                onClick={startBlankDocument}
+                title="Go directly to an empty editor without uploading files"
+              >
+                Start with blank document
+              </button>
+            </div>
           )}
         </div>
       ) : (
@@ -430,7 +463,9 @@ function App() {
               >
                 ←
               </button>
-              <h2>Extracted Text (Editable)</h2>
+              <h2>
+                {manualMode ? "Manual Text Entry (Editable)" : "Extracted Text (Editable)"}
+              </h2>
             </div>
 
             <textarea
@@ -438,7 +473,11 @@ function App() {
               className="text-editor"
               value={extractedText}
               onChange={(e) => setExtractedText(e.target.value)}
-              placeholder="Extracted text appears here."
+              placeholder={
+                manualMode
+                  ? "Paste or type text here. Use the toolbar on the right to format, then export."
+                  : "Extracted text appears here."
+              }
             />
           </div>
 
@@ -493,7 +532,7 @@ function App() {
             </div>
 
             <div className="footer-note">
-              Pen2PDF • Spacing normal • Markdown export
+              Pen2PDF • {manualMode ? "Manual entry mode (no backend)" : "Spacing normal • Markdown export"}
             </div>
           </div>
         </div>
