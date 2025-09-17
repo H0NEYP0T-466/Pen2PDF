@@ -2,6 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const { generateRES } = require('./controller/controller');
+const {
+  getAllTodos,
+  createTodoCard,
+  updateTodoCard,
+  deleteTodoCard,
+  addSubTodo,
+  updateSubTodo,
+  deleteSubTodo
+} = require('./controller/dbcontroller');
 const mongoose = require('mongoose');
 
 const app = express();
@@ -14,7 +23,17 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+// Text extraction endpoint
 app.post('/textExtract', generateRES);
+
+// Todo API endpoints
+app.get('/api/todos', getAllTodos);
+app.post('/api/todos', createTodoCard);
+app.put('/api/todos/:id', updateTodoCard);
+app.delete('/api/todos/:id', deleteTodoCard);
+app.post('/api/todos/:id/subtodos', addSubTodo);
+app.put('/api/todos/:id/subtodos/:subTodoId', updateSubTodo);
+app.delete('/api/todos/:id/subtodos/:subTodoId', deleteSubTodo);
 
 mongoose.connect('mongodb://127.0.0.1:27017/todolist')
   .then(() => {

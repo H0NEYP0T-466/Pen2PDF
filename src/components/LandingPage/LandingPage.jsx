@@ -8,6 +8,8 @@ function LandingPage() {
   const handleCardClick = (cardType) => {
     if (cardType === "pen2pdf") {
       navigate("/pen2pdf");
+    } else if (cardType === "todo") {
+      navigate("/todo");
     } else {
       console.log("Coming soon");
     }
