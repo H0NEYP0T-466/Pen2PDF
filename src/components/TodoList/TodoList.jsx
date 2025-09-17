@@ -1,15 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './TodoList.css';
 
 function TodoList() {
+  const navigate = useNavigate();
   const [todoCards, setTodoCards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [editingCard, setEditingCard] = useState(null);
+  const [editingSubTodo, setEditingSubTodo] = useState(null);
+  const [newCardTitle, setNewCardTitle] = useState('');
+  const [newSubTodoText, setNewSubTodoText] = useState('');
+  const [expandedCards, setExpandedCards] = useState(new Set());
 
   // Fetch all todos on component mount
   useEffect(() => {
-    fetchTodos();
+    // Add some mock data for testing when backend is not available
+    const mockData = [
+      {
+        _id: 'mock1',
+        title: 'Sample Todo Card',
+        subTodos: [
+          { _id: 'sub1', text: 'Complete the design', completed: false, pinned: true },
+          { _id: 'sub2', text: 'Test the functionality', completed: true, pinned: false },
+          { _id: 'sub3', text: 'Write documentation', completed: false, pinned: false },
+          { _id: 'sub4', text: 'Review with team', completed: false, pinned: false },
+          { _id: 'sub5', text: 'Deploy to staging', completed: false, pinned: false },
+          { _id: 'sub6', text: 'Final testing', completed: false, pinned: false }
+        ]
+      },
+      {
+        _id: 'mock2', 
+        title: 'Another Todo Card',
+        subTodos: [
+          { _id: 'sub7', text: 'Review the code', completed: false, pinned: false },
+          { _id: 'sub8', text: 'Deploy to production', completed: false, pinned: true }
+        ]
+      }
+    ];
+    
+    // Try to fetch from backend first, if it fails use mock data
+    fetchTodos().catch(() => {
+      setTodoCards(mockData);
+      setLoading(false);
+    });
   }, []);
 
   const fetchTodos = async () => {
@@ -21,50 +56,58 @@ function TodoList() {
       }
     } catch (error) {
       console.error('Error fetching todos:', error);
-      setError('Failed to fetch todos');
+      setError('Using mock data - backend not available');
+      // Don't throw error here so mock data can be used
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const createNewCard = async () => {
-    const title = prompt('Enter todo card title:');
-    if (!title || title.trim() === '') return;
+    // Create an empty card for inline editing
+    const newCard = {
+      _id: 'temp-' + Date.now(),
+      title: '',
+      subTodos: [],
+      isEditing: true
+    };
+    setTodoCards(prev => [newCard, ...prev]);
+    setEditingCard(newCard._id);
+    setNewCardTitle('');
+  };
+
+  const saveNewCard = async (tempId) => {
+    if (!newCardTitle.trim()) {
+      // Remove the empty card if no title
+      setTodoCards(prev => prev.filter(card => card._id !== tempId));
+      setEditingCard(null);
+      setNewCardTitle('');
+      return;
+    }
 
     try {
       const response = await axios.post('http://localhost:8000/api/todos', {
-        title: title.trim()
+        title: newCardTitle.trim()
       });
       if (response.data.success) {
-        setTodoCards(prev => [response.data.data, ...prev]);
+        setTodoCards(prev => prev.map(card => 
+          card._id === tempId ? response.data.data : card
+        ));
+        setEditingCard(null);
+        setNewCardTitle('');
       }
     } catch (error) {
       console.error('Error creating todo card:', error);
       setError('Failed to create todo card');
-    }
-  };
-
-  const updateCardTitle = async (cardId, newTitle) => {
-    if (!newTitle || newTitle.trim() === '') return;
-
-    try {
-      const response = await axios.put(`http://localhost:8000/api/todos/${cardId}`, {
-        title: newTitle.trim()
-      });
-      if (response.data.success) {
-        setTodoCards(prev => prev.map(card => 
-          card._id === cardId ? response.data.data : card
-        ));
-      }
-    } catch (error) {
-      console.error('Error updating card title:', error);
-      setError('Failed to update card title');
+      // Remove the temporary card on error
+      setTodoCards(prev => prev.filter(card => card._id !== tempId));
+      setEditingCard(null);
+      setNewCardTitle('');
     }
   };
 
   const deleteCard = async (cardId) => {
-    if (!confirm('Are you sure you want to delete this todo card?')) return;
-
     try {
       const response = await axios.delete(`http://localhost:8000/api/todos/${cardId}`);
       if (response.data.success) {
@@ -77,21 +120,58 @@ function TodoList() {
   };
 
   const addSubTodo = async (cardId) => {
-    const text = prompt('Enter sub-todo text:');
-    if (!text || text.trim() === '') return;
+    // Add empty sub-todo for inline editing
+    const tempSubTodo = {
+      _id: 'temp-subtodo-' + Date.now(),
+      text: '',
+      completed: false,
+      isEditing: true
+    };
+    
+    setTodoCards(prev => prev.map(card => 
+      card._id === cardId 
+        ? { ...card, subTodos: [...card.subTodos, tempSubTodo] }
+        : card
+    ));
+    setEditingSubTodo(tempSubTodo._id);
+    setNewSubTodoText('');
+  };
+
+  const saveNewSubTodo = async (cardId, tempSubTodoId) => {
+    if (!newSubTodoText.trim()) {
+      // Remove empty sub-todo
+      setTodoCards(prev => prev.map(card => 
+        card._id === cardId 
+          ? { ...card, subTodos: card.subTodos.filter(st => st._id !== tempSubTodoId) }
+          : card
+      ));
+      setEditingSubTodo(null);
+      setNewSubTodoText('');
+      return;
+    }
 
     try {
       const response = await axios.post(`http://localhost:8000/api/todos/${cardId}/subtodos`, {
-        text: text.trim()
+        text: newSubTodoText.trim()
       });
       if (response.data.success) {
         setTodoCards(prev => prev.map(card => 
           card._id === cardId ? response.data.data : card
         ));
+        setEditingSubTodo(null);
+        setNewSubTodoText('');
       }
     } catch (error) {
       console.error('Error adding sub-todo:', error);
       setError('Failed to add sub-todo');
+      // Remove temp sub-todo on error
+      setTodoCards(prev => prev.map(card => 
+        card._id === cardId 
+          ? { ...card, subTodos: card.subTodos.filter(st => st._id !== tempSubTodoId) }
+          : card
+      ));
+      setEditingSubTodo(null);
+      setNewSubTodoText('');
     }
   };
 
@@ -110,8 +190,6 @@ function TodoList() {
   };
 
   const deleteSubTodo = async (cardId, subTodoId) => {
-    if (!confirm('Are you sure you want to delete this sub-todo?')) return;
-
     try {
       const response = await axios.delete(`http://localhost:8000/api/todos/${cardId}/subtodos/${subTodoId}`);
       if (response.data.success) {
@@ -126,21 +204,129 @@ function TodoList() {
   };
 
   const handleSubTodoEdit = (cardId, subTodoId, currentText) => {
-    const newText = prompt('Edit sub-todo:', currentText);
-    if (newText !== null && newText.trim() !== currentText) {
-      updateSubTodo(cardId, subTodoId, { text: newText.trim() });
+    setEditingSubTodo(subTodoId);
+    setNewSubTodoText(currentText);
+  };
+
+  const saveSubTodoEdit = async (cardId, subTodoId) => {
+    if (!newSubTodoText.trim()) {
+      setEditingSubTodo(null);
+      setNewSubTodoText('');
+      return;
     }
+
+    try {
+      const response = await axios.put(`http://localhost:8000/api/todos/${cardId}/subtodos/${subTodoId}`, {
+        text: newSubTodoText.trim()
+      });
+      if (response.data.success) {
+        setTodoCards(prev => prev.map(card => 
+          card._id === cardId ? response.data.data : card
+        ));
+        setEditingSubTodo(null);
+        setNewSubTodoText('');
+      }
+    } catch (error) {
+      console.error('Error updating sub-todo:', error);
+      setError('Failed to update sub-todo');
+    }
+  };
+
+  const cancelSubTodoEdit = () => {
+    setEditingSubTodo(null);
+    setNewSubTodoText('');
   };
 
   const toggleSubTodoComplete = (cardId, subTodoId, completed) => {
     updateSubTodo(cardId, subTodoId, { completed: !completed });
   };
 
-  const handleCardTitleEdit = (cardId, currentTitle) => {
-    const newTitle = prompt('Edit card title:', currentTitle);
-    if (newTitle !== null && newTitle.trim() !== currentTitle) {
-      updateCardTitle(cardId, newTitle);
+  const toggleSubTodoPin = async (cardId, subTodoId, pinned) => {
+    try {
+      const response = await axios.put(`http://localhost:8000/api/todos/${cardId}/subtodos/${subTodoId}`, {
+        pinned: !pinned
+      });
+      if (response.data.success) {
+        setTodoCards(prev => prev.map(card => 
+          card._id === cardId ? response.data.data : card
+        ));
+      }
+    } catch (error) {
+      // For mock data, update locally
+      setTodoCards(prev => prev.map(card => 
+        card._id === cardId 
+          ? {
+              ...card,
+              subTodos: card.subTodos.map(subTodo =>
+                subTodo._id === subTodoId
+                  ? { ...subTodo, pinned: !pinned }
+                  : subTodo
+              )
+            }
+          : card
+      ));
     }
+  };
+
+  const toggleCardExpanded = (cardId) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(cardId)) {
+        newSet.delete(cardId);
+      } else {
+        newSet.add(cardId);
+      }
+      return newSet;
+    });
+  };
+
+  const getVisibleSubTodos = (card) => {
+    const { subTodos } = card;
+    const isExpanded = expandedCards.has(card._id);
+    
+    if (isExpanded) {
+      // Show all todos when expanded
+      return subTodos;
+    } else {
+      // Show only first 4 todos plus all pinned ones when collapsed
+      const pinnedTodos = subTodos.filter(todo => todo.pinned);
+      const unpinnedTodos = subTodos.filter(todo => !todo.pinned).slice(0, 4 - pinnedTodos.length);
+      return [...pinnedTodos, ...unpinnedTodos];
+    }
+  };
+
+  const handleCardTitleEdit = (cardId, currentTitle) => {
+    setEditingCard(cardId);
+    setNewCardTitle(currentTitle);
+  };
+
+  const saveCardTitleEdit = async (cardId) => {
+    if (!newCardTitle.trim()) {
+      setEditingCard(null);
+      setNewCardTitle('');
+      return;
+    }
+
+    try {
+      const response = await axios.put(`http://localhost:8000/api/todos/${cardId}`, {
+        title: newCardTitle.trim()
+      });
+      if (response.data.success) {
+        setTodoCards(prev => prev.map(card => 
+          card._id === cardId ? response.data.data : card
+        ));
+        setEditingCard(null);
+        setNewCardTitle('');
+      }
+    } catch (error) {
+      console.error('Error updating card title:', error);
+      setError('Failed to update card title');
+    }
+  };
+
+  const cancelCardTitleEdit = () => {
+    setEditingCard(null);
+    setNewCardTitle('');
   };
 
   if (loading) {
@@ -154,7 +340,16 @@ function TodoList() {
   return (
     <div className="todo-container">
       <div className="todo-header">
-        <h1>To-Do List</h1>
+        <div className="header-left">
+          <button 
+            className="back-btn"
+            onClick={() => navigate('/')}
+            title="Back to main page"
+          >
+            ←
+          </button>
+          <h1>To-Do List</h1>
+        </div>
         <button 
           className="btn primary add-card-btn"
           onClick={createNewCard}
@@ -175,29 +370,65 @@ function TodoList() {
           todoCards.map(card => (
             <div key={card._id} className="todo-card">
               <div className="card-header">
-                <h2 
-                  className="card-title"
-                  onClick={() => handleCardTitleEdit(card._id, card.title)}
-                  title="Click to edit title"
-                >
-                  {card.title}
-                </h2>
-                <div className="card-actions">
-                  <button 
-                    className="btn outline small"
-                    onClick={() => addSubTodo(card._id)}
-                    title="Add sub-todo"
-                  >
-                    <span className="plus-icon">+</span>
-                  </button>
-                  <button 
-                    className="btn danger small"
-                    onClick={() => deleteCard(card._id)}
-                    title="Delete card"
-                  >
-                    ×
-                  </button>
-                </div>
+                {editingCard === card._id ? (
+                  <div className="title-edit-container">
+                    <input
+                      type="text"
+                      value={newCardTitle}
+                      onChange={(e) => setNewCardTitle(e.target.value)}
+                      placeholder="Enter the title"
+                      className="title-input"
+                      autoFocus
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          saveNewCard ? saveNewCard(card._id) : saveCardTitleEdit(card._id);
+                        }
+                      }}
+                    />
+                    <div className="edit-actions">
+                      <button 
+                        className="btn outline small"
+                        onClick={() => saveNewCard ? saveNewCard(card._id) : saveCardTitleEdit(card._id)}
+                        title="Save title"
+                      >
+                        ✓
+                      </button>
+                      <button 
+                        className="btn outline small"
+                        onClick={cancelCardTitleEdit}
+                        title="Cancel edit"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h2 
+                      className="card-title"
+                      onClick={() => handleCardTitleEdit(card._id, card.title)}
+                      title="Click to edit title"
+                    >
+                      {card.title}
+                    </h2>
+                    <div className="card-actions">
+                      <button 
+                        className="btn outline small"
+                        onClick={() => addSubTodo(card._id)}
+                        title="Add sub-todo"
+                      >
+                        <span className="plus-icon">+</span>
+                      </button>
+                      <button 
+                        className="btn danger small"
+                        onClick={() => deleteCard(card._id)}
+                        title="Delete card"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="sub-todos-container">
@@ -206,41 +437,107 @@ function TodoList() {
                     <p>No sub-todos yet. Click + to add one!</p>
                   </div>
                 ) : (
-                  card.subTodos.map(subTodo => (
-                    <div key={subTodo._id} className={`sub-todo ${subTodo.completed ? 'completed' : ''}`}>
-                      <div className="sub-todo-content">
-                        <input
-                          type="checkbox"
-                          checked={subTodo.completed}
-                          onChange={() => toggleSubTodoComplete(card._id, subTodo._id, subTodo.completed)}
-                          className="sub-todo-checkbox"
-                        />
-                        <span 
-                          className="sub-todo-text"
-                          onClick={() => handleSubTodoEdit(card._id, subTodo._id, subTodo.text)}
-                          title="Click to edit"
-                        >
-                          {subTodo.text}
-                        </span>
+                  <>
+                    {getVisibleSubTodos(card).map(subTodo => (
+                      <div key={subTodo._id} className={`sub-todo ${subTodo.completed ? 'completed' : ''} ${subTodo.pinned ? 'pinned' : ''}`}>
+                        {editingSubTodo === subTodo._id ? (
+                          <div className="subtodo-edit-container">
+                            <input
+                              type="text"
+                              value={newSubTodoText}
+                              onChange={(e) => setNewSubTodoText(e.target.value)}
+                              placeholder="Enter the todo"
+                              className="subtodo-input"
+                              autoFocus
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  subTodo._id.startsWith('temp-') 
+                                    ? saveNewSubTodo(card._id, subTodo._id)
+                                    : saveSubTodoEdit(card._id, subTodo._id);
+                                }
+                              }}
+                            />
+                            <div className="edit-actions">
+                              <button 
+                                className="btn outline small"
+                                onClick={() => 
+                                  subTodo._id.startsWith('temp-') 
+                                    ? saveNewSubTodo(card._id, subTodo._id)
+                                    : saveSubTodoEdit(card._id, subTodo._id)
+                                }
+                                title="Save todo"
+                              >
+                                ✓
+                              </button>
+                              <button 
+                                className="btn outline small"
+                                onClick={cancelSubTodoEdit}
+                                title="Cancel edit"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="sub-todo-content">
+                              <input
+                                type="checkbox"
+                                checked={subTodo.completed}
+                                onChange={() => toggleSubTodoComplete(card._id, subTodo._id, subTodo.completed)}
+                                className="sub-todo-checkbox"
+                              />
+                              <span 
+                                className="sub-todo-text"
+                                onClick={() => handleSubTodoEdit(card._id, subTodo._id, subTodo.text)}
+                                title="Click to edit"
+                              >
+                                {subTodo.text}
+                              </span>
+                              {subTodo.pinned && <span className="pin-indicator">📌</span>}
+                            </div>
+                            <div className="sub-todo-actions">
+                              <button 
+                                className={`btn outline small pin-btn ${subTodo.pinned ? 'pinned' : ''}`}
+                                onClick={() => toggleSubTodoPin(card._id, subTodo._id, subTodo.pinned)}
+                                title={subTodo.pinned ? "Unpin sub-todo" : "Pin sub-todo"}
+                              >
+                                📌
+                              </button>
+                              <button 
+                                className="btn outline small"
+                                onClick={() => handleSubTodoEdit(card._id, subTodo._id, subTodo.text)}
+                                title="Edit sub-todo"
+                              >
+                                ✎
+                              </button>
+                              <button 
+                                className="btn danger small"
+                                onClick={() => deleteSubTodo(card._id, subTodo._id)}
+                                title="Delete sub-todo"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
-                      <div className="sub-todo-actions">
-                        <button 
-                          className="btn outline small"
-                          onClick={() => handleSubTodoEdit(card._id, subTodo._id, subTodo.text)}
-                          title="Edit sub-todo"
+                    ))}
+                    
+                    {card.subTodos.length > 4 && (
+                      <div className="expand-toggle">
+                        <button
+                          className="btn outline small expand-btn"
+                          onClick={() => toggleCardExpanded(card._id)}
                         >
-                          ✎
-                        </button>
-                        <button 
-                          className="btn danger small"
-                          onClick={() => deleteSubTodo(card._id, subTodo._id)}
-                          title="Delete sub-todo"
-                        >
-                          ×
+                          {expandedCards.has(card._id) 
+                            ? `Show less (${getVisibleSubTodos(card).length}/${card.subTodos.length})`
+                            : `Show all (${card.subTodos.length})`
+                          }
                         </button>
                       </div>
-                    </div>
-                  ))
+                    )}
+                  </>
                 )}
               </div>
             </div>
