@@ -1,12 +1,21 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const userDataSchema = new Schema({
-    todo: { type: String, required: true },
+// Sub-todo schema for individual tasks within a todo card
+const subTodoSchema = new Schema({
+    text: { type: String, required: true },
     completed: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
 
-const UserData = mongoose.model('UserData', userDataSchema);
+// Main todo card schema
+const todoCardSchema = new Schema({
+    title: { type: String, required: true },
+    subTodos: [subTodoSchema],
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
 
-module.exports = UserData;
+const TodoCard = mongoose.model('TodoCard', todoCardSchema);
+
+module.exports = TodoCard;
