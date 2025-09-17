@@ -97,20 +97,31 @@
 .todo-cards-container {
   max-width: 1200px;
   margin: 0 auto;
-  column-count: 3;
-  column-gap: 16px;
-  column-fill: balance;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
 }
 
 @media (max-width: 1000px) {
   .todo-cards-container {
-    column-count: 2;
+    gap: 12px;
+  }
+  
+  .todo-card {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 280px;
   }
 }
 
 @media (max-width: 600px) {
   .todo-cards-container {
-    column-count: 1;
+    gap: 8px;
+  }
+  
+  .todo-card {
+    flex: 1 1 100%;
+    min-width: auto;
   }
 }
 
@@ -130,12 +141,12 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
-  margin-bottom: 16px;
-  break-inside: avoid;
+  margin-bottom: 0;
   transition: all 0.2s ease;
-  display: inline-block;
-  width: 100%;
   box-sizing: border-box;
+  flex: 1 1 calc(33.333% - 11px);
+  min-width: 300px;
+  align-self: flex-start;
 }
 
 .todo-card:hover {
