@@ -345,7 +345,11 @@ function TodoList() {
     }
   };
 
-  const cancelCardTitleEdit = () => {
+  // Updated: Accept cardId to handle temp-cancel by removing the temp card
+  const cancelCardTitleEdit = (cardId) => {
+    if (cardId && cardId.startsWith('temp-')) {
+      setTodoCards(prev => prev.filter(card => card._id !== cardId));
+    }
     setEditingCard(null);
     setNewCardTitle('');
   };
@@ -402,22 +406,25 @@ function TodoList() {
                       autoFocus
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                          // This input is for editing titles only; call the right saver
-                          saveCardTitleEdit(card._id);
+                          if (card._id.startsWith('temp-')) {
+                            saveNewCard(card._id);
+                          } else {
+                            saveCardTitleEdit(card._id);
+                          }
                         }
                       }}
                     />
                     <div className="edit-actions">
                       <button 
                         className="btn outline small"
-                        onClick={() => saveCardTitleEdit(card._id)}
+                        onClick={() => card._id.startsWith('temp-') ? saveNewCard(card._id) : saveCardTitleEdit(card._id)}
                         title="Save title"
                       >
                         ✓
                       </button>
                       <button 
                         className="btn outline small"
-                        onClick={cancelCardTitleEdit}
+                        onClick={() => cancelCardTitleEdit(card._id)}
                         title="Cancel edit"
                       >
                         ×
