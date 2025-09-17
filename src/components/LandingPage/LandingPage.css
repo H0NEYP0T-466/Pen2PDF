@@ -24,14 +24,12 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0 0 16px 0;
-  background: linear-gradient(90deg, var(--brand), var(--brand-2));
-  -webkit-background-clip: text;
-  color: transparent;
+  color: #FAFAFA;
 }
 
 .landing-header p {
   font-size: 1.1rem;
-  color: var(--muted);
+  color: #B3B3B3;
   margin: 0;
 }
 
@@ -44,8 +42,8 @@
 }
 
 .card {
-  background: linear-gradient(180deg, var(--panel), var(--panel-2));
-  border: 1px solid var(--border);
+  background: #141414;
+  border: 1px solid #222;
   border-radius: 14px;
   padding: 30px 24px;
   cursor: pointer;
@@ -59,20 +57,20 @@
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(59, 72, 201, 0.2);
-  border-color: var(--brand-2);
+  background: #1A1A1A;
+  border-color: #2A2A2A;
 }
 
 .card h3 {
   font-size: 1.4rem;
   font-weight: 600;
   margin: 0 0 12px 0;
-  color: var(--text);
+  color: #FAFAFA;
 }
 
 .card p {
   font-size: 0.95rem;
-  color: var(--muted);
+  color: #B3B3B3;
   margin: 0;
   line-height: 1.5;
 }

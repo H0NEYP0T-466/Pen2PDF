@@ -1,17 +1,17 @@
 :root {
-  --bg: #05070d;
-  --panel: #0d1320;
-  --panel-2: #131b2b;
-  --border: #1e293b;
-  --text: #eef2f8;
-  --muted: #94a3b8;
-  --brand: #3b48c9;
-  --brand-2: #5865f2;
-  --accent: #7d89b2;
+  --bg: #111;
+  --panel: #141414;
+  --panel-2: #181818;
+  --border: #222;
+  --text: #FAFAFA;
+  --muted: #B3B3B3;
+  --brand: #666;
+  --brand-2: #777;
+  --accent: #9A9A9A;
   --danger: #dc2626;
-  --btn-bg: #1e293b;
-  --btn-bg-hover: #334155;
-  --focus: #4656ff80;
+  --btn-bg: #1A1A1A;
+  --btn-bg-hover: #2A2A2A;
+  --focus: rgba(250,250,250,0.2);
   --success: #16a34a;
 }
 
@@ -19,7 +19,7 @@
 
 body, html, #root {
   height: 100%;
-  background: radial-gradient(circle at top left, #101a30, #05070d 60%);
+  background: #111;
   color: var(--text);
   margin: 0;
   font-family: system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
@@ -35,7 +35,7 @@ body, html, #root {
 .navbar {
   padding: 14px 20px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(90deg, rgba(88,101,242,0.15), rgba(59,72,201,0.05) 60%, transparent);
+  background: var(--panel);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -45,9 +45,7 @@ body, html, #root {
   margin: 0;
   font-weight: 700;
   letter-spacing: 0.5px;
-  background: linear-gradient(90deg, var(--brand), var(--brand-2));
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--text);
   cursor: pointer;
 }
 .navbar h1:active { opacity: 0.85; }
@@ -69,16 +67,16 @@ body, html, #root {
   cursor: pointer;
   color: var(--muted);
   border-radius: 14px;
-  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  background: var(--panel);
   font-size: 15px;
   position: relative;
   transition: border-color .2s ease, background .25s ease;
 }
 .upload-area.drag-active {
-  border-color: var(--brand-2);
-  background: linear-gradient(180deg, #17233a, #111a2b);
+  border-color: var(--accent);
+  background: var(--panel-2);
 }
-.upload-area strong { color: var(--brand-2); }
+.upload-area strong { color: var(--text); }
 .upload-hint {
   margin-top: 10px;
   font-size: 12px;
@@ -103,11 +101,14 @@ body, html, #root {
 .btn:hover { background: var(--btn-bg-hover); }
 .btn:active { transform: translateY(1px); }
 .btn.primary {
-  background: linear-gradient(90deg, var(--brand), var(--brand-2));
-  border: none;
-  box-shadow: 0 0 0 1px #ffffff10, 0 4px 14px -4px #4656ff90;
+  background: var(--btn-bg-hover);
+  border: 1px solid var(--accent);
+  color: var(--text);
 }
-.btn.primary:hover { filter: brightness(1.06); }
+.btn.primary:hover { 
+  background: #333;
+  border-color: var(--text);
+}
 .btn.subtle {
   background: var(--panel-2);
   border-color: var(--border);
@@ -120,10 +121,10 @@ body, html, #root {
 .btn.danger:hover { filter: brightness(1.07); }
 .btn.outline {
   background: transparent;
-  border: 1px solid var(--brand-2);
-  color: var(--brand-2);
+  border: 1px solid var(--accent);
+  color: var(--accent);
 }
-.btn.outline:hover { background: #1d2740; }
+.btn.outline:hover { background: var(--panel); }
 .btn.block { width: 100%; }
 
 .files-list {
@@ -218,12 +219,12 @@ body, html, #root {
   padding: 18px;
   width: min(1400px, 96vw);
   margin: 0 auto;
-  height: calc(100vh - 60px); /* 60 ~= navbar height space */
+  height: 100vh; /* Full viewport height since navbar removed */
   overflow: hidden;
 }
 
 .left-panel, .right-panel {
-  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px 16px 16px;
@@ -262,8 +263,8 @@ body, html, #root {
   flex-shrink: 0;
 }
 .back-btn:hover {
-  background: #1a2540;
-  color: var(--brand-2);
+  background: var(--panel-2);
+  color: var(--text);
 }
 
 .text-editor {
@@ -276,17 +277,17 @@ body, html, #root {
   line-height: 1.58;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #0b1529;
+  background: var(--panel-2);
   color: var(--text);
   outline: none;
   transition: border-color .2s ease, background .25s ease;
-  box-shadow: inset 0 0 0 1px #ffffff05;
+  box-shadow: inset 0 0 0 1px rgba(250,250,250,0.05);
   overflow: auto;
   white-space: pre-wrap;
 }
 .text-editor:focus {
-  border-color: var(--brand-2);
-  box-shadow: 0 0 0 1px var(--focus), 0 0 0 4px #4656ff20;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus), 0 0 0 4px rgba(250,250,250,0.1);
 }
 
 .right-panel h2, .left-panel h2 { color: var(--text); }
@@ -323,14 +324,14 @@ body, html, #root {
 }
 .input:focus {
   outline: none;
-  border-color: var(--brand-2);
-  background: #18233a;
-  box-shadow: 0 0 0 3px #4656ff30;
+  border-color: var(--accent);
+  background: var(--panel-2);
+  box-shadow: 0 0 0 3px var(--focus);
 }
 
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #24324a, transparent);
+  background: var(--border);
   margin: 24px 0 18px;
   border: none;
   flex-shrink: 0;
@@ -346,13 +347,13 @@ body, html, #root {
 }
 
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: #0a0f1a; }
+::-webkit-scrollbar-track { background: var(--panel); }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--border);
   border-radius: 20px;
-  border: 2px solid #0a0f1a;
+  border: 2px solid var(--panel);
 }
-::-webkit-scrollbar-thumb:hover { background: #293750; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 @media (max-width: 1050px) {
   .extracted-panel {

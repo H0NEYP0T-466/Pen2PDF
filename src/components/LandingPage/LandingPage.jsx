@@ -15,10 +15,6 @@ function LandingPage() {
 
   return (
     <div className="landing-page">
-      <nav className="navbar">
-        <h1>Pen2PDF</h1>
-      </nav>
-      
       <div className="landing-container">
         <div className="landing-header">
           <h2>Welcome to Pen2PDF Suite</h2>

@@ -313,22 +313,8 @@ function App() {
     }
   };
 
-  const brandClick = () => {
-    if (extracted) {
-      resetToUpload();
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
   return (
     <div className="app">
-      <nav className="navbar">
-        <h1 onClick={brandClick} title="Go to upload page">
-          Pen2PDF
-        </h1>
-      </nav>
-
       {!extracted ? (
         <div className="upload-container">
           <input
