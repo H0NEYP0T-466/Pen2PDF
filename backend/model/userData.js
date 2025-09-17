@@ -5,6 +5,7 @@ const { Schema } = mongoose;
 const subTodoSchema = new Schema({
     text: { type: String, required: true },
     completed: { type: Boolean, default: false },
+    pinned: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
 

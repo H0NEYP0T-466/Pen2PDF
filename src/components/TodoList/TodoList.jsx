@@ -12,6 +12,7 @@ function TodoList() {
   const [editingSubTodo, setEditingSubTodo] = useState(null);
   const [newCardTitle, setNewCardTitle] = useState('');
   const [newSubTodoText, setNewSubTodoText] = useState('');
+  const [expandedCards, setExpandedCards] = useState(new Set());
 
   // Fetch all todos on component mount
   useEffect(() => {
@@ -21,17 +22,20 @@ function TodoList() {
         _id: 'mock1',
         title: 'Sample Todo Card',
         subTodos: [
-          { _id: 'sub1', text: 'Complete the design', completed: false },
-          { _id: 'sub2', text: 'Test the functionality', completed: true },
-          { _id: 'sub3', text: 'Write documentation', completed: false }
+          { _id: 'sub1', text: 'Complete the design', completed: false, pinned: true },
+          { _id: 'sub2', text: 'Test the functionality', completed: true, pinned: false },
+          { _id: 'sub3', text: 'Write documentation', completed: false, pinned: false },
+          { _id: 'sub4', text: 'Review with team', completed: false, pinned: false },
+          { _id: 'sub5', text: 'Deploy to staging', completed: false, pinned: false },
+          { _id: 'sub6', text: 'Final testing', completed: false, pinned: false }
         ]
       },
       {
         _id: 'mock2', 
         title: 'Another Todo Card',
         subTodos: [
-          { _id: 'sub4', text: 'Review the code', completed: false },
-          { _id: 'sub5', text: 'Deploy to production', completed: false }
+          { _id: 'sub7', text: 'Review the code', completed: false, pinned: false },
+          { _id: 'sub8', text: 'Deploy to production', completed: false, pinned: true }
         ]
       }
     ];
@@ -237,6 +241,60 @@ function TodoList() {
     updateSubTodo(cardId, subTodoId, { completed: !completed });
   };
 
+  const toggleSubTodoPin = async (cardId, subTodoId, pinned) => {
+    try {
+      const response = await axios.put(`http://localhost:8000/api/todos/${cardId}/subtodos/${subTodoId}`, {
+        pinned: !pinned
+      });
+      if (response.data.success) {
+        setTodoCards(prev => prev.map(card => 
+          card._id === cardId ? response.data.data : card
+        ));
+      }
+    } catch (error) {
+      // For mock data, update locally
+      setTodoCards(prev => prev.map(card => 
+        card._id === cardId 
+          ? {
+              ...card,
+              subTodos: card.subTodos.map(subTodo =>
+                subTodo._id === subTodoId
+                  ? { ...subTodo, pinned: !pinned }
+                  : subTodo
+              )
+            }
+          : card
+      ));
+    }
+  };
+
+  const toggleCardExpanded = (cardId) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(cardId)) {
+        newSet.delete(cardId);
+      } else {
+        newSet.add(cardId);
+      }
+      return newSet;
+    });
+  };
+
+  const getVisibleSubTodos = (card) => {
+    const { subTodos } = card;
+    const isExpanded = expandedCards.has(card._id);
+    
+    if (isExpanded) {
+      // Show all todos when expanded
+      return subTodos;
+    } else {
+      // Show only first 4 todos plus all pinned ones when collapsed
+      const pinnedTodos = subTodos.filter(todo => todo.pinned);
+      const unpinnedTodos = subTodos.filter(todo => !todo.pinned).slice(0, 4 - pinnedTodos.length);
+      return [...pinnedTodos, ...unpinnedTodos];
+    }
+  };
+
   const handleCardTitleEdit = (cardId, currentTitle) => {
     setEditingCard(cardId);
     setNewCardTitle(currentTitle);
@@ -379,83 +437,107 @@ function TodoList() {
                     <p>No sub-todos yet. Click + to add one!</p>
                   </div>
                 ) : (
-                  card.subTodos.map(subTodo => (
-                    <div key={subTodo._id} className={`sub-todo ${subTodo.completed ? 'completed' : ''}`}>
-                      {editingSubTodo === subTodo._id ? (
-                        <div className="subtodo-edit-container">
-                          <input
-                            type="text"
-                            value={newSubTodoText}
-                            onChange={(e) => setNewSubTodoText(e.target.value)}
-                            placeholder="Enter the todo"
-                            className="subtodo-input"
-                            autoFocus
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                subTodo._id.startsWith('temp-') 
-                                  ? saveNewSubTodo(card._id, subTodo._id)
-                                  : saveSubTodoEdit(card._id, subTodo._id);
-                              }
-                            }}
-                          />
-                          <div className="edit-actions">
-                            <button 
-                              className="btn outline small"
-                              onClick={() => 
-                                subTodo._id.startsWith('temp-') 
-                                  ? saveNewSubTodo(card._id, subTodo._id)
-                                  : saveSubTodoEdit(card._id, subTodo._id)
-                              }
-                              title="Save todo"
-                            >
-                              ✓
-                            </button>
-                            <button 
-                              className="btn outline small"
-                              onClick={cancelSubTodoEdit}
-                              title="Cancel edit"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="sub-todo-content">
+                  <>
+                    {getVisibleSubTodos(card).map(subTodo => (
+                      <div key={subTodo._id} className={`sub-todo ${subTodo.completed ? 'completed' : ''} ${subTodo.pinned ? 'pinned' : ''}`}>
+                        {editingSubTodo === subTodo._id ? (
+                          <div className="subtodo-edit-container">
                             <input
-                              type="checkbox"
-                              checked={subTodo.completed}
-                              onChange={() => toggleSubTodoComplete(card._id, subTodo._id, subTodo.completed)}
-                              className="sub-todo-checkbox"
+                              type="text"
+                              value={newSubTodoText}
+                              onChange={(e) => setNewSubTodoText(e.target.value)}
+                              placeholder="Enter the todo"
+                              className="subtodo-input"
+                              autoFocus
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  subTodo._id.startsWith('temp-') 
+                                    ? saveNewSubTodo(card._id, subTodo._id)
+                                    : saveSubTodoEdit(card._id, subTodo._id);
+                                }
+                              }}
                             />
-                            <span 
-                              className="sub-todo-text"
-                              onClick={() => handleSubTodoEdit(card._id, subTodo._id, subTodo.text)}
-                              title="Click to edit"
-                            >
-                              {subTodo.text}
-                            </span>
+                            <div className="edit-actions">
+                              <button 
+                                className="btn outline small"
+                                onClick={() => 
+                                  subTodo._id.startsWith('temp-') 
+                                    ? saveNewSubTodo(card._id, subTodo._id)
+                                    : saveSubTodoEdit(card._id, subTodo._id)
+                                }
+                                title="Save todo"
+                              >
+                                ✓
+                              </button>
+                              <button 
+                                className="btn outline small"
+                                onClick={cancelSubTodoEdit}
+                                title="Cancel edit"
+                              >
+                                ×
+                              </button>
+                            </div>
                           </div>
-                          <div className="sub-todo-actions">
-                            <button 
-                              className="btn outline small"
-                              onClick={() => handleSubTodoEdit(card._id, subTodo._id, subTodo.text)}
-                              title="Edit sub-todo"
-                            >
-                              ✎
-                            </button>
-                            <button 
-                              className="btn danger small"
-                              onClick={() => deleteSubTodo(card._id, subTodo._id)}
-                              title="Delete sub-todo"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))
+                        ) : (
+                          <>
+                            <div className="sub-todo-content">
+                              <input
+                                type="checkbox"
+                                checked={subTodo.completed}
+                                onChange={() => toggleSubTodoComplete(card._id, subTodo._id, subTodo.completed)}
+                                className="sub-todo-checkbox"
+                              />
+                              <span 
+                                className="sub-todo-text"
+                                onClick={() => handleSubTodoEdit(card._id, subTodo._id, subTodo.text)}
+                                title="Click to edit"
+                              >
+                                {subTodo.text}
+                              </span>
+                              {subTodo.pinned && <span className="pin-indicator">📌</span>}
+                            </div>
+                            <div className="sub-todo-actions">
+                              <button 
+                                className={`btn outline small pin-btn ${subTodo.pinned ? 'pinned' : ''}`}
+                                onClick={() => toggleSubTodoPin(card._id, subTodo._id, subTodo.pinned)}
+                                title={subTodo.pinned ? "Unpin sub-todo" : "Pin sub-todo"}
+                              >
+                                📌
+                              </button>
+                              <button 
+                                className="btn outline small"
+                                onClick={() => handleSubTodoEdit(card._id, subTodo._id, subTodo.text)}
+                                title="Edit sub-todo"
+                              >
+                                ✎
+                              </button>
+                              <button 
+                                className="btn danger small"
+                                onClick={() => deleteSubTodo(card._id, subTodo._id)}
+                                title="Delete sub-todo"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {card.subTodos.length > 4 && (
+                      <div className="expand-toggle">
+                        <button
+                          className="btn outline small expand-btn"
+                          onClick={() => toggleCardExpanded(card._id)}
+                        >
+                          {expandedCards.has(card._id) 
+                            ? `Show less (${getVisibleSubTodos(card).length}/${card.subTodos.length})`
+                            : `Show all (${card.subTodos.length})`
+                          }
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

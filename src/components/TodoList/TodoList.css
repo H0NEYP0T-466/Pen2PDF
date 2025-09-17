@@ -269,6 +269,16 @@
   background: var(--btn-bg-hover);
 }
 
+.sub-todo.pinned {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.sub-todo.pinned:hover {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+}
+
 .sub-todo.completed {
   opacity: 0.7;
 }
@@ -283,6 +293,11 @@
   align-items: center;
   gap: 8px;
   flex-grow: 1;
+}
+
+.pin-indicator {
+  font-size: 0.7rem;
+  margin-left: 4px;
 }
 
 .sub-todo-checkbox {
@@ -310,6 +325,40 @@
   display: flex;
   gap: 4px;
   align-items: center;
+}
+
+.pin-btn {
+  font-size: 0.7rem;
+  padding: 2px 6px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.pin-btn:hover {
+  opacity: 1;
+}
+
+.pin-btn.pinned {
+  opacity: 1;
+  background: rgba(251, 191, 36, 0.2) !important;
+  border-color: #fbbf24 !important;
+  color: #fbbf24 !important;
+}
+
+.expand-toggle {
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.expand-btn {
+  font-size: 0.8rem;
+  padding: 4px 12px !important;
+  color: var(--accent) !important;
+  background: transparent !important;
 }
 
 /* Existing button styles from App.css are inherited */
