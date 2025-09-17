@@ -108,6 +108,12 @@ function TodoList() {
   };
 
   const deleteCard = async (cardId) => {
+    // Handle temporary cards (those created locally but not saved to backend)
+    if (cardId.startsWith('temp-')) {
+      setTodoCards(prev => prev.filter(card => card._id !== cardId));
+      return;
+    }
+
     try {
       const response = await axios.delete(`http://localhost:8000/api/todos/${cardId}`);
       if (response.data.success) {
@@ -251,7 +257,7 @@ function TodoList() {
           card._id === cardId ? response.data.data : card
         ));
       }
-    } catch (error) {
+    } catch {
       // For mock data, update locally
       setTodoCards(prev => prev.map(card => 
         card._id === cardId 
