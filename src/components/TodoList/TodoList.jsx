@@ -256,9 +256,23 @@ function TodoList() {
         setTodoCards(prev => prev.map(card => 
           card._id === cardId ? response.data.data : card
         ));
+      } else {
+        // Fallback local update if API returns success: false
+        setTodoCards(prev => prev.map(card => 
+          card._id === cardId 
+            ? {
+                ...card,
+                subTodos: card.subTodos.map(subTodo =>
+                  subTodo._id === subTodoId
+                    ? { ...subTodo, pinned: !pinned }
+                    : subTodo
+                )
+              }
+            : card
+        ));
       }
     } catch {
-      // For mock data, update locally
+      // For mock data or network errors, update locally
       setTodoCards(prev => prev.map(card => 
         card._id === cardId 
           ? {
@@ -296,7 +310,8 @@ function TodoList() {
     } else {
       // Show only first 4 todos plus all pinned ones when collapsed
       const pinnedTodos = subTodos.filter(todo => todo.pinned);
-      const unpinnedTodos = subTodos.filter(todo => !todo.pinned).slice(0, 4 - pinnedTodos.length);
+      const unpinnedLimit = Math.max(0, 4 - pinnedTodos.length); // prevent negative slicing
+      const unpinnedTodos = subTodos.filter(todo => !todo.pinned).slice(0, unpinnedLimit);
       return [...pinnedTodos, ...unpinnedTodos];
     }
   };
@@ -387,14 +402,15 @@ function TodoList() {
                       autoFocus
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                          saveNewCard ? saveNewCard(card._id) : saveCardTitleEdit(card._id);
+                          // This input is for editing titles only; call the right saver
+                          saveCardTitleEdit(card._id);
                         }
                       }}
                     />
                     <div className="edit-actions">
                       <button 
                         className="btn outline small"
-                        onClick={() => saveNewCard ? saveNewCard(card._id) : saveCardTitleEdit(card._id)}
+                        onClick={() => saveCardTitleEdit(card._id)}
                         title="Save title"
                       >
                         ✓

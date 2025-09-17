@@ -112,7 +112,7 @@ const addSubTodo = async (req, res) => {
 const updateSubTodo = async (req, res) => {
   try {
     const { id, subTodoId } = req.params;
-    const { text, completed } = req.body;
+    const { text, completed, pinned } = req.body; // <-- include pinned
 
     const todoCard = await TodoCard.findById(id);
     if (!todoCard) {
@@ -126,8 +126,9 @@ const updateSubTodo = async (req, res) => {
 
     if (text !== undefined) subTodo.text = text;
     if (completed !== undefined) subTodo.completed = completed;
+    if (pinned !== undefined) subTodo.pinned = pinned; // <-- update pinned
+
     todoCard.updatedAt = new Date();
-    
     await todoCard.save();
 
     console.log('✅ Update sub-todo function executed successfully');
