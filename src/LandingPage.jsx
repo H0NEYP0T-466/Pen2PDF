@@ -13,18 +13,28 @@ function LandingPage() {
     }
   };
 
+  const scrollToCards = () => {
+    const cardsSection = document.getElementById("cards-section");
+    if (cardsSection) {
+      cardsSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="landing-page">
-      <nav className="navbar">
-        <h1>Pen2PDF</h1>
-      </nav>
-      
-      <div className="landing-container">
-        <div className="landing-header">
-          <h2>Welcome to Pen2PDF Suite</h2>
-          <p>Choose from our collection of productivity tools</p>
+      {/* Hero Section */}
+      <div className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">WELCOME TO PEN2PDF</h1>
+          <p className="hero-subtitle">Convert, organize, and power your productivity with AI.</p>
+          <button className="get-started-btn" onClick={scrollToCards}>
+            Get Started
+          </button>
         </div>
-        
+      </div>
+      
+      {/* Cards Section */}
+      <div id="cards-section" className="cards-section">
         <div className="cards-grid">
           <div 
             className="card" 
