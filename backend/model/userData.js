@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const { todoConnection } = require('../config/database');
+const { Schema } = require('mongoose');
 
 // Sub-todo schema for individual tasks within a todo card
 const subTodoSchema = new Schema({
@@ -17,6 +17,6 @@ const todoCardSchema = new Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-const TodoCard = mongoose.model('TodoCard', todoCardSchema);
+const TodoCard = todoConnection.model('TodoCard', todoCardSchema);
 
 module.exports = TodoCard;

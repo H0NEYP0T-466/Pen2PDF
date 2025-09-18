@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const { timetableConnection } = require('../config/database');
+const { Schema } = require('mongoose');
 
 // Timetable entry schema
 const timetableEntrySchema = new Schema({
@@ -13,6 +13,6 @@ const timetableEntrySchema = new Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-const TimetableEntry = mongoose.model('TimetableEntry', timetableEntrySchema);
+const TimetableEntry = timetableConnection.model('TimetableEntry', timetableEntrySchema);
 
 module.exports = TimetableEntry;

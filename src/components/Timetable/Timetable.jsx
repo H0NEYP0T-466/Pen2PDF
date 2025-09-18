@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import axios from 'axios';
 import './Timetable.css';
 
@@ -112,52 +113,82 @@ function Timetable() {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (!file.name.endsWith('.csv')) {
-      setImportError('Please select a CSV file');
+    const fileExtension = file.name.toLowerCase().split('.').pop();
+    const supportedFormats = ['csv', 'xlsx', 'xls'];
+    
+    if (!supportedFormats.includes(fileExtension)) {
+      setImportError('Please select a CSV, XLSX, or XLS file');
       return;
     }
 
-    Papa.parse(file, {
-      header: true,
-      complete: (results) => {
-        setImportError('');
-        
-        // Validate CSV structure
-        const requiredHeaders = ['Subject Name', 'Teacher Name', 'Class Number', 'Class Type', 'Timings', 'Day'];
-        const headers = Object.keys(results.data[0] || {});
-        
-        const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
-        if (missingHeaders.length > 0) {
-          setImportError(`Missing required columns: ${missingHeaders.join(', ')}`);
-          return;
+    if (fileExtension === 'csv') {
+      // Handle CSV files with Papa Parse
+      Papa.parse(file, {
+        header: true,
+        complete: (results) => {
+          processFileData(results.data);
+        },
+        error: (error) => {
+          setImportError('Error parsing CSV file: ' + error.message);
         }
-
-        // Transform CSV data to match backend schema
-        const transformedData = results.data
-          .filter(row => row['Subject Name'] && row['Teacher Name']) // Filter empty rows
-          .map(row => ({
-            subjectName: row['Subject Name'],
-            teacherName: row['Teacher Name'],
-            classNumber: row['Class Number'],
-            classType: row['Class Type'],
-            timings: row['Timings'],
-            day: row['Day']
-          }));
-
-        if (transformedData.length === 0) {
-          setImportError('No valid data found in CSV file');
-          return;
+      });
+    } else {
+      // Handle Excel files with xlsx
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Get the first worksheet
+          const worksheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[worksheetName];
+          
+          // Convert to JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          processFileData(jsonData);
+        } catch (error) {
+          setImportError('Error parsing Excel file: ' + error.message);
         }
-
-        importTimetableData(transformedData);
-      },
-      error: (error) => {
-        setImportError('Error parsing CSV file: ' + error.message);
-      }
-    });
+      };
+      reader.readAsArrayBuffer(file);
+    }
 
     // Reset file input
     event.target.value = '';
+  };
+
+  const processFileData = (data) => {
+    setImportError('');
+    
+    // Validate data structure
+    const requiredHeaders = ['Subject Name', 'Teacher Name', 'Class Number', 'Class Type', 'Timings', 'Day'];
+    const headers = Object.keys(data[0] || {});
+    
+    const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+    if (missingHeaders.length > 0) {
+      setImportError(`Missing required columns: ${missingHeaders.join(', ')}`);
+      return;
+    }
+
+    // Transform data to match backend schema
+    const transformedData = data
+      .filter(row => row['Subject Name'] && row['Teacher Name']) // Filter empty rows
+      .map(row => ({
+        subjectName: row['Subject Name'],
+        teacherName: row['Teacher Name'],
+        classNumber: row['Class Number'],
+        classType: row['Class Type'],
+        timings: row['Timings'],
+        day: row['Day']
+      }));
+
+    if (transformedData.length === 0) {
+      setImportError('No valid data found in file');
+      return;
+    }
+
+    importTimetableData(transformedData);
   };
 
   const importTimetableData = async (data) => {
@@ -276,13 +307,13 @@ function Timetable() {
         <div className="header-actions">
           <input
             type="file"
-            id="csv-upload"
-            accept=".csv"
+            id="file-upload"
+            accept=".csv,.xlsx,.xls"
             onChange={handleFileUpload}
             style={{ display: 'none' }}
           />
-          <label htmlFor="csv-upload" className="btn outline">
-            Import CSV
+          <label htmlFor="file-upload" className="btn outline">
+            Import File
           </label>
           <button 
             className="btn primary" 
@@ -397,13 +428,13 @@ function Timetable() {
             {timetableEntries.length === 0 ? (
               <tr>
                 <td colSpan="7" className="empty-state">
-                  No timetable entries found. Add some entries or import from CSV.
+                  No timetable entries found. Add some entries or import from CSV/Excel files.
                 </td>
               </tr>
             ) : (
               days.map(day => {
                 const dayEntries = groupedEntries[day] || [];
-                return dayEntries.map((entry, index) => (
+                return dayEntries.map((entry) => (
                   <React.Fragment key={entry._id}>
                     {editingEntry === entry._id ? (
                       <EditForm
@@ -454,8 +485,9 @@ function Timetable() {
       </div>
 
       <div className="csv-format-info">
-        <h3>CSV Import Format</h3>
-        <p>Your CSV file should have the following columns (in this exact order):</p>
+        <h3>File Import Format</h3>
+        <p>Supported file formats: <strong>CSV, XLSX, XLS</strong></p>
+        <p>Your file should have the following columns (in this exact order):</p>
         <code>Subject Name, Teacher Name, Class Number, Class Type, Timings, Day</code>
         <p>
           <strong>Class Type</strong> should be either "Theory" or "Lab".<br/>

@@ -19,7 +19,7 @@ const {
   deleteAllTimetableEntries,
   importTimetableEntries
 } = require('./controller/timetableController');
-const mongoose = require('mongoose');
+const { todoConnection, timetableConnection } = require('./config/database');
 
 const app = express();
 app.use(cors());
@@ -51,12 +51,14 @@ app.delete('/api/timetable/:id', deleteTimetableEntry);
 app.delete('/api/timetable', deleteAllTimetableEntries);
 app.post('/api/timetable/import', importTimetableEntries);
 
-mongoose.connect('mongodb://127.0.0.1:27017/todolist')
-  .then(() => {
-    console.log('MongoDB connected');
-    app.listen(8000, () => console.log('Server running on port 8000'));
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
+// Start server when both database connections are ready
+Promise.all([
+  todoConnection.asPromise(),
+  timetableConnection.asPromise()
+]).then(() => {
+  console.log('🚀 All MongoDB connections established');
+  app.listen(8000, () => console.log('🌟 Server running on port 8000'));
+}).catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+  process.exit(1);
+});
