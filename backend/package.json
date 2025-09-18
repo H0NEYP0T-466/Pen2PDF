@@ -17,5 +17,8 @@
     "express": "^5.1.0",
     "express-fileupload": "^1.5.2",
     "mongoose": "^8.18.1"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.2.1"
   }
 }

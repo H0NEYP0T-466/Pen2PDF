@@ -10,6 +10,8 @@ function LandingPage() {
       navigate("/pen2pdf");
     } else if (cardType === "todo") {
       navigate("/todo");
+    } else if (cardType === "timetable") {
+      navigate("/timetable");
     } else {
       console.log("Coming soon");
     }
