@@ -1,0 +1,325 @@
+.timetable-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  color: white;
+}
+
+.timetable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn.primary {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn.primary:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.btn.outline {
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn.outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn.danger {
+  background: #f44336;
+  color: white;
+}
+
+.btn.danger:hover {
+  background: #da190b;
+  transform: translateY(-2px);
+}
+
+.btn.danger:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.small {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.error-message {
+  background: rgba(244, 67, 54, 0.9);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 50px;
+  color: white;
+}
+
+.add-form-container {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
+}
+
+.add-form-container h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+}
+
+.add-form, .edit-form {
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  align-items: center;
+}
+
+.form-row input,
+.form-row select {
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+}
+
+.form-row input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-row input:focus,
+.form-row select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.form-row select option {
+  background: #333;
+  color: white;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
+.timetable-table-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  margin-bottom: 30px;
+}
+
+.timetable-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.timetable-table th {
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  padding: 15px 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.timetable-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.timetable-table tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.edit-row {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.edit-row td {
+  padding: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  padding: 40px !important;
+}
+
+.class-type {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.class-type.theory {
+  background: rgba(33, 150, 243, 0.2);
+  border: 1px solid #2196F3;
+  color: #64B5F6;
+}
+
+.class-type.lab {
+  background: rgba(255, 152, 0, 0.2);
+  border: 1px solid #FF9800;
+  color: #FFB74D;
+}
+
+.day-badge {
+  background: rgba(156, 39, 176, 0.2);
+  border: 1px solid #9C27B0;
+  color: #CE93D8;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-buttons .btn {
+  padding: 6px 8px;
+  min-width: auto;
+}
+
+.csv-format-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.csv-format-info h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+}
+
+.csv-format-info p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.csv-format-info code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  display: block;
+  margin: 10px 0;
+  color: #64B5F6;
+}
+
+@media (max-width: 768px) {
+  .timetable-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-left {
+    justify-content: center;
+  }
+  
+  .header-actions {
+    justify-content: center;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .timetable-table {
+    font-size: 12px;
+  }
+  
+  .timetable-table th,
+  .timetable-table td {
+    padding: 8px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}

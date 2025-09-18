@@ -11,6 +11,14 @@ const {
   updateSubTodo,
   deleteSubTodo
 } = require('./controller/dbcontroller');
+const {
+  getAllTimetableEntries,
+  createTimetableEntry,
+  updateTimetableEntry,
+  deleteTimetableEntry,
+  deleteAllTimetableEntries,
+  importTimetableEntries
+} = require('./controller/timetableController');
 const mongoose = require('mongoose');
 
 const app = express();
@@ -34,6 +42,14 @@ app.delete('/api/todos/:id', deleteTodoCard);
 app.post('/api/todos/:id/subtodos', addSubTodo);
 app.put('/api/todos/:id/subtodos/:subTodoId', updateSubTodo);
 app.delete('/api/todos/:id/subtodos/:subTodoId', deleteSubTodo);
+
+// Timetable API endpoints
+app.get('/api/timetable', getAllTimetableEntries);
+app.post('/api/timetable', createTimetableEntry);
+app.put('/api/timetable/:id', updateTimetableEntry);
+app.delete('/api/timetable/:id', deleteTimetableEntry);
+app.delete('/api/timetable', deleteAllTimetableEntries);
+app.post('/api/timetable/import', importTimetableEntries);
 
 mongoose.connect('mongodb://127.0.0.1:27017/todolist')
   .then(() => {
