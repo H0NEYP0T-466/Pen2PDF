@@ -428,13 +428,13 @@ function Timetable() {
             {timetableEntries.length === 0 ? (
               <tr>
                 <td colSpan="7" className="empty-state">
-                  No timetable entries found. Add some entries or import from CSV.
+                  No timetable entries found. Add some entries or import from CSV/Excel files.
                 </td>
               </tr>
             ) : (
               days.map(day => {
                 const dayEntries = groupedEntries[day] || [];
-                return dayEntries.map((entry, index) => (
+                return dayEntries.map((entry) => (
                   <React.Fragment key={entry._id}>
                     {editingEntry === entry._id ? (
                       <EditForm
