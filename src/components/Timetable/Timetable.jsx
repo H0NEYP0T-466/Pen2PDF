@@ -296,11 +296,11 @@ function Timetable() {
       <div className="timetable-header">
         <div className="header-left">
           <button 
-            className="btn outline" 
+            className="back-btn" 
             onClick={() => navigate('/')}
-            title="Back to Home"
+            title="Back to main page"
           >
-            ← Back
+            ←
           </button>
           <h1>Class Timetable</h1>
         </div>
@@ -331,12 +331,13 @@ function Timetable() {
         </div>
       </div>
 
-      {error && (
-        <div className="error-message">
-          {error}
-          <button onClick={() => setError('')} className="close-btn">×</button>
-        </div>
-      )}
+      <div className="timetable-content">
+        {error && (
+          <div className="error-message">
+            {error}
+            <button onClick={() => setError('')} className="close-btn">×</button>
+          </div>
+        )}
 
       {importError && (
         <div className="error-message">
@@ -493,6 +494,7 @@ function Timetable() {
           <strong>Class Type</strong> should be either "Theory" or "Lab".<br/>
           <strong>Day</strong> should be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, or Sat/Sun.
         </p>
+      </div>
       </div>
     </div>
   );

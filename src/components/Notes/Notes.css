@@ -1,13 +1,10 @@
 /* Notes component styles - Based on existing App.css patterns */
 
 .notes-container {
-  width: 100%;
-  max-width: 100vw;
-  margin: 0 auto;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   background: var(--bg);
   color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
 }
 
 .notes-header {
@@ -55,10 +52,9 @@
 /* Upload container styles */
 .upload-container {
   padding: 24px;
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  height: calc(100vh - 80px);
-  overflow-y: auto;
+  min-height: calc(100vh - 80px);
 }
 
 .upload-area {
@@ -230,9 +226,9 @@
   grid-template-columns: 1fr 320px;
   gap: 16px;
   padding: 16px;
+  max-width: 1200px;
   margin: 0 auto;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 .left-panel,
@@ -336,8 +332,9 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   padding: 20px;
-  height: calc(100vh - 120px);
-  overflow-y: auto;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 120px);
 }
 
 .note-card {

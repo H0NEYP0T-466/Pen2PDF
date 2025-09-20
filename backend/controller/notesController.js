@@ -1,7 +1,5 @@
 const Notes = require('../model/notesData');
 const { generateNotesResponse } = require('../gemini/notesgemini');
-const fs = require('fs');
-const path = require('path');
 
 // Get all saved notes
 const getAllNotes = async (req, res) => {
@@ -82,7 +80,7 @@ const generateNotes = async (req, res) => {
       return res.status(400).json({ success: false, error: 'No files uploaded' });
     }
 
-    const retryInstruction = req.body.retryInstruction || null;
+    const retryInstruction = req.body?.retryInstruction || null;
     const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
     const parts = [];
 
