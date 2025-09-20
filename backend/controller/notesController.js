@@ -1,7 +1,5 @@
 const Notes = require('../model/notesData');
 const { generateNotesResponse } = require('../gemini/notesgemini');
-const fs = require('fs');
-const path = require('path');
 
 // Get all saved notes
 const getAllNotes = async (req, res) => {
