@@ -6,6 +6,11 @@
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
 }
 
+.timetable-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .timetable-header {
   display: flex;
   justify-content: space-between;
@@ -13,12 +18,37 @@
   margin-bottom: 30px;
   flex-wrap: wrap;
   gap: 20px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 30px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.back-btn {
+  background: var(--panel-2);
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 18px;
+  transition: background .15s ease, color .2s ease;
+  flex-shrink: 0;
+}
+
+.back-btn:hover {
+  background: var(--panel-2);
+  color: var(--text);
 }
 
 .header-left h1 {
@@ -215,14 +245,14 @@
 .timetable-table th {
   background: var(--panel-2);
   color: var(--text);
-  padding: 15px 12px;
+  padding: 10px 8px;
   text-align: left;
   font-weight: 600;
   border-bottom: 1px solid var(--border);
 }
 
 .timetable-table td {
-  padding: 12px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
 }
@@ -236,7 +266,7 @@
 }
 
 .edit-row td {
-  padding: 20px;
+  padding: 12px 8px;
 }
 
 .empty-state {
