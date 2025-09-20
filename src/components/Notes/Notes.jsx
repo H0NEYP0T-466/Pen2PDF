@@ -331,6 +331,28 @@ function Notes() {
     }
   };
 
+  const deleteNote = async (noteId) => {
+    if (!window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`http://localhost:8000/api/notes/${noteId}`);
+      
+      if (response.data.success) {
+        // Remove the deleted note from the local state
+        setSavedNotes(prev => prev.filter(note => note._id !== noteId));
+        // Optional: Show success message
+        // alert('Note deleted successfully!');
+      } else {
+        setError('Failed to delete note');
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      setError('Failed to delete note');
+    }
+  };
+
   if (showLibrary) {
     return (
       <div className="notes-container">
@@ -383,6 +405,12 @@ function Notes() {
                     }}
                   >
                     Edit
+                  </button>
+                  <button 
+                    className="btn danger small"
+                    onClick={() => deleteNote(note._id)}
+                  >
+                    Delete
                   </button>
                 </div>
               </div>
