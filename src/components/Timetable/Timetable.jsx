@@ -458,7 +458,7 @@ function Timetable() {
                           <span className="day-badge">{entry.day}</span>
                         </td>
                         <td>
-                          <div className="action-buttons">
+                          <div className="action_buttons">
                             <button
                               className="btn outline small"
                               onClick={() => setEditingEntry(entry._id)}
