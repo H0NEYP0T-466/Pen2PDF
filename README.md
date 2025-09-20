@@ -26,9 +26,9 @@
 
 </p>
 
-**Transform your handwritten notes, presentations, and documents into beautifully formatted PDFs with AI-powered text extraction and markdown editing capabilities.**
+**A comprehensive productivity suite that combines AI-powered document processing, schedule management, task organization, and intelligent note-taking in one unified platform.**
 
-Pen2PDF is a modern web application that leverages Google Gemini AI to extract text from various file formats (PDF, PPT, PPTX, images) and converts them into editable markdown format, which can then be exported as professional PDFs.
+Pen2PDF Suite is a modern web application that offers four powerful productivity tools: AI-powered text extraction and PDF conversion, intelligent timetable management with Excel/CSV import, comprehensive todo list management with subtasks, and smart notes generation with a searchable library - all designed to streamline your academic and professional workflow.
 
 ## 🔗 Links
 
@@ -54,16 +54,44 @@ Pen2PDF is a modern web application that leverages Google Gemini AI to extract t
 
 ## 🚀 Features
 
+### 📝 Pen2PDF - AI-Powered Document Conversion
 - **🤖 AI-Powered Text Extraction**: Uses Google Gemini AI to extract text from various file formats
 - **📝 Multiple File Format Support**: PDF, PPT, PPTX, PNG, JPG, WebP
 - **✏️ Real-time Markdown Editor**: Edit extracted text with live markdown formatting
 - **📄 Professional PDF Export**: Generate high-quality PDFs with custom styling
 - **📤 Markdown Export**: Download content as markdown files
 - **🎯 Drag & Drop Interface**: Intuitive file upload with drag-and-drop support
-- **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
-- **🔧 Text Formatting Tools**: Built-in tools for headers, bold text, and content replacement
 - **📋 Blank Document Mode**: Start with a blank document without file upload
-- **⚡ Fast Processing**: Efficient text extraction and processing
+
+### 📅 Timetable Management
+- **📊 Schedule Organization**: Create and manage your daily, weekly schedules
+- **📁 Excel/CSV Import**: Import timetable data from CSV, XLSX, and XLS files
+- **🏫 Class Management**: Organize subjects, teachers, rooms, and class types (Theory/Lab)
+- **⏰ Time Slot Management**: Manage class timings and daily schedules
+- **🔄 Bulk Operations**: Import multiple entries at once with validation
+- **🗓️ Weekly View**: Visualize your entire week's schedule in an organized format
+
+### ✅ TodoList - Task Management
+- **📋 Task Organization**: Create todo cards with organized task lists
+- **🔗 Subtask Support**: Break down complex tasks into manageable subtasks
+- **📌 Priority Pinning**: Pin important subtasks for quick access
+- **✓ Progress Tracking**: Mark tasks and subtasks as completed
+- **📊 Task Statistics**: View completion progress and task analytics
+- **🎯 Focus Mode**: Expandable cards to focus on specific task groups
+
+### 📚 Notes Generation & Library
+- **🤖 Smart Notes Creation**: AI-powered generation of study notes from uploaded files
+- **📖 Notes Library**: Searchable collection of all your generated notes
+- **📝 Rich Text Support**: Create and edit notes with markdown formatting
+- **🔄 Note Regeneration**: Retry note generation with improved prompts
+- **💾 Persistent Storage**: Save and organize notes in a dedicated library
+- **🎯 Blank Note Creation**: Start with empty documents for manual note-taking
+
+### 🌐 Universal Features
+- **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
+- **⚡ Fast Processing**: Efficient processing and data management
+- **🎨 Modern UI**: Clean, intuitive interface with consistent design
+- **🔐 Local Storage**: Secure data management with MongoDB integration
 
 ## ⚡ Tech Stack
 
@@ -108,7 +136,8 @@ Before you begin, ensure you have the following installed:
 
 - **Node.js** (v16.0.0 or higher)
 - **npm** (v7.0.0 or higher)
-- **Google Gemini AI API Key** (for text extraction functionality)
+- **MongoDB** (v4.4 or higher) - For data persistence across all features
+- **Google Gemini AI API Key** (for AI-powered text extraction and notes generation)
 
 ## 🛠️ Installation
 
@@ -132,7 +161,23 @@ cd backend
 npm install
 ```
 
-### 4. Environment Setup
+### 4. Database Setup
+
+Ensure MongoDB is running on your system. The application uses multiple databases:
+
+```bash
+# Start MongoDB service (varies by OS)
+# macOS (with Homebrew): brew services start mongodb-community
+# Ubuntu: sudo systemctl start mongod
+# Windows: net start MongoDB
+```
+
+The application will automatically create the following databases:
+- `todolist` - For todo management data
+- `timetable` - For timetable and schedule data  
+- `notes` - For notes and study materials
+
+### 5. Environment Setup
 
 Create a `.env` file in the `backend` directory:
 
@@ -147,7 +192,7 @@ Add your Google Gemini AI API key to the `.env` file:
 GEMINI_API_KEY=your_google_gemini_api_key_here
 ```
 
-### 5. Start the Development Servers
+### 6. Start the Development Servers
 
 #### Backend Server (Terminal 1)
 ```bash
@@ -164,7 +209,9 @@ The application will be available at `http://localhost:5173` (frontend) and the 
 
 ## 💻 Usage
 
-### Basic Workflow
+The Pen2PDF Suite provides four main productivity tools accessible from the landing page. Each tool is designed to handle specific aspects of your workflow:
+
+### 📝 Pen2PDF - Document Conversion
 
 1. **📤 Upload Files**: Drag and drop or click to upload PDF, PPT, PPTX, or image files
 2. **🔄 Reorder Files**: Use the up/down arrows to arrange files in the desired order
@@ -172,24 +219,49 @@ The application will be available at `http://localhost:5173` (frontend) and the 
 4. **✏️ Edit Content**: Use the markdown editor to refine and format the extracted text
 5. **📄 Export**: Download as PDF or markdown file
 
-### File Format Support
-
+#### File Format Support
 | Format | Description | Notes |
 |--------|-------------|-------|
 | PDF | Portable Document Format | Supports text and image-based PDFs |
 | PPT/PPTX | PowerPoint Presentations | Extract text from slides |
 | PNG/JPG/WebP | Image Files | OCR text extraction from images |
 
-### Editing Features
+### 📅 Timetable Management
 
-- **Headers**: Convert text to H1, H2, H3 headings
-- **Bold Text**: Apply bold formatting to selected text
-- **Text Replacement**: Replace selected text with custom content
-- **Live Preview**: See markdown rendering in real-time
+1. **➕ Add Entries**: Create individual timetable entries with subject, teacher, room, and timing details
+2. **📁 Import Data**: Upload CSV, XLSX, or XLS files with bulk timetable data
+3. **📊 View Schedule**: Browse your organized weekly schedule
+4. **✏️ Edit Entries**: Modify existing timetable entries as needed
+5. **🗑️ Manage Data**: Delete individual entries or clear entire schedule
 
-### Manual Mode
+#### Import File Format
+Your import file should contain these columns:
+```
+Subject Name, Teacher Name, Class Number, Class Type, Timings, Day
+```
 
-Start with a blank document without uploading files - perfect for creating new content from scratch.
+### ✅ TodoList Management
+
+1. **📋 Create Cards**: Add new todo cards for different projects or categories
+2. **➕ Add Subtasks**: Break down cards into specific actionable subtasks
+3. **📌 Pin Important**: Pin high-priority subtasks for easy access
+4. **✓ Track Progress**: Mark subtasks as completed to monitor progress
+5. **📊 View Analytics**: See completion statistics and progress overview
+
+### 📚 Notes Generation & Library
+
+1. **📤 Upload Content**: Upload files (PDF, PPTX, etc.) for note generation
+2. **🤖 Generate Notes**: AI creates structured study notes from your content
+3. **✏️ Edit Notes**: Refine generated notes using the markdown editor
+4. **💾 Save to Library**: Store notes in your personal notes library
+5. **🔍 Browse Library**: Access and search through your saved notes collection
+6. **📋 Blank Notes**: Create notes from scratch without file upload
+
+### 🎯 Navigation
+
+- **🏠 Landing Page**: Access all four tools from the main dashboard
+- **🔙 Easy Return**: Navigate back to the main menu from any tool
+- **📱 Mobile Friendly**: All features work seamlessly on mobile devices
 
 ## 📁 Project Structure
 
@@ -198,18 +270,43 @@ Pen2PDF/
 ├── 📁 public/                 # Static assets
 │   └── favi.png              # Favicon
 ├── 📁 src/                   # Frontend source code
-│   ├── App.jsx              # Main React component
+│   ├── App.jsx              # Main React application
 │   ├── App.css              # Application styles
 │   ├── main.jsx             # React entry point
-│   └── index.css            # Global styles
+│   ├── index.css            # Global styles
+│   └── 📁 components/        # React components
+│       ├── 📁 LandingPage/   # Main dashboard
+│       │   ├── LandingPage.jsx
+│       │   └── LandingPage.css
+│       ├── 📁 Notes/         # Notes generation & library
+│       │   ├── Notes.jsx
+│       │   └── Notes.css
+│       ├── 📁 Timetable/     # Schedule management
+│       │   ├── Timetable.jsx
+│       │   └── Timetable.css
+│       └── 📁 TodoList/      # Task management
+│           ├── TodoList.jsx
+│           └── TodoList.css
 ├── 📁 backend/               # Backend server
 │   ├── 📁 controller/        # Request handlers
-│   │   └── controller.js     # Text extraction controller
+│   │   ├── controller.js     # Pen2PDF text extraction
+│   │   ├── dbcontroller.js   # TodoList management
+│   │   ├── timetableController.js  # Timetable management
+│   │   └── notesController.js      # Notes management
+│   ├── 📁 model/            # Database models
+│   │   ├── todoData.js      # Todo data schema
+│   │   ├── timetableData.js # Timetable data schema
+│   │   └── notesData.js     # Notes data schema
+│   ├── 📁 config/           # Database configuration
+│   │   └── database.js      # MongoDB connections
 │   ├── 📁 gemini/           # AI integration
-│   │   └── gemini.js        # Google Gemini API client
+│   │   ├── gemini.js        # Pen2PDF text extraction
+│   │   └── notesgemini.js   # Notes generation
 │   ├── index.js             # Express server entry point
 │   └── package.json         # Backend dependencies
 ├── 📄 README.md             # Project documentation
+├── 📄 TIMETABLE_IMPORT_GUIDE.md  # Timetable import guide
+├── 📄 sample_timetable.csv  # Example timetable format
 ├── 📄 LICENSE               # MIT License
 ├── 📄 CONTRIBUTING.md       # Contribution guidelines
 ├── 📄 package.json          # Frontend dependencies
@@ -244,27 +341,30 @@ This project follows the Contributor Covenant Code of Conduct. Please read our [
 ## 🗺️ Roadmap
 
 ### ✅ Current Features
-- AI-powered text extraction using Google Gemini
-- Multi-format file support (PDF, PPT, PPTX, images)
-- Real-time markdown editing
-- Professional PDF export
-- Responsive web interface
+- **📝 Pen2PDF**: AI-powered text extraction using Google Gemini from multiple file formats
+- **📅 Timetable**: Complete schedule management with Excel/CSV import functionality
+- **✅ TodoList**: Task management with subtasks, pinning, and progress tracking
+- **📚 Notes**: AI-powered notes generation and searchable notes library
+- **🎨 Unified Interface**: Consistent design across all productivity tools
+- **📱 Responsive Design**: Full mobile and desktop compatibility
+- **🔐 Data Persistence**: MongoDB integration for all features
 
 ### 🚧 In Development
-- Batch processing improvements
-- Enhanced text formatting options
-- Custom PDF styling themes
-- Cloud storage integration
+- **🔄 Cross-feature Integration**: Link notes to specific timetable subjects and todo tasks
+- **📊 Analytics Dashboard**: Usage statistics and productivity insights across all tools
+- **🎯 Smart Suggestions**: AI-powered recommendations based on usage patterns
+- **🔍 Global Search**: Search across all notes, todos, and timetable entries
+- **📅 Calendar Integration**: Sync timetable with external calendar applications
 
 ### 🔮 Future Vision
-- Multiple AI provider support (OpenAI, Claude, etc.)
-- Collaborative editing features
-- Template library for common document types
-- Mobile application
-- Browser extension
-- API for third-party integrations
-- Advanced OCR capabilities
-- Document version history
+- **☁️ Cloud Sync**: Multi-device synchronization and backup
+- **👥 Collaboration**: Share timetables, notes, and todo lists with team members
+- **📱 Mobile Apps**: Native iOS and Android applications
+- **🔌 API Integrations**: Connect with popular productivity and educational tools
+- **🎓 Academic Features**: GPA tracking, assignment deadlines, exam scheduling
+- **🤖 Advanced AI**: Multi-provider AI support (OpenAI, Claude, etc.)
+- **📈 Progress Analytics**: Detailed productivity metrics and goal tracking
+- **🎨 Customization**: Themes, templates, and personalized workflows
 
 ## 🙏 Acknowledgements
 
