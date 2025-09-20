@@ -196,6 +196,16 @@ function TodoList() {
   };
 
   const deleteSubTodo = async (cardId, subTodoId) => {
+    // Handle temporary subtodos (those created locally but not saved to backend)
+    if (subTodoId.startsWith('temp-')) {
+      setTodoCards(prev => prev.map(card => 
+        card._id === cardId 
+          ? { ...card, subTodos: card.subTodos.filter(st => st._id !== subTodoId) }
+          : card
+      ));
+      return;
+    }
+
     try {
       const response = await axios.delete(`http://localhost:8000/api/todos/${cardId}/subtodos/${subTodoId}`);
       if (response.data.success) {
@@ -413,6 +423,22 @@ function TodoList() {
                           }
                         }
                       }}
+                      onBlur={() => {
+                        // Auto-delete empty main todos when user clicks elsewhere
+                        setTimeout(() => {
+                          if (card._id.startsWith('temp-') && !newCardTitle.trim()) {
+                            // Remove empty temp card
+                            setTodoCards(prev => prev.filter(c => c._id !== card._id));
+                            setEditingCard(null);
+                            setNewCardTitle('');
+                          } else if (newCardTitle.trim()) {
+                            // Save non-empty cards
+                            card._id.startsWith('temp-') 
+                              ? saveNewCard(card._id)
+                              : saveCardTitleEdit(card._id);
+                          }
+                        }, 100); // Small delay to allow button clicks to register
+                      }}
                     />
                     <div className="edit-actions">
                       <button 
@@ -484,6 +510,26 @@ function TodoList() {
                                     ? saveNewSubTodo(card._id, subTodo._id)
                                     : saveSubTodoEdit(card._id, subTodo._id);
                                 }
+                              }}
+                              onBlur={() => {
+                                // Auto-delete empty todos when user clicks elsewhere
+                                setTimeout(() => {
+                                  if (subTodo._id.startsWith('temp-') && !newSubTodoText.trim()) {
+                                    // Remove empty temp subtodo
+                                    setTodoCards(prev => prev.map(card => 
+                                      card._id === card._id 
+                                        ? { ...card, subTodos: card.subTodos.filter(st => st._id !== subTodo._id) }
+                                        : card
+                                    ));
+                                    setEditingSubTodo(null);
+                                    setNewSubTodoText('');
+                                  } else {
+                                    // Save non-empty todos
+                                    subTodo._id.startsWith('temp-') 
+                                      ? saveNewSubTodo(card._id, subTodo._id)
+                                      : saveSubTodoEdit(card._id, subTodo._id);
+                                  }
+                                }, 100); // Small delay to allow button clicks to register
                               }}
                             />
                             <div className="edit-actions">

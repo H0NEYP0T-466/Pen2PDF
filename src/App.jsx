@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { marked } from "marked";
 import html2pdf from "html2pdf.js";
@@ -13,6 +14,7 @@ New additions in this version:
 */
 
 function App() {
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [extracted, setExtracted] = useState(false);
@@ -317,6 +319,17 @@ function App() {
     <div className="app">
       {!extracted ? (
         <div className="upload-container">
+          <div className="panel-header">
+            <button
+              className="back-btn"
+              onClick={() => navigate('/')}
+              title="Back to main page"
+            >
+              ←
+            </button>
+            <h2>Pen2PDF - Document Upload</h2>
+          </div>
+          
           <input
             type="file"
             id="fileUpload"
@@ -448,6 +461,14 @@ function App() {
                 title="Back to upload"
               >
                 ←
+              </button>
+              <button
+                className="back-btn"
+                onClick={() => navigate('/')}
+                title="Back to main page"
+                style={{ marginLeft: '8px' }}
+              >
+                🏠
               </button>
               <h2>
                 {manualMode ? "Manual Text Entry (Editable)" : "Extracted Text (Editable)"}
