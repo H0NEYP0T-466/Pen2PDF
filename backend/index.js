@@ -19,12 +19,22 @@ const {
   deleteAllTimetableEntries,
   importTimetableEntries
 } = require('./controller/timetableController');
-const { todoConnection, timetableConnection } = require('./config/database');
+const {
+  getAllNotes,
+  createNotes,
+  updateNotes,
+  deleteNotes,
+  generateNotes,
+  getNotesById
+} = require('./controller/notesController');
+const { todoConnection, timetableConnection, notesConnection } = require('./config/database');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(fileUpload()); 
+app.use(fileUpload({ 
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit for file uploads
+})); 
 
 app.get('/', (req, res) => {
   console.log("Frontend call received at backend");
@@ -33,6 +43,9 @@ app.get('/', (req, res) => {
 
 // Text extraction endpoint
 app.post('/textExtract', generateRES);
+
+// Notes generation endpoint
+app.post('/notesGenerate', generateNotes);
 
 // Todo API endpoints
 app.get('/api/todos', getAllTodos);
@@ -51,10 +64,18 @@ app.delete('/api/timetable/:id', deleteTimetableEntry);
 app.delete('/api/timetable', deleteAllTimetableEntries);
 app.post('/api/timetable/import', importTimetableEntries);
 
-// Start server when both database connections are ready
+// Notes API endpoints
+app.get('/api/notes', getAllNotes);
+app.post('/api/notes', createNotes);
+app.get('/api/notes/:id', getNotesById);
+app.put('/api/notes/:id', updateNotes);
+app.delete('/api/notes/:id', deleteNotes);
+
+// Start server when all database connections are ready
 Promise.all([
   todoConnection.asPromise(),
-  timetableConnection.asPromise()
+  timetableConnection.asPromise(),
+  notesConnection.asPromise()
 ]).then(() => {
   console.log('🚀 All MongoDB connections established');
   app.listen(8000, () => console.log('🌟 Server running on port 8000'));

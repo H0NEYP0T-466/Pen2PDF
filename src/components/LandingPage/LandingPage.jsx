@@ -12,6 +12,8 @@ function LandingPage() {
       navigate("/todo");
     } else if (cardType === "timetable") {
       navigate("/timetable");
+    } else if (cardType === "notes") {
+      navigate("/notes");
     } else {
       console.log("Coming soon");
     }
