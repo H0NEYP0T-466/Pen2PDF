@@ -20,6 +20,8 @@ function extractTextFromResult(result) {
   const t =
     result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
     result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
+    result?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
+    result?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
     null;
   return t;
 }
