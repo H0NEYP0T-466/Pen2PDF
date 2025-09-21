@@ -227,18 +227,99 @@ function Notes() {
     try {
       const html = marked(extractedText);
       const element = document.createElement('div');
-      element.innerHTML = html;
-      element.style.padding = '20px';
-      element.style.fontFamily = 'Arial, sans-serif';
-      element.style.lineHeight = '1.6';
-      element.style.color = '#333';
+      element.className = 'printable-light pdf-page';
+      element.innerHTML = `
+        <style>
+          /* Print-safe CSS for PDF generation */
+          @page {
+            margin: 12mm;
+          }
+          
+          .pdf-page {
+            padding: 8mm;
+            position: relative;
+          }
+          
+          /* Prevent word breaking and control text flow */
+          body, p, li, h1, h2, h3, h4, h5, h6 {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            hyphens: none;
+            -webkit-hyphens: none;
+            -moz-hyphens: none;
+            -ms-hyphens: none;
+          }
+          
+          /* Prevent orphaned elements and bad page breaks */
+          h1, h2, h3, h4, h5, h6, img, table, pre, blockquote {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+          }
+          
+          /* Keep headings with following content */
+          h1, h2, h3, h4, h5, h6 {
+            break-after: avoid;
+            page-break-after: avoid;
+            -webkit-column-break-after: avoid;
+          }
+          
+          /* Orphan and widow control */
+          p {
+            orphans: 2;
+            widows: 2;
+          }
+          
+          .printable-light {
+            max-width: none;
+            padding: 0;
+            color: #333;
+            background: #ffffff;
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            position: relative;
+          }
+          
+          .printable-light h1, .printable-light h2, .printable-light h3 {
+            color: #333;
+            margin: 0 0 12px 0;
+            line-height: 1.25;
+            font-weight: 700;
+          }
+          
+          .printable-light p, .printable-light li {
+            font-size: 12.5pt;
+            line-height: 1.6;
+            color: #333;
+          }
+          
+          /* Watermark styles */
+          .watermark {
+            position: fixed;
+            bottom: 16pt;
+            right: 16pt;
+            opacity: 0.2;
+            font-size: 14pt;
+            color: #000;
+            pointer-events: none;
+            z-index: 1000;
+            font-family: 'Arial', sans-serif;
+          }
+        </style>
+        <div class="watermark">~honeypot</div>
+        ${html}
+      `;
 
       const opt = {
-        margin: 1,
+        margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
         filename: `${fileName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+        pagebreak: { 
+          mode: ["css", "legacy"], 
+          avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote"]
+        }
       };
 
       await html2pdf().set(opt).from(element).save();
