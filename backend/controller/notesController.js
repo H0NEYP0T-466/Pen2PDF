@@ -127,12 +127,23 @@ const generateNotes = async (req, res) => {
     const result = await generateNotesResponse(parts, retryInstruction);
     
     console.log('✅ Notes generation function executed successfully');
-    res.json({ 
-      success: true, 
-      text: result.text,
-      modelUsed: result.modelUsed,
-      filesProcessed: files.map(f => f.name)
-    });
+    
+    // Handle both object and string returns for backward compatibility
+    const response = typeof result === 'object' 
+      ? { 
+          success: true, 
+          text: result.text,
+          modelUsed: result.modelUsed,
+          filesProcessed: files.map(f => f.name)
+        }
+      : { 
+          success: true, 
+          text: result,
+          modelUsed: 'Gemini',
+          filesProcessed: files.map(f => f.name)
+        };
+        
+    res.json(response);
 
   } catch (error) {
     console.error('❌ Error in generateNotes:', error);

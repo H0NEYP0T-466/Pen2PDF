@@ -6,11 +6,11 @@ const ai = new GoogleGenAI({
 });
 
 const CANDIDATE_MODELS = [
-  "gemini-2.5-pro",
+  "gemini-2.5-flash",
   "gemini-2.0-flash",
-  "gemini-1.5-pro-latest",
-  "gemini-1.5-pro",
+  "gemini-2.5-pro",
   "gemini-1.5-flash",
+  "gemini-1.5-pro"
 ];
 
 function extractTextFromResult(result) {
@@ -37,6 +37,7 @@ Your task:
 
   for (const model of CANDIDATE_MODELS) {
     try {
+      console.log(`\n🔄 Trying model: ${model}`);
       const result = await ai.models.generateContent({
         model,
         config: { systemInstruction },
@@ -51,13 +52,27 @@ Your task:
       lastErr = err;
       const code = err?.status || err?.code;
       const msg = (err?.message || "").toLowerCase();
-      const retryable =
+      
+      // Check for rate limit errors
+      const isRateLimit = code === 429 || msg.includes("quota") || msg.includes("rate limit");
+      
+      // Check for retryable errors
+      const isRetryable =
         code === 404 ||
         msg.includes("not found") ||
         msg.includes("unsupported") ||
-        msg.includes("does not support");
-      console.warn(`Model ${model} failed: ${err?.message}`);
-      if (!retryable) break;
+        msg.includes("does not support") ||
+        msg.includes("text parameter") ||
+        isRateLimit;
+        
+      console.warn(`❌ Model ${model} failed: ${err?.message}`);
+      
+      if (isRateLimit) {
+        console.log(`⏳ Rate limit hit for ${model}, trying next model...`);
+      } else if (!isRetryable) {
+        console.log(`❌ Non-retryable error for ${model}, stopping attempts.`);
+        break;
+      }
     }
   }
 
