@@ -242,12 +242,26 @@ function Notes() {
           
           /* Prevent word breaking and control text flow */
           body, p, li, h1, h2, h3, h4, h5, h6 {
-            word-break: keep-all;
-            overflow-wrap: break-word;
+            word-break: normal;
+            overflow-wrap: normal;
+            word-wrap: normal;
             hyphens: none;
             -webkit-hyphens: none;
             -moz-hyphens: none;
             -ms-hyphens: none;
+            text-align: justify;
+            text-justify: inter-word;
+          }
+          
+          /* Stronger word protection for all text elements */
+          * {
+            word-break: normal !important;
+            overflow-wrap: normal !important;
+            word-wrap: normal !important;
+            hyphens: none !important;
+            -webkit-hyphens: none !important;
+            -moz-hyphens: none !important;
+            -ms-hyphens: none !important;
           }
           
           /* Prevent orphaned elements and bad page breaks */
