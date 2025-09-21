@@ -247,15 +247,56 @@ function App() {
     try {
       const html = marked.parse(extractedText || "");
       const el = document.createElement("div");
-      el.className = "printable-light";
+      el.className = "printable-light pdf-page";
       el.innerHTML = `
         <style>
+          /* Print-safe CSS for PDF generation */
+          @page {
+            margin: 12mm;
+          }
+          
+          .pdf-page {
+            padding: 8mm;
+            position: relative;
+          }
+          
+          /* Prevent word breaking and control text flow */
+          body, p, li, h1, h2, h3, h4, h5, h6 {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            hyphens: none;
+            -webkit-hyphens: none;
+            -moz-hyphens: none;
+            -ms-hyphens: none;
+          }
+          
+          /* Prevent orphaned elements and bad page breaks */
+          h1, h2, h3, h4, h5, h6, img, table, pre, blockquote {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+          }
+          
+          /* Keep headings with following content */
+          h1, h2, h3, h4, h5, h6 {
+            break-after: avoid;
+            page-break-after: avoid;
+            -webkit-column-break-after: avoid;
+          }
+          
+          /* Orphan and widow control */
+          p {
+            orphans: 2;
+            widows: 2;
+          }
+          
           .printable-light {
-            max-width: 850px;
-            padding: 28px 32px;
+            max-width: none;
+            padding: 0;
             color: #111827;
             background: #ffffff;
             font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans';
+            position: relative;
           }
           .printable-light h1, .printable-light h2, .printable-light h3, .printable-light h4 {
             color: #111827;
@@ -276,17 +317,34 @@ function App() {
           .printable-light hr { border: none; border-top: 1px solid #e5e7eb; margin: 18px 0; }
           .printable-light code { background:#f3f4f6; padding:2px 4px; border-radius:4px; font-size:90%; }
           .printable-light pre code { display:block; padding:14px; }
+          
+          /* Watermark styles */
+          .watermark {
+            position: fixed;
+            bottom: 16pt;
+            right: 16pt;
+            opacity: 0.2;
+            font-size: 14pt;
+            color: #000;
+            pointer-events: none;
+            z-index: 1000;
+            font-family: 'Inter', system-ui, sans-serif;
+          }
         </style>
+        <div class="watermark">~honeypot</div>
         ${html}
       `;
       document.body.appendChild(el);
       const opt = {
-        margin: [24, 28, 28, 28],
+        margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
         filename: "Pen2PDF.pdf",
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
         jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] }
+        pagebreak: { 
+          mode: ["css", "legacy"], 
+          avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote"]
+        }
       };
       await html2pdf().set(opt).from(el).save();
       document.body.removeChild(el);
