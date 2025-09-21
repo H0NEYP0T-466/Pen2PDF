@@ -1,4 +1,9 @@
-const ai = require('./config');
+const { GoogleGenAI } = require("@google/genai");
+require("dotenv").config();
+
+const ai = new GoogleGenAI({
+  apiKey: process.env.geminiApiKey || process.env.GEMINI_API_KEY,
+});
 
 const CANDIDATE_MODELS = [
   'models/gemini-1.5-flash-002',
