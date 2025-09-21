@@ -14,16 +14,46 @@ const CANDIDATE_MODELS = [
 ];
 
 function extractTextFromResult(result) {
-  if (!result?.response?.candidates?.[0]?.content?.parts) {
-    console.error('Invalid result structure:', JSON.stringify(result, null, 2));
+  // Try multiple extraction methods to handle different response structures
+  
+  // Method 1: Check if result has a text() function (some versions)
+  if (typeof result?.response?.text === "function") return result.response.text();
+  if (typeof result?.text === "string") return result.text;
+  
+  // Method 2: Try direct candidates structure (newer API)
+  if (result?.candidates?.[0]?.content?.parts) {
+    const parts = result.candidates[0].content.parts;
+    const text = parts
+      .filter(part => part.text)
+      .map(part => part.text)
+      .join('');
+    if (text) return text;
+  }
+  
+  // Method 3: Try response.candidates structure (older API)
+  if (result?.response?.candidates?.[0]?.content?.parts) {
+    const parts = result.response.candidates[0].content.parts;
+    const text = parts
+      .filter(part => part.text)
+      .map(part => part.text)
+      .join('');
+    if (text) return text;
+  }
+  
+  // Method 4: Try alternative extraction methods
+  const t =
+    result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
+    result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
+    result?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
+    result?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
+    null;
+  
+  if (!t) {
+    console.error('Invalid result structure - no text found:', JSON.stringify(result, null, 2));
     return null;
   }
-
-  const parts = result.response.candidates[0].content.parts;
-  return parts
-    .filter(part => part.text)
-    .map(part => part.text)
-    .join('');
+  
+  return t;
 }
 
 async function generateNotesResponse(parts, retryInstruction = null) {
