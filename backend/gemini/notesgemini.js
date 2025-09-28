@@ -57,7 +57,7 @@ function extractTextFromResult(result) {
 }
 
 async function generateNotesResponse(parts, retryInstruction = null) {
-  const systemInstruction = `
+const systemInstruction = `
 # 📘 Study Notes Generator
 
 Transform provided files into clean, structured study notes using **Markdown only**.
@@ -77,15 +77,19 @@ Include sections only if relevant from source content, except mandatory sections
 * ## 🍼 Teach It Simply — ⭐ MANDATORY LAST SECTION (child-friendly explanations with 2-5 real-world analogies)
 
 ## 🎯 Rules
-* Use H1/H2/H3 headings only
+* Your **goal is NOT to make the notes long** — focus on delivering *concise, clear study notes only*.
+* Discard any unnecessary or irrelevant material from the provided source.
+* **Make the notes exam-focused:** after the heading of a topic, if the topic is especially important for exams, add **(IMP\*)** right after the heading.
+* Use H1/H2/H3 headings only.
 * **All headings and bullet points must include relevant emojis**
 * Bold key terms on first mention
 * Academic tone (except "Teach It Simply" section)
 * Include inline source citations: (slide#X) or (page#X)
-* No invented facts - only content from provided files
+* No invented facts — use only content from provided files.
 
 ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
 `;
+
 
   let lastErr = null;
 
