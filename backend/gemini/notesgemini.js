@@ -116,6 +116,9 @@ ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
       // Check for rate limit errors
       const isRateLimit = code === 429 || msg.includes("quota") || msg.includes("rate limit");
       
+      // Check for service unavailable/overloaded errors
+      const isServiceUnavailable = code === 503 || msg.includes("overloaded") || msg.includes("unavailable");
+      
       // Check for retryable errors (model not available, unsupported, etc.)
       const isRetryable = 
         code === 404 ||
@@ -123,10 +126,13 @@ ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
         msg.includes("unsupported") ||
         msg.includes("does not support") ||
         msg.includes("text parameter") ||
-        isRateLimit;
+        isRateLimit ||
+        isServiceUnavailable;
       
       if (isRateLimit) {
         console.log(`⏳ Rate limit hit for ${model}, trying next model...`);
+      } else if (isServiceUnavailable) {
+        console.log(`⚠️ Model ${model} is overloaded/unavailable, trying next model...`);
       } else if (!isRetryable) {
         console.log(`❌ Non-retryable error for ${model}, stopping attempts.`);
         break;
