@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import WeekCounter from "../WeekCounter/WeekCounter.jsx";
 import "./LandingPage.css";
 
 function LandingPage() {
@@ -21,6 +22,7 @@ function LandingPage() {
 
   return (
     <div className="landing-page">
+      <WeekCounter />
       <div className="landing-container">
         <div className="landing-header">
           <h2>Welcome to Pen2PDF Suite</h2>
