@@ -44,6 +44,7 @@ Pen2PDF Suite is a modern web application that offers four powerful productivity
 - [📋 Prerequisites](#-prerequisites)
 - [🛠️ Installation](#️-installation)
 - [💻 Usage](#-usage)
+  - [📐 LaTeX Formula Guide](LATEX_GUIDE.md)
 - [📁 Project Structure](#-project-structure)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
@@ -256,6 +257,13 @@ Subject Name, Teacher Name, Class Number, Class Type, Timings, Day
 4. **💾 Save to Library**: Store notes in your personal notes library
 5. **🔍 Browse Library**: Access and search through your saved notes collection
 6. **📋 Blank Notes**: Create notes from scratch without file upload
+
+#### LaTeX Formula Support
+Notes support LaTeX mathematical notation for beautiful formula rendering in PDF exports:
+- **Inline math**: Use `$formula$` for formulas within text
+- **Display math**: Use `$$formula$$` for standalone equations
+- **AI-generated notes automatically include properly formatted LaTeX**
+- See [LATEX_GUIDE.md](LATEX_GUIDE.md) for comprehensive LaTeX usage guide
 
 ### 🎯 Navigation
 
