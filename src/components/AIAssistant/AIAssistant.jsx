@@ -92,9 +92,9 @@ function AIAssistant() {
 
   // Toggle note selection
   const toggleNoteSelection = (note) => {
-    const isSelected = selectedNotes.find(n => n._id === note._id);
+    const isSelected = selectedNotes.find(n => n.noteId === note._id);
     if (isSelected) {
-      setSelectedNotes(selectedNotes.filter(n => n._id !== note._id));
+      setSelectedNotes(selectedNotes.filter(n => n.noteId !== note._id));
     } else {
       setSelectedNotes([...selectedNotes, {
         noteId: note._id,

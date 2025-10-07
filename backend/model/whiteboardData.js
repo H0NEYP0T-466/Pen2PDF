@@ -4,8 +4,8 @@ const { Schema } = require('mongoose');
 // Whiteboard schema to store canvas state
 const whiteboardSchema = new Schema({
     elements: [{
-        id: { type: String, required: true },
-        type: { type: String, required: true }, // 'drawing', 'text', 'image'
+        id: { type: String, required: false },
+        type: { type: String, required: false }, // 'drawing', 'text', 'image'
         data: { type: Schema.Types.Mixed }, // Stores the specific element data
         position: {
             x: Number,
@@ -18,7 +18,7 @@ const whiteboardSchema = new Schema({
         createdAt: { type: Date, default: Date.now }
     }],
     updatedAt: { type: Date, default: Date.now }
-});
+}, { strict: false });
 
 const Whiteboard = whiteboardConnection.model('Whiteboard', whiteboardSchema);
 
