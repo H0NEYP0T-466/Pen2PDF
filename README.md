@@ -28,7 +28,7 @@
 
 **A comprehensive productivity suite that combines AI-powered document processing, schedule management, task organization, and intelligent note-taking in one unified platform.**
 
-Pen2PDF Suite is a modern web application that offers four powerful productivity tools: AI-powered text extraction and PDF conversion, intelligent timetable management with Excel/CSV import, comprehensive todo list management with subtasks, and smart notes generation with a searchable library - all designed to streamline your academic and professional workflow.
+Pen2PDF Suite is a modern web application that offers six powerful productivity tools: AI-powered text extraction and PDF conversion, intelligent timetable management with Excel/CSV import, comprehensive todo list management with subtasks, smart notes generation with a searchable library, a full-featured digital whiteboard, and an AI assistant (Bella) for intelligent help - all designed to streamline your academic and professional workflow.
 
 ## 🔗 Links
 
@@ -87,6 +87,29 @@ Pen2PDF Suite is a modern web application that offers four powerful productivity
 - **💾 Persistent Storage**: Save and organize notes in a dedicated library
 - **🎯 Blank Note Creation**: Start with empty documents for manual note-taking
 
+### 🎨 Whiteboard - Digital Collaboration
+- **✏️ Freehand Drawing**: Draw with customizable pen colors and stroke widths
+- **📝 Text Elements**: Add text anywhere on the board with formatting
+- **🖼️ Image Support**: Paste or drag-and-drop images onto the whiteboard
+- **🔧 Element Manipulation**: Move, resize, and delete elements easily
+- **↩️ Undo/Redo**: Full undo/redo support for all actions
+- **💾 Auto-Save**: Automatically saves your work as you edit
+- **📤 Export Options**: Export whiteboard to image or PDF format
+- **🔄 State Persistence**: Automatically loads your last saved whiteboard on open
+
+### 🤖 AI Assistant (Bella) - Intelligent Help
+- **💬 Multi-Model Support**: Switch between LongCat and Gemini models
+  - LongCat-Flash-Chat
+  - LongCat-Flash-Thinking
+  - Gemini 2.5 Pro
+  - Gemini 2.5 Flash
+- **📎 File Upload**: Upload files for context (Gemini models only)
+- **📚 Notes Context**: Load and select notes from your library as context
+- **🔍 Smart Search**: Search through notes to find relevant context
+- **💾 Chat Persistence**: Conversation history is saved and loaded automatically
+- **🎯 CLI-Style Interface**: Clean, terminal-inspired chat interface
+- **🔄 Dynamic Model Switching**: Seamlessly switch between AI models mid-conversation
+
 ### 🌐 Universal Features
 - **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
 - **⚡ Fast Processing**: Efficient processing and data management
@@ -138,6 +161,7 @@ Before you begin, ensure you have the following installed:
 - **npm** (v7.0.0 or higher)
 - **MongoDB** (v4.4 or higher) - For data persistence across all features
 - **Google Gemini AI API Key** (for AI-powered text extraction and notes generation)
+- **LongCat API Key** (optional - for AI Assistant alternative models)
 
 ## 🛠️ Installation
 
@@ -176,6 +200,8 @@ The application will automatically create the following databases:
 - `todolist` - For todo management data
 - `timetable` - For timetable and schedule data  
 - `notes` - For notes and study materials
+- `whiteboard` - For whiteboard state and elements
+- `chat` - For AI assistant chat history
 
 ### 5. Environment Setup
 
@@ -190,6 +216,7 @@ Add your Google Gemini AI API key to the `.env` file:
 
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key_here
+LONGCAT_API_KEY=your_longcat_api_key_here  # Optional: for AI Assistant LongCat models
 ```
 
 ### 6. Start the Development Servers
@@ -209,7 +236,7 @@ The application will be available at `http://localhost:5173` (frontend) and the 
 
 ## 💻 Usage
 
-The Pen2PDF Suite provides four main productivity tools accessible from the landing page. Each tool is designed to handle specific aspects of your workflow:
+The Pen2PDF Suite provides six main productivity tools accessible from the landing page. Each tool is designed to handle specific aspects of your workflow:
 
 ### 📝 Pen2PDF - Document Conversion
 
@@ -257,9 +284,40 @@ Subject Name, Teacher Name, Class Number, Class Type, Timings, Day
 5. **🔍 Browse Library**: Access and search through your saved notes collection
 6. **📋 Blank Notes**: Create notes from scratch without file upload
 
+### 🎨 Whiteboard Usage
+
+1. **🖌️ Drawing Tools**: Select pen tool, choose color and stroke width
+2. **📝 Add Text**: Click text tool, then click anywhere on the board to add text
+3. **🖼️ Add Images**: Paste from clipboard or drag and drop images onto the board
+4. **🔧 Manipulate Elements**: Click to select, then move, resize, or delete elements
+5. **↩️ Undo/Redo**: Use undo/redo buttons to navigate through your changes
+6. **💾 Save**: Whiteboard auto-saves; click save button to manually save
+7. **📤 Export**: Export to PNG image or PDF document
+8. **🔄 Load**: Your last saved whiteboard is automatically loaded when you open the tool
+
+### 🤖 AI Assistant (Bella) Usage
+
+1. **💬 Start Chat**: Open AI Assistant from the landing page
+2. **🔄 Select Model**: Choose from LongCat or Gemini models in the dropdown
+   - LongCat models: Fast chat and thinking modes
+   - Gemini models: Advanced AI with file upload support
+3. **📎 Upload Files** (Gemini only): Click upload button to add files as context
+4. **📚 Add Notes Context**: 
+   - Open context panel
+   - Search for relevant notes
+   - Check notes to include them as context
+5. **💬 Send Messages**: Type your message and press Enter or click Send
+6. **💾 Conversation History**: Your chat is automatically saved and loaded on next visit
+7. **🔄 Switch Models**: Change models anytime to suit your needs
+
+
+4. **💾 Save to Library**: Store notes in your personal notes library
+5. **🔍 Browse Library**: Access and search through your saved notes collection
+6. **📋 Blank Notes**: Create notes from scratch without file upload
+
 ### 🎯 Navigation
 
-- **🏠 Landing Page**: Access all four tools from the main dashboard
+- **🏠 Landing Page**: Access all six tools from the main dashboard
 - **🔙 Easy Return**: Navigate back to the main menu from any tool
 - **📱 Mobile Friendly**: All features work seamlessly on mobile devices
 
@@ -284,19 +342,32 @@ Pen2PDF/
 │       ├── 📁 Timetable/     # Schedule management
 │       │   ├── Timetable.jsx
 │       │   └── Timetable.css
-│       └── 📁 TodoList/      # Task management
-│           ├── TodoList.jsx
-│           └── TodoList.css
+│       ├── 📁 TodoList/      # Task management
+│       │   ├── TodoList.jsx
+│       │   └── TodoList.css
+│       ├── 📁 Whiteboard/    # Digital whiteboard
+│       │   ├── Whiteboard.jsx
+│       │   └── Whiteboard.css
+│       ├── 📁 AIAssistant/   # AI chat assistant
+│       │   ├── AIAssistant.jsx
+│       │   └── AIAssistant.css
+│       └── 📁 WeekCounter/   # Week counter widget
+│           ├── WeekCounter.jsx
+│           └── WeekCounter.css
 ├── 📁 backend/               # Backend server
 │   ├── 📁 controller/        # Request handlers
 │   │   ├── controller.js     # Pen2PDF text extraction
 │   │   ├── dbcontroller.js   # TodoList management
 │   │   ├── timetableController.js  # Timetable management
-│   │   └── notesController.js      # Notes management
+│   │   ├── notesController.js      # Notes management
+│   │   ├── whiteboardController.js # Whiteboard management
+│   │   └── chatController.js       # Chat history management
 │   ├── 📁 model/            # Database models
 │   │   ├── todoData.js      # Todo data schema
 │   │   ├── timetableData.js # Timetable data schema
-│   │   └── notesData.js     # Notes data schema
+│   │   ├── notesData.js     # Notes data schema
+│   │   ├── whiteboardData.js # Whiteboard data schema
+│   │   └── chatData.js      # Chat history schema
 │   ├── 📁 config/           # Database configuration
 │   │   └── database.js      # MongoDB connections
 │   ├── 📁 gemini/           # AI integration
@@ -345,6 +416,8 @@ This project follows the Contributor Covenant Code of Conduct. Please read our [
 - **📅 Timetable**: Complete schedule management with Excel/CSV import functionality
 - **✅ TodoList**: Task management with subtasks, pinning, and progress tracking
 - **📚 Notes**: AI-powered notes generation and searchable notes library
+- **🎨 Whiteboard**: Full-featured digital whiteboard with drawing, text, images, and export
+- **🤖 AI Assistant (Bella)**: Multi-model AI chat with file upload and notes context
 - **🎨 Unified Interface**: Consistent design across all productivity tools
 - **📱 Responsive Design**: Full mobile and desktop compatibility
 - **🔐 Data Persistence**: MongoDB integration for all features
