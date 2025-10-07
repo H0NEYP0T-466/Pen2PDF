@@ -27,7 +27,17 @@ const {
   generateNotes,
   getNotesById
 } = require('./controller/notesController');
-const { todoConnection, timetableConnection, notesConnection } = require('./config/database');
+const {
+  getWhiteboard,
+  saveWhiteboard,
+  clearWhiteboard
+} = require('./controller/whiteboardController');
+const {
+  getChatHistory,
+  sendMessage,
+  clearChatHistory
+} = require('./controller/chatController');
+const { todoConnection, timetableConnection, notesConnection, whiteboardConnection, chatConnection } = require('./config/database');
 
 const app = express();
 app.use(cors());
@@ -71,11 +81,23 @@ app.get('/api/notes/:id', getNotesById);
 app.put('/api/notes/:id', updateNotes);
 app.delete('/api/notes/:id', deleteNotes);
 
+// Whiteboard API endpoints
+app.get('/api/whiteboard', getWhiteboard);
+app.post('/api/whiteboard', saveWhiteboard);
+app.delete('/api/whiteboard', clearWhiteboard);
+
+// Chat API endpoints
+app.get('/api/chat', getChatHistory);
+app.post('/api/chat/message', sendMessage);
+app.delete('/api/chat', clearChatHistory);
+
 // Start server when all database connections are ready
 Promise.all([
   todoConnection.asPromise(),
   timetableConnection.asPromise(),
-  notesConnection.asPromise()
+  notesConnection.asPromise(),
+  whiteboardConnection.asPromise(),
+  chatConnection.asPromise()
 ]).then(() => {
   console.log('🚀 All MongoDB connections established');
   app.listen(8000, () => console.log('🌟 Server running on port 8000'));

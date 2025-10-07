@@ -1,0 +1,155 @@
+.whiteboard-container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #0A0A0A;
+  position: relative;
+}
+
+.whiteboard-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(20, 20, 20, 0.95);
+  border-bottom: 1px solid #222;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-left: 1px solid #333;
+}
+
+.toolbar-section:first-of-type {
+  border-left: none;
+}
+
+.back-btn {
+  background: #1A1A1A;
+  border: 1px solid #222;
+  color: #FAFAFA;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: #2A2A2A;
+  border-color: #333;
+}
+
+.toolbar-btn {
+  background: #1A1A1A;
+  border: 1px solid #222;
+  color: #FAFAFA;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar-btn:hover {
+  background: #2A2A2A;
+  border-color: #333;
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolbar-btn.active {
+  background: #2A2A2A;
+  border-color: #666;
+  color: #FFF;
+}
+
+.color-picker {
+  width: 40px;
+  height: 32px;
+  border: 1px solid #222;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+}
+
+.stroke-slider {
+  width: 100px;
+  height: 6px;
+  border-radius: 3px;
+  background: #333;
+  outline: none;
+  cursor: pointer;
+}
+
+.stroke-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #FAFAFA;
+  cursor: pointer;
+}
+
+.stroke-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #FAFAFA;
+  cursor: pointer;
+  border: none;
+}
+
+#whiteboard-canvas {
+  display: block;
+  margin-top: 60px;
+  cursor: crosshair;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .whiteboard-toolbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .toolbar-section {
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .toolbar-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-width: 36px;
+  }
+
+  .stroke-slider {
+    width: 60px;
+  }
+
+  #whiteboard-canvas {
+    margin-top: 80px;
+  }
+}
