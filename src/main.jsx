@@ -6,7 +6,6 @@ import LandingPage from './components/LandingPage/LandingPage.jsx'
 import TodoList from './components/TodoList/TodoList.jsx'
 import Timetable from './components/Timetable/Timetable.jsx'
 import Notes from './components/Notes/Notes.jsx'
-import Whiteboard from './components/Whiteboard/Whiteboard.jsx'
 import AIAssistant from './components/AIAssistant/AIAssistant.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -17,7 +16,6 @@ createRoot(document.getElementById('root')).render(
             <Route path="/todo" element={<TodoList />} />
             <Route path="/timetable" element={<Timetable />} />
             <Route path="/notes" element={<Notes />} />
-            <Route path="/whiteboard" element={<Whiteboard />} />
             <Route path="/ai-assistant" element={<AIAssistant />} />
         </Routes>
     </BrowserRouter>

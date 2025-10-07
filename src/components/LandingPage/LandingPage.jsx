@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import WeekCounter from "../WeekCounter/WeekCounter.jsx";
+import AIAssistantToggle from "../AIAssistantToggle/AIAssistantToggle.jsx";
 import "./LandingPage.css";
 
 function LandingPage() {
@@ -15,10 +16,6 @@ function LandingPage() {
       navigate("/timetable");
     } else if (cardType === "notes") {
       navigate("/notes");
-    } else if (cardType === "whiteboard") {
-      navigate("/whiteboard");
-    } else if (cardType === "ai-assistant") {
-      navigate("/ai-assistant");
     } else {
       console.log("Coming soon");
     }
@@ -27,6 +24,7 @@ function LandingPage() {
   return (
     <div className="landing-page">
       <WeekCounter />
+      <AIAssistantToggle />
       <div className="landing-container">
         <div className="landing-header">
           <h2>Welcome to Pen2PDF Suite</h2>
@@ -64,22 +62,6 @@ function LandingPage() {
           >
             <h3>Notes Generator</h3>
             <p>Create and manage digital notes with smart formatting</p>
-          </div>
-
-          <div 
-            className="card" 
-            onClick={() => handleCardClick("whiteboard")}
-          >
-            <h3>Whiteboard</h3>
-            <p>Collaborate and brainstorm with a full-featured digital whiteboard</p>
-          </div>
-          
-          <div 
-            className="card" 
-            onClick={() => handleCardClick("ai-assistant")}
-          >
-            <h3>AI Assistant (Bella)</h3>
-            <p>Get intelligent help with your tasks using AI-powered assistance</p>
           </div>
         </div>
       </div>
