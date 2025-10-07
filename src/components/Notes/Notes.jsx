@@ -10,7 +10,8 @@ import './Notes.css';
 // Configure marked to use KaTeX extension for LaTeX math rendering
 marked.use(markedKatex({
   throwOnError: false,
-  output: 'html'
+  output: 'html',
+  nonStandard: true  // Allow parsing without spaces around $ delimiters
 }));
 
 function Notes() {
