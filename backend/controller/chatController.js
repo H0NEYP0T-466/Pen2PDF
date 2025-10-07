@@ -143,6 +143,12 @@ async function callGeminiAPI(model, message, attachments, contextNotes) {
     return responseText;
   } catch (error) {
     console.error('Gemini API error:', error);
+    
+    // Provide more user-friendly error messages
+    if (error.message && error.message.includes('fetch failed')) {
+      throw new Error('Network error: Unable to connect to Gemini API. Please check your internet connection.');
+    }
+    
     throw new Error('Failed to get response from Gemini: ' + error.message);
   }
 }
@@ -150,9 +156,6 @@ async function callGeminiAPI(model, message, attachments, contextNotes) {
 // Helper function to call LongCat API
 async function callLongCatAPI(model, message, contextNotes) {
   try {
-    // Note: This is a placeholder for LongCat API integration
-    // You'll need to add the actual API endpoint and authentication
-    
     // Prepare context from notes if provided
     let contextText = '';
     if (contextNotes && contextNotes.length > 0) {
@@ -162,13 +165,44 @@ async function callLongCatAPI(model, message, contextNotes) {
       });
     }
 
-    // This variable is prepared for future API integration
-    // eslint-disable-next-line no-unused-vars
     const fullMessage = contextText + '\n\nUser question: ' + message;
 
-    // Placeholder response for LongCat
-    // TODO: Implement actual LongCat API call when API details are available
-    return `[LongCat ${model}] This is a placeholder response. LongCat API integration needs to be configured with the actual API endpoint and credentials.`;
+    // LongCat API uses OpenAI format
+    const apiKey = process.env.longcatApiKey || process.env.LONGCAT_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('LongCat API key not configured');
+    }
+
+    const systemInstruction = `You are Bella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
+
+    const response = await fetch('https://api.longcat.chat/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: 'system', content: systemInstruction },
+          { role: 'user', content: fullMessage }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`LongCat API returned ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response format from LongCat API');
+    }
+
+    return data.choices[0].message.content || 'I apologize, but I could not generate a response.';
   } catch (error) {
     console.error('LongCat API error:', error);
     throw new Error('Failed to get response from LongCat: ' + error.message);
