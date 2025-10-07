@@ -79,7 +79,7 @@ Include sections only if relevant from source content, except mandatory sections
 ## 🎯 Rules
 * Your **goal is NOT to make the notes long** — focus on delivering *concise, clear study notes only*.
 * Discard any unnecessary or irrelevant material from the provided source.
-* **Make the notes exam-focused:** after the heading of a topic, if the topic is especially important for exams, add **(IMP\*)** right after the heading.
+* **Make the notes exam-focused:** after the heading of a topic, if the topic is especially important for exams, add **(IMP*)** right after the heading.
 * Use H1/H2/H3 headings only.
 * **All headings and bullet points must include relevant emojis**
 * Bold key terms on first mention
