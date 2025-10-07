@@ -2,8 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { marked } from 'marked';
+import markedKatex from 'marked-katex-extension';
 import html2pdf from 'html2pdf.js';
+import 'katex/dist/katex.min.css';
 import './Notes.css';
+
+// Configure marked to use KaTeX extension for LaTeX math rendering
+marked.use(markedKatex({
+  throwOnError: false,
+  output: 'html'
+}));
 
 function Notes() {
   const navigate = useNavigate();
@@ -228,8 +236,30 @@ function Notes() {
       const html = marked(extractedText);
       const element = document.createElement('div');
       element.className = 'printable-light pdf-page';
+      
+      // Get KaTeX CSS from the stylesheet
+      const katexCSS = Array.from(document.styleSheets)
+        .filter(sheet => {
+          try {
+            return sheet.href && sheet.href.includes('katex');
+          } catch {
+            return false;
+          }
+        })
+        .map(sheet => {
+          try {
+            return Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
+          } catch {
+            return '';
+          }
+        })
+        .join('\n');
+      
       element.innerHTML = `
         <style>
+          /* KaTeX styles for math rendering */
+          ${katexCSS}
+          
           /* Print-safe CSS for PDF generation */
           @page {
             margin: 12mm;
@@ -276,6 +306,26 @@ function Notes() {
             break-after: avoid;
             page-break-after: avoid;
             -webkit-column-break-after: avoid;
+          }
+          
+          /* Math equation page break protection */
+          .katex, .katex-display {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+          }
+          
+          /* Block math equations get extra spacing and centering */
+          .katex-display {
+            margin: 1em 0;
+            text-align: center;
+          }
+          
+          /* Inline math stays with surrounding text */
+          p:has(.katex) {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            -webkit-column-break-inside: avoid;
           }
           
           /* Orphan and widow control */
@@ -332,7 +382,7 @@ function Notes() {
         jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
           mode: ["css", "legacy"], 
-          avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote"]
+          avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote", ".katex", ".katex-display"]
         }
       };
 
