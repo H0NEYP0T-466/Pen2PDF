@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fabric } from 'fabric';
+import * as fabric from 'fabric';
 import { jsPDF } from 'jspdf';
 import axios from 'axios';
 import './Whiteboard.css';
@@ -34,9 +34,11 @@ function Whiteboard() {
       isDrawingMode: tool === 'pen',
     });
 
-    // Configure drawing brush
-    fabricCanvas.freeDrawingBrush.color = color;
-    fabricCanvas.freeDrawingBrush.width = strokeWidth;
+    // Configure drawing brush (check if it exists first)
+    if (fabricCanvas.freeDrawingBrush) {
+      fabricCanvas.freeDrawingBrush.color = color;
+      fabricCanvas.freeDrawingBrush.width = strokeWidth;
+    }
 
     setCanvas(fabricCanvas);
 
@@ -75,7 +77,7 @@ function Whiteboard() {
 
   // Update brush properties
   useEffect(() => {
-    if (!canvas) return;
+    if (!canvas || !canvas.freeDrawingBrush) return;
     canvas.freeDrawingBrush.color = color;
     canvas.freeDrawingBrush.width = strokeWidth;
   }, [color, strokeWidth, canvas]);
