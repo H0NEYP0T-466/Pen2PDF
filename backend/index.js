@@ -28,16 +28,11 @@ const {
   getNotesById
 } = require('./controller/notesController');
 const {
-  getWhiteboard,
-  saveWhiteboard,
-  clearWhiteboard
-} = require('./controller/whiteboardController');
-const {
   getChatHistory,
   sendMessage,
   clearChatHistory
 } = require('./controller/chatController');
-const { todoConnection, timetableConnection, notesConnection, whiteboardConnection, chatConnection } = require('./config/database');
+const { todoConnection, timetableConnection, notesConnection, chatConnection } = require('./config/database');
 
 const app = express();
 app.use(cors());
@@ -81,11 +76,6 @@ app.get('/api/notes/:id', getNotesById);
 app.put('/api/notes/:id', updateNotes);
 app.delete('/api/notes/:id', deleteNotes);
 
-// Whiteboard API endpoints
-app.get('/api/whiteboard', getWhiteboard);
-app.post('/api/whiteboard', saveWhiteboard);
-app.delete('/api/whiteboard', clearWhiteboard);
-
 // Chat API endpoints
 app.get('/api/chat', getChatHistory);
 app.post('/api/chat/message', sendMessage);
@@ -96,7 +86,6 @@ Promise.all([
   todoConnection.asPromise(),
   timetableConnection.asPromise(),
   notesConnection.asPromise(),
-  whiteboardConnection.asPromise(),
   chatConnection.asPromise()
 ]).then(() => {
   console.log('🚀 All MongoDB connections established');
