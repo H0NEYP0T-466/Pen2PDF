@@ -236,9 +236,128 @@
 .message-content {
   color: #FAFAFA;
   line-height: 1.6;
-  white-space: pre-wrap;
   word-wrap: break-word;
   font-size: 14px;
+}
+
+/* Markdown styling */
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4,
+.message-content h5,
+.message-content h6 {
+  color: #FAFAFA;
+  margin: 16px 0 12px 0;
+  font-weight: 600;
+}
+
+.message-content h1 { font-size: 1.6em; border-bottom: 2px solid #333; padding-bottom: 8px; }
+.message-content h2 { font-size: 1.4em; border-bottom: 1px solid #333; padding-bottom: 6px; }
+.message-content h3 { font-size: 1.2em; }
+.message-content h4 { font-size: 1.1em; }
+.message-content h5 { font-size: 1em; }
+.message-content h6 { font-size: 0.9em; color: #B3B3B3; }
+
+.message-content p {
+  margin: 8px 0;
+}
+
+.message-content code {
+  background: #1A1A1A;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  color: #4ade80;
+  font-size: 0.9em;
+}
+
+.message-content pre {
+  background: #1A1A1A;
+  border: 1px solid #333;
+  border-left: 3px solid #16a34a;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.message-content pre code {
+  background: none;
+  padding: 0;
+  color: #FAFAFA;
+  font-size: 0.9em;
+}
+
+.message-content ul,
+.message-content ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.message-content li {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+.message-content blockquote {
+  border-left: 3px solid #666;
+  padding-left: 16px;
+  margin: 12px 0;
+  color: #B3B3B3;
+  font-style: italic;
+}
+
+.message-content a {
+  color: #4ade80;
+  text-decoration: none;
+}
+
+.message-content a:hover {
+  text-decoration: underline;
+}
+
+.message-content table {
+  border-collapse: collapse;
+  margin: 12px 0;
+  width: 100%;
+}
+
+.message-content th,
+.message-content td {
+  border: 1px solid #333;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.message-content th {
+  background: #1A1A1A;
+  font-weight: 600;
+}
+
+.message-content tr:nth-child(even) {
+  background: #141414;
+}
+
+/* LaTeX/KaTeX styling */
+.message-content .katex {
+  font-size: 1.1em;
+}
+
+.message-content .katex-display {
+  margin: 16px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.message-content .katex-display > .katex {
+  text-align: center;
+}
+
+/* Inline code and math spacing */
+.message-content p > code,
+.message-content p > .katex {
+  margin: 0 2px;
 }
 
 .typing-indicator {

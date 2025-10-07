@@ -1,7 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { marked } from 'marked';
+import markedKatex from "marked-katex-extension";
+import 'katex/dist/katex.min.css';
 import './AIAssistant.css';
+
+// Configure marked with KaTeX extension for LaTeX rendering
+marked.use(markedKatex({
+  throwOnError: false,
+  nonStandard: true
+}));
 
 /*
  * AI Assistant (Bella) Component
@@ -10,6 +19,7 @@ import './AIAssistant.css';
  * - File upload for Gemini models only
  * - Context panel to select notes as context
  * - Persistent chat history
+ * - Markdown and LaTeX rendering support
  */
 
 function AIAssistant() {
@@ -102,6 +112,12 @@ function AIAssistant() {
         content: note.generatedNotes
       }]);
     }
+  };
+
+  // Render markdown with LaTeX support
+  const renderMarkdown = (content) => {
+    const html = marked(content);
+    return { __html: html };
   };
 
   // Handle file upload
@@ -292,9 +308,7 @@ function AIAssistant() {
                       <span className="message-model">({msg.model})</span>
                     )}
                   </div>
-                  <div className="message-content">
-                    {msg.content}
-                  </div>
+                  <div className="message-content" dangerouslySetInnerHTML={renderMarkdown(msg.content)} />
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div className="message-attachments">
                       {msg.attachments.map((att, i) => (
