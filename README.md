@@ -104,11 +104,13 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
   - LongCat-Flash-Thinking
   - Gemini 2.5 Pro
   - Gemini 2.5 Flash
+- **🧠 Smart Context Window**: AI remembers last 20 messages for coherent conversations
+- **📝 Markdown & LaTeX Rendering**: Beautiful formatting for code, math equations, and text
 - **📎 File Upload**: Upload files for context (Gemini models only)
 - **📚 Notes Context**: Load and select notes from your library as context
 - **🔍 Smart Search**: Search through notes to find relevant context
 - **💾 Chat Persistence**: Conversation history is saved and loaded automatically
-- **🎯 CLI-Style Interface**: Clean, terminal-inspired chat interface
+- **🎯 CLI-Style Interface**: Clean, terminal-inspired chat interface with syntax highlighting
 - **🔄 Dynamic Model Switching**: Seamlessly switch between AI models mid-conversation
 
 ### 🌐 Universal Features
@@ -314,8 +316,12 @@ Notes support LaTeX mathematical notation for beautiful formula rendering in PDF
    - Search for relevant notes
    - Check notes to include them as context
 5. **💬 Send Messages**: Type your message and press Enter or click Send
-6. **💾 Conversation History**: Your chat is automatically saved and loaded on next visit
-7. **🔄 Switch Models**: Change models anytime to suit your needs
+6. **🧠 Context-Aware Chat**: AI remembers your last 20 messages for better conversations
+7. **📝 Rich Formatting**: AI responses render with markdown, code blocks, and LaTeX math
+8. **💾 Conversation History**: Your chat is automatically saved and loaded on next visit
+9. **🔄 Switch Models**: Change models anytime to suit your needs
+
+For detailed information about chat context and formatting, see [CHAT_CONTEXT_GUIDE.md](./CHAT_CONTEXT_GUIDE.md)
 
 
 4. **💾 Save to Library**: Store notes in your personal notes library
@@ -377,12 +383,15 @@ Pen2PDF/
 │   │   └── chatData.js      # Chat history schema
 │   ├── 📁 config/           # Database configuration
 │   │   └── database.js      # MongoDB connections
-│   ├── 📁 gemini/           # AI integration
+│   ├── 📁 gemini/           # Gemini AI integration
 │   │   ├── gemini.js        # Pen2PDF text extraction
 │   │   └── notesgemini.js   # Notes generation
+│   ├── 📁 longcat/          # LongCat AI integration
+│   │   └── longcat.js       # Chat API integration
 │   ├── index.js             # Express server entry point
 │   └── package.json         # Backend dependencies
 ├── 📄 README.md             # Project documentation
+├── 📄 CHAT_CONTEXT_GUIDE.md # Chat context & formatting guide
 ├── 📄 TIMETABLE_IMPORT_GUIDE.md  # Timetable import guide
 ├── 📄 sample_timetable.csv  # Example timetable format
 ├── 📄 LICENSE               # MIT License

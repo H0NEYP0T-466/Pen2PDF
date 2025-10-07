@@ -1,5 +1,6 @@
 const Chat = require('../model/chatData');
 const { GoogleGenAI } = require("@google/genai");
+const { callLongCatAPI } = require('../longcat/longcat');
 require("dotenv").config();
 
 const ai = new GoogleGenAI({
@@ -57,15 +58,21 @@ const sendMessage = async (req, res) => {
     };
     chat.messages.push(userMessage);
 
+    // Get last 20 messages for context window (excluding the current message)
+    const contextWindow = chat.messages.slice(-21, -1).map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
+
     // Prepare the AI request
     let aiResponse;
     
     if (model.startsWith('longcat')) {
-      // LongCat models - use external API
-      aiResponse = await callLongCatAPI(model, message, contextNotes);
+      // LongCat models - use external API with context window
+      aiResponse = await callLongCatAPI(model, message, contextNotes, contextWindow);
     } else {
-      // Gemini models
-      aiResponse = await callGeminiAPI(model, message, attachments, contextNotes);
+      // Gemini models - with context window
+      aiResponse = await callGeminiAPI(model, message, attachments, contextNotes, contextWindow);
     }
 
     // Add AI response to history
@@ -99,7 +106,7 @@ const sendMessage = async (req, res) => {
 };
 
 // Helper function to call Gemini API
-async function callGeminiAPI(model, message, attachments, contextNotes) {
+async function callGeminiAPI(model, message, attachments, contextNotes, chatHistory = []) {
   try {
     // Prepare context from notes if provided
     let contextText = '';
@@ -110,7 +117,17 @@ async function callGeminiAPI(model, message, attachments, contextNotes) {
       });
     }
 
-    const fullMessage = contextText + '\n\nUser question: ' + message;
+    // Add chat history context
+    let historyText = '';
+    if (chatHistory && chatHistory.length > 0) {
+      const historyMessages = chatHistory.map(msg => 
+        `${msg.role === 'user' ? 'User' : 'Bella'}: ${msg.content}`
+      ).join('\n');
+      
+      historyText = `\n\nHere is your previous chat with the user:\n\n${historyMessages}\n\nNow respond to their current message below.\n\n`;
+    }
+
+    const fullMessage = contextText + historyText + 'User question: ' + message;
 
     // Prepare parts for the API call
     const parts = [{ text: fullMessage }];
@@ -150,62 +167,6 @@ async function callGeminiAPI(model, message, attachments, contextNotes) {
     }
     
     throw new Error('Failed to get response from Gemini: ' + error.message);
-  }
-}
-
-// Helper function to call LongCat API
-async function callLongCatAPI(model, message, contextNotes) {
-  try {
-    // Prepare context from notes if provided
-    let contextText = '';
-    if (contextNotes && contextNotes.length > 0) {
-      contextText = '\n\nContext from notes:\n';
-      contextNotes.forEach(note => {
-        contextText += `\n--- ${note.title} ---\n${note.content}\n`;
-      });
-    }
-
-    const fullMessage = contextText + '\n\nUser question: ' + message;
-
-    // LongCat API uses OpenAI format
-    const apiKey = process.env.longcatApiKey || process.env.LONGCAT_API_KEY;
-    
-    if (!apiKey) {
-      throw new Error('LongCat API key not configured');
-    }
-
-    const systemInstruction = `You are Bella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
-
-    const response = await fetch('https://api.longcat.chat/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          { role: 'system', content: systemInstruction },
-          { role: 'user', content: fullMessage }
-        ]
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`LongCat API returned ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response format from LongCat API');
-    }
-
-    return data.choices[0].message.content || 'I apologize, but I could not generate a response.';
-  } catch (error) {
-    console.error('LongCat API error:', error);
-    throw new Error('Failed to get response from LongCat: ' + error.message);
   }
 }
 
