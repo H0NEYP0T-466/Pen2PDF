@@ -378,7 +378,7 @@ function Notes() {
         margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
         filename: `${fileName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
           mode: ["css", "legacy"], 

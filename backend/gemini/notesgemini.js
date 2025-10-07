@@ -69,7 +69,7 @@ Include sections only if relevant from source content, except mandatory sections
 * ## 🌐 Overview (3-6 sentences)
 * ## ⭐ Key Takeaways (5-10 bullets)
 * ## 📂 Concepts (organize by topic with inline citations like (page#X))
-* ## ➕ Formulas/Definitions (if applicable - use LaTeX)
+* ## ➕ Formulas/Definitions (if applicable - use LaTeX format)
 * ## ⚙️ Procedures/Algorithms (if applicable - numbered steps)
 * ## 💡 Examples (if applicable)
 * ## ❓ Questions for Review — ⭐ MANDATORY (3-9 questions)
@@ -86,6 +86,24 @@ Include sections only if relevant from source content, except mandatory sections
 * Academic tone (except "Teach It Simply" section)
 * Include inline source citations: (slide#X) or (page#X)
 * No invented facts — use only content from provided files.
+
+## 📐 LaTeX Formatting Rules (CRITICAL for Formulas/Definitions section)
+* **ALWAYS use proper LaTeX delimiters:**
+  - For inline math: Use single dollar signs like \`$formula$\`
+  - For display/block math: Use double dollar signs like \`$$formula$$\`
+* **Examples of CORRECT LaTeX formatting:**
+  - Inline: \`$s = T(r)$\` or \`$g(x,y) = T[f(x,y)]$\`
+  - Display: \`$$s = c \\cdot \\log(1+r)$$\` or \`$$p(r_k) = \\frac{n_k}{MN}$$\`
+* **Use proper LaTeX syntax:**
+  - Multiplication: Use \`\\cdot\` for dot product (e.g., \`$c \\cdot r$\`)
+  - Fractions: Use \`\\frac{numerator}{denominator}\` (e.g., \`$\\frac{a}{b}$\`)
+  - Superscripts: Use \`^\` for powers (e.g., \`$r^\\gamma$\`)
+  - Subscripts: Use \`_\` for subscripts (e.g., \`$r_k$\`)
+  - Greek letters: Use backslash (e.g., \`$\\gamma$\`, \`$\\theta$\`, \`$\\alpha$\`)
+  - Integrals: Use \`\\int\` (e.g., \`$\\int_0^r f(x)dx$\`)
+  - Summations: Use \`\\sum\` (e.g., \`$\\sum_{i=1}^{n} x_i$\`)
+* **NEVER write formulas as plain text** - always wrap them in LaTeX delimiters
+* **Each formula MUST be complete and valid LaTeX** - test mentally if it would render correctly
 
 ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
 `;
