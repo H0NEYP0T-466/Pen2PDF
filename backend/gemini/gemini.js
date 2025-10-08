@@ -6,25 +6,12 @@ const ai = new GoogleGenAI({
 });
 
 const CANDIDATE_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-2.5-pro",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro"
+  "gemini-2.0-flash-exp",
+  "gemini-1.5-flash-002",
+  "gemini-1.5-flash-001",
+  "gemini-1.5-pro-002",
+  "gemini-1.5-pro-001"
 ];
-
-function extractTextFromResult(result) {
-  if (typeof result?.response?.text === "function") return result.response.text();
-  if (typeof result?.text === "string") return result.text;
-
-  const t =
-    result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
-    result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
-    result?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
-    result?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
-    null;
-  return t;
-}
 
 async function generateGeminiResponse(parts) {
   const systemInstruction = `
@@ -36,29 +23,49 @@ Your task:
 `;
 
   console.log('🔄 [GEMINI TEXT] Starting text extraction with model fallback strategy');
+  console.log('📋 [GEMINI TEXT] System instruction:', systemInstruction.trim());
 
   let lastErr = null;
 
   for (const model of CANDIDATE_MODELS) {
     try {
       console.log(`\n🔄 [GEMINI TEXT] Trying model: ${model}`);
-      const result = await ai.models.generateContent({
+      console.log(`📤 [GEMINI TEXT] Sending request to Gemini API...`);
+      
+      const response = await ai.models.generateContent({
         model,
-        config: { systemInstruction },
-        contents: [{ role: "user", parts }],
+        contents: parts,
+        config: { systemInstruction }
       });
 
-      const text = extractTextFromResult(result);
-      if (!text) throw new Error("No valid text response received from Gemini.");
+      console.log('📦 [GEMINI TEXT] Full API response received:');
+      console.log('─'.repeat(80));
+      console.log(JSON.stringify(response, null, 2));
+      console.log('─'.repeat(80));
+
+      const text = response.text;
+      if (!text || text.trim().length === 0) {
+        throw new Error("No valid text response received from Gemini.");
+      }
       
       console.log(`\n✅ [GEMINI TEXT] Text extraction successful using model: ${model}`);
       console.log(`📊 [GEMINI TEXT] Extracted text length: ${text.length} characters`);
+      console.log('📝 [GEMINI TEXT] Extracted text content:');
+      console.log('─'.repeat(80));
+      console.log(text);
+      console.log('─'.repeat(80));
       
       return text;
     } catch (err) {
       lastErr = err;
       const code = err?.status || err?.code;
       const msg = (err?.message || "").toLowerCase();
+      
+      console.error(`❌ [GEMINI TEXT] Model ${model} failed:`, {
+        message: err?.message,
+        status: code,
+        stack: err?.stack
+      });
       
       const isRateLimit = code === 429 || msg.includes("quota") || msg.includes("rate limit");
       
@@ -73,8 +80,6 @@ Your task:
         isRateLimit ||
         isServiceUnavailable;
         
-      console.warn(`❌ [GEMINI TEXT] Model ${model} failed: ${err?.message}`);
-      
       if (isRateLimit) {
         console.log(`⏳ [GEMINI TEXT] Rate limit hit for ${model}, trying next model...`);
       } else if (isServiceUnavailable) {

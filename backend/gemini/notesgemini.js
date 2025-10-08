@@ -6,49 +6,12 @@ const ai = new GoogleGenAI({
 });
 
 const CANDIDATE_MODELS = [
-  "gemini-2.5-pro",
-  "gemini-2.5-flash",
-  "gemini-2.0-flash", 
-  "gemini-1.5-flash",
-  "gemini-1.5-pro"
+  "gemini-2.0-flash-exp",
+  "gemini-1.5-flash-002",
+  "gemini-1.5-flash-001",
+  "gemini-1.5-pro-002",
+  "gemini-1.5-pro-001"
 ];
-
-function extractTextFromResult(result) {
-  if (typeof result?.response?.text === "function") return result.response.text();
-  if (typeof result?.text === "string") return result.text;
-  
-  if (result?.candidates?.[0]?.content?.parts) {
-    const parts = result.candidates[0].content.parts;
-    const text = parts
-      .filter(part => part.text)
-      .map(part => part.text)
-      .join('');
-    if (text) return text;
-  }
-  
-  if (result?.response?.candidates?.[0]?.content?.parts) {
-    const parts = result.response.candidates[0].content.parts;
-    const text = parts
-      .filter(part => part.text)
-      .map(part => part.text)
-      .join('');
-    if (text) return text;
-  }
-  
-  const t =
-    result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
-    result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
-    result?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
-    result?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
-    null;
-  
-  if (!t) {
-    console.error('❌ [GEMINI NOTES] Invalid result structure - no text found:', JSON.stringify(result, null, 2));
-    return null;
-  }
-  
-  return t;
-}
 
 async function generateNotesResponse(parts, retryInstruction = null) {
 const systemInstruction = `
@@ -103,27 +66,45 @@ ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
 `;
 
   console.log('🔄 [GEMINI NOTES] Starting notes generation with model fallback strategy');
+  console.log('📋 [GEMINI NOTES] System instruction:', systemInstruction.substring(0, 200) + '...');
 
   let lastErr = null;
 
   for (const model of CANDIDATE_MODELS) {
     try {
       console.log(`\n🔄 [GEMINI NOTES] Trying model: ${model}`);
-      const result = await ai.models.generateContent({
+      console.log(`📤 [GEMINI NOTES] Sending request to Gemini API...`);
+      
+      const response = await ai.models.generateContent({
         model,
-        config: { systemInstruction },
-        contents: [{ role: "user", parts }],
+        contents: parts,
+        config: { systemInstruction }
       });
 
-      const text = extractTextFromResult(result);
-      if (!text) throw new Error("No valid text response received from Gemini.");
+      console.log('📦 [GEMINI NOTES] Full API response received:');
+      console.log('─'.repeat(80));
+      console.log(JSON.stringify(response, null, 2));
+      console.log('─'.repeat(80));
+
+      const text = response.text;
+      if (!text || text.trim().length === 0) {
+        throw new Error("No valid text response received from Gemini.");
+      }
       
       console.log(`\n✅ [GEMINI NOTES] Notes generation successful using model: ${model}`);
       console.log(`📊 [GEMINI NOTES] Generated content length: ${text.length} characters`);
+      console.log('📝 [GEMINI NOTES] Generated notes content:');
+      console.log('─'.repeat(80));
+      console.log(text);
+      console.log('─'.repeat(80));
       
       return { text, modelUsed: model };
     } catch (err) {
-      console.error(`\n❌ [GEMINI NOTES] Model ${model} failed:`, err.message);
+      console.error(`\n❌ [GEMINI NOTES] Model ${model} failed:`, {
+        message: err?.message,
+        status: err?.status || err?.code,
+        stack: err?.stack
+      });
       lastErr = err;
       
       const code = err?.status || err?.code;
