@@ -15,7 +15,7 @@ const getChatHistory = async (req, res) => {
     
     if (!chat) {
       console.log('📝 [CHAT] No chat history found, creating new chat document');
-      chat = new Chat({ messages: [], currentModel: 'gemini-2.5-flash' });
+      chat = new Chat({ messages: [], currentModel: 'gemini-2.0-flash-exp' });
       await chat.save();
     } else {
       console.log(`📚 [CHAT] Retrieved chat history with ${chat.messages.length} messages`);
@@ -48,7 +48,7 @@ const sendMessage = async (req, res) => {
     let chat = await Chat.findOne();
     if (!chat) {
       console.log('📝 [CHATBOT] Creating new chat session');
-      chat = new Chat({ messages: [], currentModel: model || 'gemini-2.5-flash' });
+      chat = new Chat({ messages: [], currentModel: model || 'gemini-2.0-flash-exp' });
     }
 
     chat.currentModel = model || chat.currentModel;
@@ -154,8 +154,8 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
       console.log('📎 [GEMINI] Adding', attachments.length, 'attachments to request');
       attachments.forEach(attachment => {
         parts.push({
-          inline_data: {
-            mime_type: attachment.fileType,
+          inlineData: {
+            mimeType: attachment.fileType,
             data: attachment.fileData
           }
         });
@@ -165,16 +165,20 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
     const systemInstruction = `You are Bella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
 
     console.log('🚀 [GEMINI] Sending request to model:', model);
+    console.log('📤 [GEMINI] Making API call to Gemini...');
     
-    const result = await ai.models.generateContent({
+    const response = await ai.models.generateContent({
       model: model,
-      config: { systemInstruction },
-      contents: [{ role: "user", parts }],
+      contents: parts,
+      config: { systemInstruction }
     });
 
-    const responseText = result?.response?.text?.() || 
-                        result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-                        'I apologize, but I could not generate a response.';
+    console.log('📦 [GEMINI] Full API response received:');
+    console.log('─'.repeat(80));
+    console.log(JSON.stringify(response, null, 2));
+    console.log('─'.repeat(80));
+
+    const responseText = response.text || 'I apologize, but I could not generate a response.';
 
     console.log('📨 [GEMINI] Complete response from model:');
     console.log('─'.repeat(80));
@@ -183,7 +187,11 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
 
     return responseText;
   } catch (error) {
-    console.error('❌ [GEMINI] API error:', error);
+    console.error('❌ [GEMINI] API error:', {
+      message: error?.message,
+      status: error?.status || error?.code,
+      stack: error?.stack
+    });
     
     if (error.message && error.message.includes('fetch failed')) {
       throw new Error('Network error: Unable to connect to Gemini API. Please check your internet connection.');
