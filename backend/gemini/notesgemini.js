@@ -14,13 +14,9 @@ const CANDIDATE_MODELS = [
 ];
 
 function extractTextFromResult(result) {
-  // Try multiple extraction methods to handle different response structures
-  
-  // Method 1: Check if result has a text() function (some versions)
   if (typeof result?.response?.text === "function") return result.response.text();
   if (typeof result?.text === "string") return result.text;
   
-  // Method 2: Try direct candidates structure (newer API)
   if (result?.candidates?.[0]?.content?.parts) {
     const parts = result.candidates[0].content.parts;
     const text = parts
@@ -30,7 +26,6 @@ function extractTextFromResult(result) {
     if (text) return text;
   }
   
-  // Method 3: Try response.candidates structure (older API)
   if (result?.response?.candidates?.[0]?.content?.parts) {
     const parts = result.response.candidates[0].content.parts;
     const text = parts
@@ -40,7 +35,6 @@ function extractTextFromResult(result) {
     if (text) return text;
   }
   
-  // Method 4: Try alternative extraction methods
   const t =
     result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.type === "text")?.text ||
     result?.response?.candidates?.[0]?.content?.parts?.find?.(p => p.text)?.text ||
@@ -49,7 +43,7 @@ function extractTextFromResult(result) {
     null;
   
   if (!t) {
-    console.error('Invalid result structure - no text found:', JSON.stringify(result, null, 2));
+    console.error('❌ [GEMINI NOTES] Invalid result structure - no text found:', JSON.stringify(result, null, 2));
     return null;
   }
   
@@ -108,12 +102,13 @@ Include sections only if relevant from source content, except mandatory sections
 ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
 `;
 
+  console.log('🔄 [GEMINI NOTES] Starting notes generation with model fallback strategy');
 
   let lastErr = null;
 
   for (const model of CANDIDATE_MODELS) {
     try {
-      console.log(`\n🔄 Trying model: ${model}`);
+      console.log(`\n🔄 [GEMINI NOTES] Trying model: ${model}`);
       const result = await ai.models.generateContent({
         model,
         config: { systemInstruction },
@@ -122,22 +117,22 @@ ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
 
       const text = extractTextFromResult(result);
       if (!text) throw new Error("No valid text response received from Gemini.");
-      console.log(`\n✅ Notes generation model used: ${model}\n`);
+      
+      console.log(`\n✅ [GEMINI NOTES] Notes generation successful using model: ${model}`);
+      console.log(`📊 [GEMINI NOTES] Generated content length: ${text.length} characters`);
+      
       return { text, modelUsed: model };
     } catch (err) {
-      console.error(`\n❌ Model ${model} failed:`, err.message);
+      console.error(`\n❌ [GEMINI NOTES] Model ${model} failed:`, err.message);
       lastErr = err;
       
       const code = err?.status || err?.code;
       const msg = (err?.message || "").toLowerCase();
       
-      // Check for rate limit errors
       const isRateLimit = code === 429 || msg.includes("quota") || msg.includes("rate limit");
       
-      // Check for service unavailable/overloaded errors
       const isServiceUnavailable = code === 503 || msg.includes("overloaded") || msg.includes("unavailable");
       
-      // Check for retryable errors (model not available, unsupported, etc.)
       const isRetryable = 
         code === 404 ||
         msg.includes("not found") ||
@@ -148,11 +143,11 @@ ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
         isServiceUnavailable;
       
       if (isRateLimit) {
-        console.log(`⏳ Rate limit hit for ${model}, trying next model...`);
+        console.log(`⏳ [GEMINI NOTES] Rate limit hit for ${model}, trying next model...`);
       } else if (isServiceUnavailable) {
-        console.log(`⚠️ Model ${model} is overloaded/unavailable, trying next model...`);
+        console.log(`⚠️ [GEMINI NOTES] Model ${model} is overloaded/unavailable, trying next model...`);
       } else if (!isRetryable) {
-        console.log(`❌ Non-retryable error for ${model}, stopping attempts.`);
+        console.log(`❌ [GEMINI NOTES] Non-retryable error for ${model}, stopping attempts.`);
         break;
       }
     }

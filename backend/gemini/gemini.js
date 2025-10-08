@@ -35,11 +35,13 @@ Your task:
 - Return clean, structured text only, no explanations.
 `;
 
+  console.log('🔄 [GEMINI TEXT] Starting text extraction with model fallback strategy');
+
   let lastErr = null;
 
   for (const model of CANDIDATE_MODELS) {
     try {
-      console.log(`\n🔄 Trying model: ${model}`);
+      console.log(`\n🔄 [GEMINI TEXT] Trying model: ${model}`);
       const result = await ai.models.generateContent({
         model,
         config: { systemInstruction },
@@ -48,20 +50,20 @@ Your task:
 
       const text = extractTextFromResult(result);
       if (!text) throw new Error("No valid text response received from Gemini.");
-      console.log(`\n✅ Model used: ${model}\n`);
+      
+      console.log(`\n✅ [GEMINI TEXT] Text extraction successful using model: ${model}`);
+      console.log(`📊 [GEMINI TEXT] Extracted text length: ${text.length} characters`);
+      
       return text;
     } catch (err) {
       lastErr = err;
       const code = err?.status || err?.code;
       const msg = (err?.message || "").toLowerCase();
       
-      // Check for rate limit errors
       const isRateLimit = code === 429 || msg.includes("quota") || msg.includes("rate limit");
       
-      // Check for service unavailable/overloaded errors
       const isServiceUnavailable = code === 503 || msg.includes("overloaded") || msg.includes("unavailable");
       
-      // Check for retryable errors
       const isRetryable =
         code === 404 ||
         msg.includes("not found") ||
@@ -71,20 +73,20 @@ Your task:
         isRateLimit ||
         isServiceUnavailable;
         
-      console.warn(`❌ Model ${model} failed: ${err?.message}`);
+      console.warn(`❌ [GEMINI TEXT] Model ${model} failed: ${err?.message}`);
       
       if (isRateLimit) {
-        console.log(`⏳ Rate limit hit for ${model}, trying next model...`);
+        console.log(`⏳ [GEMINI TEXT] Rate limit hit for ${model}, trying next model...`);
       } else if (isServiceUnavailable) {
-        console.log(`⚠️ Model ${model} is overloaded/unavailable, trying next model...`);
+        console.log(`⚠️ [GEMINI TEXT] Model ${model} is overloaded/unavailable, trying next model...`);
       } else if (!isRetryable) {
-        console.log(`❌ Non-retryable error for ${model}, stopping attempts.`);
+        console.log(`❌ [GEMINI TEXT] Non-retryable error for ${model}, stopping attempts.`);
         break;
       }
     }
   }
 
-  console.error("❌ Gemini API error:", lastErr);
+  console.error("❌ [GEMINI TEXT] All models failed. Last error:", lastErr);
   throw lastErr || new Error("Gemini call failed");
 }
 

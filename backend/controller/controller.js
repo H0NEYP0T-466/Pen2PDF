@@ -1,38 +1,41 @@
 const { generateGeminiResponse } = require("../gemini/gemini");
 
 const SUPPORTED_MIME_TYPES = new Set([
-  // Images
   "image/png",
   "image/jpeg",
   "image/webp",
   "image/heic",
   "image/heif",
-  // Docs
   "application/pdf",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
-  "application/vnd.ms-powerpoint", // .ppt (legacy)
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.ms-powerpoint",
 ]);
 
 const generateRES = async (req, res) => {
   try {
-    console.log("Received request at /textExtract");
+    console.log('\n' + '='.repeat(80));
+    console.log('📄 [TEXT EXTRACT] Text extraction request received');
 
     if (!req.files || !req.files.file) {
+      console.log('❌ [TEXT EXTRACT] No file uploaded');
       return res.status(400).json({ error: "No file uploaded." });
     }
 
     const { file } = req.files;
 
+    console.log(`📁 [TEXT EXTRACT] File: ${file.name}`);
+    console.log(`📊 [TEXT EXTRACT] Type: ${file.mimetype}`);
+    console.log(`📏 [TEXT EXTRACT] Size: ${(file.size / 1024).toFixed(2)} KB`);
+
     if (!SUPPORTED_MIME_TYPES.has(file.mimetype)) {
+      console.log('❌ [TEXT EXTRACT] Unsupported file type:', file.mimetype);
       return res.status(415).json({
         error: `Unsupported file type: ${file.mimetype}. Try an image, PDF, or PPTX.`,
       });
     }
 
-    // Convert uploaded file buffer to base64 for inlineData
     const base64 = Buffer.from(file.data).toString("base64");
 
-    // Build prompt parts: the file + extraction instruction
     const parts = [
       {
         inlineData: {
@@ -46,12 +49,18 @@ const generateRES = async (req, res) => {
       },
     ];
 
-    // For very large PDFs/PPTX, switch to the Files API instead of inlineData.
+    console.log('🚀 [TEXT EXTRACT] Sending to Gemini API for extraction...');
+
     const reply = await generateGeminiResponse(parts);
+
+    console.log('✅ [TEXT EXTRACT] Text extracted successfully');
+    console.log(`📝 [TEXT EXTRACT] Extracted text length: ${reply.length} characters`);
+    console.log('='.repeat(80) + '\n');
 
     return res.json({ text: reply });
   } catch (err) {
-    console.error("❌ Error in /textExtract route:", err);
+    console.error("❌ [TEXT EXTRACT] Error:", err);
+    console.log('='.repeat(80) + '\n');
     return res.status(500).json({
       error: "Something went wrong with text extraction.",
       detail: err?.message,

@@ -7,24 +7,27 @@ const ai = new GoogleGenAI({
   apiKey: process.env.geminiApiKey || process.env.GEMINI_API_KEY,
 });
 
-// Get chat history
 const getChatHistory = async (req, res) => {
   try {
-    // Get the single chat document (we only store one conversation for single-user setup)
+    console.log('📥 [CHAT] Get chat history request received');
+    
     let chat = await Chat.findOne();
     
     if (!chat) {
-      // Create empty chat if none exists
+      console.log('📝 [CHAT] No chat history found, creating new chat document');
       chat = new Chat({ messages: [], currentModel: 'gemini-2.5-flash' });
       await chat.save();
+    } else {
+      console.log(`📚 [CHAT] Retrieved chat history with ${chat.messages.length} messages`);
     }
 
     res.json({
       success: true,
       data: chat
     });
+    console.log('✅ [CHAT] Chat history sent successfully');
   } catch (error) {
-    console.error('Error fetching chat history:', error);
+    console.error('❌ [CHAT] Error fetching chat history:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch chat history',
@@ -33,21 +36,23 @@ const getChatHistory = async (req, res) => {
   }
 };
 
-// Send message and get AI response
 const sendMessage = async (req, res) => {
   try {
     const { message, model, attachments, contextNotes } = req.body;
 
-    // Get the chat document
+    console.log('\n' + '='.repeat(80));
+    console.log('🤖 [CHATBOT] User accessed chatbot');
+    console.log('📊 [CHATBOT] Model requested:', model);
+    console.log('💬 [CHATBOT] User query:', message);
+    
     let chat = await Chat.findOne();
     if (!chat) {
+      console.log('📝 [CHATBOT] Creating new chat session');
       chat = new Chat({ messages: [], currentModel: model || 'gemini-2.5-flash' });
     }
 
-    // Update current model
     chat.currentModel = model || chat.currentModel;
 
-    // Add user message to history
     const userMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -58,24 +63,33 @@ const sendMessage = async (req, res) => {
     };
     chat.messages.push(userMessage);
 
-    // Get last 20 messages for context window (excluding the current message)
     const contextWindow = chat.messages.slice(-21, -1).map(msg => ({
       role: msg.role,
       content: msg.content
     }));
 
-    // Prepare the AI request
+    console.log('📚 [CHATBOT] Context window size:', contextWindow.length, 'messages');
+    
+    if (contextNotes && contextNotes.length > 0) {
+      console.log('📄 [CHATBOT] Context notes included:', contextNotes.length, 'notes');
+      contextNotes.forEach((note, idx) => {
+        console.log(`   📌 Note ${idx + 1}: ${note.title} (${note.content.length} chars)`);
+      });
+    }
+
     let aiResponse;
     
     if (model.startsWith('longcat')) {
-      // LongCat models - use external API with context window
+      console.log('🔄 [CHATBOT] Using LongCat API');
       aiResponse = await callLongCatAPI(model, message, contextNotes, contextWindow);
     } else {
-      // Gemini models - with context window
+      console.log('🔄 [CHATBOT] Using Gemini API');
       aiResponse = await callGeminiAPI(model, message, attachments, contextNotes, contextWindow);
     }
 
-    // Add AI response to history
+    console.log('📤 [CHATBOT] Model response received (length:', aiResponse.length, 'chars)');
+    console.log('📝 [CHATBOT] Response preview:', aiResponse.substring(0, 200) + (aiResponse.length > 200 ? '...' : ''));
+    
     const assistantMessage = {
       id: (Date.now() + 1).toString(),
       role: 'assistant',
@@ -88,6 +102,9 @@ const sendMessage = async (req, res) => {
     chat.updatedAt = new Date();
     await chat.save();
 
+    console.log('✅ [CHATBOT] Response sent successfully using model:', model);
+    console.log('='.repeat(80) + '\n');
+
     res.json({
       success: true,
       data: {
@@ -96,7 +113,7 @@ const sendMessage = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error('❌ [CHATBOT] Error sending message:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send message',
@@ -105,10 +122,8 @@ const sendMessage = async (req, res) => {
   }
 };
 
-// Helper function to call Gemini API
 async function callGeminiAPI(model, message, attachments, contextNotes, chatHistory = []) {
   try {
-    // Prepare context from notes if provided
     let contextText = '';
     if (contextNotes && contextNotes.length > 0) {
       contextText = '\n\nContext from notes:\n';
@@ -117,7 +132,6 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
       });
     }
 
-    // Add chat history context
     let historyText = '';
     if (chatHistory && chatHistory.length > 0) {
       const historyMessages = chatHistory.map(msg => 
@@ -129,11 +143,15 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
 
     const fullMessage = contextText + historyText + 'User question: ' + message;
 
-    // Prepare parts for the API call
+    console.log('📋 [GEMINI] Full prompt being sent to model:');
+    console.log('─'.repeat(80));
+    console.log(fullMessage);
+    console.log('─'.repeat(80));
+
     const parts = [{ text: fullMessage }];
 
-    // Add attachments if present (only for Gemini models)
     if (attachments && attachments.length > 0) {
+      console.log('📎 [GEMINI] Adding', attachments.length, 'attachments to request');
       attachments.forEach(attachment => {
         parts.push({
           inline_data: {
@@ -146,22 +164,27 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
 
     const systemInstruction = `You are Bella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
 
+    console.log('🚀 [GEMINI] Sending request to model:', model);
+    
     const result = await ai.models.generateContent({
       model: model,
       config: { systemInstruction },
       contents: [{ role: "user", parts }],
     });
 
-    // Extract text from response
     const responseText = result?.response?.text?.() || 
                         result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
                         'I apologize, but I could not generate a response.';
 
+    console.log('📨 [GEMINI] Complete response from model:');
+    console.log('─'.repeat(80));
+    console.log(responseText);
+    console.log('─'.repeat(80));
+
     return responseText;
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('❌ [GEMINI] API error:', error);
     
-    // Provide more user-friendly error messages
     if (error.message && error.message.includes('fetch failed')) {
       throw new Error('Network error: Unable to connect to Gemini API. Please check your internet connection.');
     }
@@ -170,15 +193,20 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
   }
 }
 
-// Clear chat history
 const clearChatHistory = async (req, res) => {
   try {
+    console.log('🗑️  [CHAT] Clear chat history request received');
+    
     let chat = await Chat.findOne();
     
     if (chat) {
+      const messageCount = chat.messages.length;
       chat.messages = [];
       chat.updatedAt = new Date();
       await chat.save();
+      console.log(`✅ [CHAT] Chat history cleared (${messageCount} messages removed)`);
+    } else {
+      console.log('📝 [CHAT] No chat history to clear');
     }
 
     res.json({
@@ -186,7 +214,7 @@ const clearChatHistory = async (req, res) => {
       message: 'Chat history cleared successfully'
     });
   } catch (error) {
-    console.error('Error clearing chat history:', error);
+    console.error('❌ [CHAT] Error clearing chat history:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to clear chat history',
