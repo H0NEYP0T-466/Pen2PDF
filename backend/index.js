@@ -44,7 +44,7 @@ app.use(fileUpload({
 
 app.use((req, res, next) => {
   console.log(`\n📡 [API] ${req.method} ${req.path}`);
-  if (Object.keys(req.body).length > 0) {
+  if (req.body && Object.keys(req.body).length > 0) {
     console.log('📦 [API] Body:', JSON.stringify(req.body, null, 2).substring(0, 200));
   }
   next();
