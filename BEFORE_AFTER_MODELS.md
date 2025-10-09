@@ -15,16 +15,13 @@ const CANDIDATE_MODELS = [
 ];
 ```
 
-#### ✅ After
+#### ✅ After (Current Working Models)
 ```javascript
-// Text extraction priority: 2.5 flash -> 2.5 pro -> 2.0 flash -> rest
+// Text extraction priority: 1.5 flash (fast) -> 1.5 pro (quality) -> 2.0 flash (experimental)
 const CANDIDATE_MODELS = [
-  "gemini-2.5-flash-latest",
-  "gemini-2.5-pro-latest",
-  "gemini-2.5-flash-002",
-  "gemini-2.5-pro-002",
-  "gemini-2.0-flash-exp",
-  "gemini-2.0-flash-lite"
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
+  "gemini-2.0-flash-exp"
 ];
 ```
 
@@ -43,16 +40,13 @@ const CANDIDATE_MODELS = [
 ];
 ```
 
-#### ✅ After
+#### ✅ After (Current Working Models)
 ```javascript
-// Notes generation priority: 2.5 pro -> 2.5 flash -> rest
+// Notes generation priority: 1.5 pro (quality) -> 1.5 flash (fast) -> 2.0 flash (experimental)
 const CANDIDATE_MODELS = [
-  "gemini-2.5-pro-latest",
-  "gemini-2.5-flash-latest",
-  "gemini-2.5-pro-002",
-  "gemini-2.5-flash-002",
-  "gemini-2.0-flash-exp",
-  "gemini-2.0-flash-lite"
+  "gemini-1.5-pro",
+  "gemini-1.5-flash",
+  "gemini-2.0-flash-exp"
 ];
 ```
 
@@ -73,19 +67,18 @@ const models = [
 const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash-exp');
 ```
 
-#### ✅ After
+#### ✅ After (Current Working Models)
 ```javascript
 const models = [
   { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false },
   { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: false },
-  { value: 'gemini-2.5-pro-latest', label: 'Gemini 2.5 Pro', supportsFiles: true },
-  { value: 'gemini-2.5-flash-latest', label: 'Gemini 2.5 Flash', supportsFiles: true },
-  { value: 'gemini-2.5-flash-002', label: 'Gemini 2.5 Flash (Stable)', supportsFiles: true },
+  { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Best Quality)', supportsFiles: true },
+  { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Fast)', supportsFiles: true },
+  { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash-8B (Fastest)', supportsFiles: true },
   { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)', supportsFiles: true },
-  { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash-Lite', supportsFiles: true },
 ];
 
-const [selectedModel, setSelectedModel] = useState('gemini-2.5-pro-latest');
+const [selectedModel, setSelectedModel] = useState('gemini-1.5-pro');
 ```
 
 ---
@@ -177,31 +170,31 @@ const [selectedModel, setSelectedModel] = useState('gemini-2.5-pro-latest');
 
 ## Key Improvements
 
-### 1. Model Version Upgrade
-- ✅ **Before**: Using Gemini 1.5 models (outdated)
-- ✅ **After**: Using Gemini 2.5 models (latest)
+### 1. Model Version Update
+- ✅ **Before**: Using older Gemini 1.5 models and 2.0 experimental
+- ✅ **After**: Using stable Gemini 1.5 models (1.5-pro, 1.5-flash, 1.5-flash-8b) + 2.0-flash-exp
 
 ### 2. Fallback Strategy
 - ✅ **Before**: Same order for all use cases
 - ✅ **After**: 
-  - Text extraction: Speed-first (flash → pro)
-  - Notes generation: Quality-first (pro → flash)
+  - Text extraction: Speed-first (1.5-flash → 1.5-pro → 2.0-flash-exp)
+  - Notes generation: Quality-first (1.5-pro → 1.5-flash → 2.0-flash-exp)
 
 ### 3. User Choice
 - ✅ **Before**: Limited model selection in UI (3 Gemini models)
-- ✅ **After**: Full model selection in UI (5 Gemini models)
+- ✅ **After**: 4 Gemini models + 2 LongCat models (6 total)
 
 ### 4. Error Handling
 - ✅ **Before**: Server returns 500 error and may crash
 - ✅ **After**: 
   - Server returns 200 with error message
   - User-friendly error descriptions
-  - Specific detection for quota/rate limits
+  - Specific detection for quota/rate limits/404 errors
   - Server never crashes
 
 ### 5. Default Model
 - ✅ **Before**: gemini-2.0-flash-exp (experimental)
-- ✅ **After**: gemini-2.5-pro-latest (latest stable quality)
+- ✅ **After**: gemini-1.5-pro (stable, best quality)
 
 ---
 
@@ -214,22 +207,22 @@ const [selectedModel, setSelectedModel] = useState('gemini-2.5-pro-latest');
 - Existing features preserved
 
 ### ✅ Improvements
-- Better model performance (2.5 > 1.5)
-- Smarter fallback strategies
-- More user control over model selection
-- Robust error handling
+- Better model stability (using stable 1.5 models)
+- Smarter fallback strategies for different use cases
+- More user control over model selection (4 Gemini + 2 LongCat)
+- Robust error handling (including 404 model not found)
 - Server stability guaranteed
 
 ### ✅ User Experience
 **Before:**
 ```
-[Server crashes when quota exceeded]
+[Server crashes when quota exceeded or model not found]
 User needs to restart server
 ```
 
 **After:**
 ```
-⚠️ Model "gemini-2.5-pro-latest" has reached its quota or rate limit.
+⚠️ Model "gemini-1.5-pro" has reached its quota or rate limit.
 Please try a different model or wait a few moments before trying again.
 
 [User can immediately switch to another model and continue]

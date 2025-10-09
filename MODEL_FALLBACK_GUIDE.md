@@ -4,12 +4,9 @@
 **Use Case:** Extract text from PDFs, images, scanned documents
 
 **Priority Order:**
-1. ⚡ `gemini-2.5-flash-latest` - Fast extraction
-2. 🎯 `gemini-2.5-pro-latest` - Accurate extraction  
-3. ⚡ `gemini-2.5-flash-002` - Stable fast
-4. 🎯 `gemini-2.5-pro-002` - Stable accurate
-5. 🧪 `gemini-2.0-flash-exp` - Experimental
-6. 🪶 `gemini-2.0-flash-lite` - Lightweight
+1. ⚡ `gemini-1.5-flash` - Fast extraction
+2. 🎯 `gemini-1.5-pro` - Accurate extraction  
+3. 🧪 `gemini-2.0-flash-exp` - Experimental
 
 **Strategy:** Speed first, then accuracy
 
@@ -19,12 +16,9 @@
 **Use Case:** Generate study notes from uploaded materials
 
 **Priority Order:**
-1. 🎯 `gemini-2.5-pro-latest` - Best quality
-2. ⚡ `gemini-2.5-flash-latest` - Fast generation
-3. 🎯 `gemini-2.5-pro-002` - Stable quality
-4. ⚡ `gemini-2.5-flash-002` - Stable fast
-5. 🧪 `gemini-2.0-flash-exp` - Experimental
-6. 🪶 `gemini-2.0-flash-lite` - Lightweight
+1. 🎯 `gemini-1.5-pro` - Best quality
+2. ⚡ `gemini-1.5-flash` - Fast generation
+3. 🧪 `gemini-2.0-flash-exp` - Experimental
 
 **Strategy:** Quality first, then speed
 
@@ -36,11 +30,10 @@
 **Available Models (user-selectable):**
 - 🐱 `longcat-flash-chat` - LongCat Chat (no files)
 - 🐱 `longcat-flash-thinking` - LongCat Thinking (no files)
-- 🎯 `gemini-2.5-pro-latest` - **Default** - Best responses (files ✓)
-- ⚡ `gemini-2.5-flash-latest` - Fast responses (files ✓)
-- ⚡ `gemini-2.5-flash-002` - Stable fast (files ✓)
+- 🎯 `gemini-1.5-pro` - **Default** - Best responses (files ✓)
+- ⚡ `gemini-1.5-flash` - Fast responses (files ✓)
+- ⚡ `gemini-1.5-flash-8b` - Fastest responses (files ✓)
 - 🧪 `gemini-2.0-flash-exp` - Experimental (files ✓)
-- 🪶 `gemini-2.0-flash-lite` - Lightweight (files ✓)
 
 **Strategy:** No auto-fallback - user manually switches models if quota exceeded
 
@@ -61,7 +54,7 @@ When a model hits quota or rate limits:
 
 ### Error Messages
 ```
-⚠️ Model "gemini-2.5-pro-latest" has reached its quota or rate limit.
+⚠️ Model "gemini-1.5-pro" has reached its quota or rate limit.
 Please try a different model or wait a few moments before trying again.
 ```
 
@@ -71,12 +64,10 @@ Please try a different model or wait a few moments before trying again.
 
 | Model | Speed | Quality | Cost | Best For |
 |-------|-------|---------|------|----------|
-| gemini-2.5-pro-latest | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 💰💰💰 | Complex tasks, notes generation |
-| gemini-2.5-flash-latest | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 💰💰 | Text extraction, quick responses |
-| gemini-2.5-flash-002 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 💰💰 | Stable version of flash |
-| gemini-2.5-pro-002 | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 💰💰💰 | Stable version of pro |
-| gemini-2.0-flash-exp | ⭐⭐⭐⭐ | ⭐⭐⭐ | 💰 | Experimental features |
-| gemini-2.0-flash-lite | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | 💰 | Simple tasks, low quota |
+| gemini-1.5-pro | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 💰💰💰 | Complex tasks, notes generation |
+| gemini-1.5-flash | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 💰💰 | Text extraction, quick responses |
+| gemini-1.5-flash-8b | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | 💰 | Ultra-fast simple tasks |
+| gemini-2.0-flash-exp | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 💰 | Experimental features |
 
 ---
 
@@ -99,7 +90,7 @@ Please try a different model or wait a few moments before trying again.
 1. Try next model in list (auto-happens for text/notes)
 2. For AI Assistant: manually select different model
 3. Wait a few minutes and retry
-4. Use lite version for simpler tasks
+4. Use flash-8b for simpler/faster tasks
 
 ### Model not responding
 1. Check internet connection
