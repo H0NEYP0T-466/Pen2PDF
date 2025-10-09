@@ -6,21 +6,10 @@ import markedKatex from "marked-katex-extension";
 import 'katex/dist/katex.min.css';
 import './AIAssistant.css';
 
-// Configure marked with KaTeX extension for LaTeX rendering
 marked.use(markedKatex({
   throwOnError: false,
   nonStandard: true
 }));
-
-/*
- * AI Assistant (Bella) Component
- * - CLI-style chat interface
- * - Model selection: LongCat and Gemini models
- * - File upload for Gemini models only
- * - Context panel to select notes as context
- * - Persistent chat history
- * - Markdown and LaTeX rendering support
- */
 
 function AIAssistant() {
   const navigate = useNavigate();
@@ -42,6 +31,7 @@ function AIAssistant() {
     { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false },
     { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: false },
     { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)', supportsFiles: true },
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', supportsFiles: true },
     { value: 'gemini-1.5-flash-002', label: 'Gemini 1.5 Flash', supportsFiles: true },
     { value: 'gemini-1.5-pro-002', label: 'Gemini 1.5 Pro', supportsFiles: true },
   ];

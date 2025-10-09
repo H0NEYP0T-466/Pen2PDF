@@ -1,6 +1,5 @@
 const TimetableEntry = require('../model/timetableData');
 
-// Get all timetable entries
 const getAllTimetableEntries = async (req, res) => {
   try {
     const entries = await TimetableEntry.find().sort({ day: 1, timings: 1 });
@@ -12,12 +11,10 @@ const getAllTimetableEntries = async (req, res) => {
   }
 };
 
-// Create a new timetable entry
 const createTimetableEntry = async (req, res) => {
   try {
     const { subjectName, teacherName, classNumber, classType, timings, day } = req.body;
     
-    // Validate required fields
     if (!subjectName || !teacherName || !classNumber || !classType || !timings || !day) {
       return res.status(400).json({ 
         success: false, 
@@ -43,13 +40,11 @@ const createTimetableEntry = async (req, res) => {
   }
 };
 
-// Update timetable entry
 const updateTimetableEntry = async (req, res) => {
   try {
     const { id } = req.params;
     const { subjectName, teacherName, classNumber, classType, timings, day } = req.body;
 
-    // Validate required fields
     if (!subjectName || !teacherName || !classNumber || !classType || !timings || !day) {
       return res.status(400).json({ 
         success: false, 
@@ -75,7 +70,6 @@ const updateTimetableEntry = async (req, res) => {
   }
 };
 
-// Delete timetable entry
 const deleteTimetableEntry = async (req, res) => {
   try {
     const { id } = req.params;
@@ -94,7 +88,6 @@ const deleteTimetableEntry = async (req, res) => {
   }
 };
 
-// Delete all timetable entries
 const deleteAllTimetableEntries = async (req, res) => {
   try {
     await TimetableEntry.deleteMany({});
@@ -106,7 +99,6 @@ const deleteAllTimetableEntries = async (req, res) => {
   }
 };
 
-// Import timetable entries from CSV data
 const importTimetableEntries = async (req, res) => {
   try {
     const { entries } = req.body;
@@ -118,7 +110,6 @@ const importTimetableEntries = async (req, res) => {
       });
     }
 
-    // Validate each entry
     const validEntries = [];
     const errors = [];
 
@@ -159,10 +150,8 @@ const importTimetableEntries = async (req, res) => {
       });
     }
 
-    // Clear existing entries before importing
     await TimetableEntry.deleteMany({});
     
-    // Insert new entries
     const savedEntries = await TimetableEntry.insertMany(validEntries);
 
     console.log('✅ Import timetable entries function executed successfully');

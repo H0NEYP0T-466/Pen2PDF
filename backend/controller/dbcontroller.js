@@ -1,6 +1,5 @@
 const TodoCard = require('../model/userData');
 
-// Get all todo cards
 const getAllTodos = async (req, res) => {
   try {
     const todos = await TodoCard.find().sort({ createdAt: -1 });
@@ -12,7 +11,6 @@ const getAllTodos = async (req, res) => {
   }
 };
 
-// Create a new todo card
 const createTodoCard = async (req, res) => {
   try {
     const { title } = req.body;
@@ -34,7 +32,6 @@ const createTodoCard = async (req, res) => {
   }
 };
 
-// Update todo card title
 const updateTodoCard = async (req, res) => {
   try {
     const { id } = req.params;
@@ -62,7 +59,6 @@ const updateTodoCard = async (req, res) => {
   }
 };
 
-// Delete todo card
 const deleteTodoCard = async (req, res) => {
   try {
     const { id } = req.params;
@@ -81,7 +77,6 @@ const deleteTodoCard = async (req, res) => {
   }
 };
 
-// Add sub-todo to a card
 const addSubTodo = async (req, res) => {
   try {
     const { id } = req.params;
@@ -108,11 +103,10 @@ const addSubTodo = async (req, res) => {
   }
 };
 
-// Update sub-todo
 const updateSubTodo = async (req, res) => {
   try {
     const { id, subTodoId } = req.params;
-    const { text, completed, pinned } = req.body; // <-- include pinned
+    const { text, completed, pinned } = req.body;
 
     const todoCard = await TodoCard.findById(id);
     if (!todoCard) {
@@ -126,7 +120,7 @@ const updateSubTodo = async (req, res) => {
 
     if (text !== undefined) subTodo.text = text;
     if (completed !== undefined) subTodo.completed = completed;
-    if (pinned !== undefined) subTodo.pinned = pinned; // <-- update pinned
+    if (pinned !== undefined) subTodo.pinned = pinned;
 
     todoCard.updatedAt = new Date();
     await todoCard.save();
@@ -139,7 +133,6 @@ const updateSubTodo = async (req, res) => {
   }
 };
 
-// Delete sub-todo
 const deleteSubTodo = async (req, res) => {
   try {
     const { id, subTodoId } = req.params;
