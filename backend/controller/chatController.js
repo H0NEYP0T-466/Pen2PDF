@@ -15,7 +15,7 @@ const getChatHistory = async (req, res) => {
     
     if (!chat) {
       console.log('📝 [CHAT] No chat history found, creating new chat document');
-      chat = new Chat({ messages: [], currentModel: 'gemini-2.5-pro-latest' });
+      chat = new Chat({ messages: [], currentModel: 'gemini-1.5-pro' });
       await chat.save();
     } else {
       console.log(`📚 [CHAT] Retrieved chat history with ${chat.messages.length} messages`);
@@ -52,7 +52,7 @@ const sendMessage = async (req, res) => {
     let chat = await Chat.findOne();
     if (!chat) {
       console.log('📝 [CHATBOT] Creating new chat session');
-      chat = new Chat({ messages: [], currentModel: model || 'gemini-2.5-pro-latest' });
+      chat = new Chat({ messages: [], currentModel: model || 'gemini-1.5-pro' });
     }
 
     chat.currentModel = model || chat.currentModel;
@@ -213,6 +213,7 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
     
     const isRateLimit = code === 429 || msg.includes("quota") || msg.includes("rate limit") || msg.includes("resource has been exhausted");
     const isServiceUnavailable = code === 503 || msg.includes("overloaded") || msg.includes("unavailable");
+    const isModelNotFound = code === 404 || msg.includes("not found") || msg.includes("is not found for api version");
     
     if (isRateLimit) {
       console.log('⏳ [GEMINI] Rate limit/quota exceeded for model:', model);
@@ -220,6 +221,9 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
     } else if (isServiceUnavailable) {
       console.log('⚠️ [GEMINI] Service unavailable for model:', model);
       throw new Error(`⚠️ Model "${model}" is currently unavailable or overloaded. Please try a different model.`);
+    } else if (isModelNotFound) {
+      console.log('❌ [GEMINI] Model not found:', model);
+      throw new Error(`⚠️ Model "${model}" is not available. Please select a different model from the dropdown.`);
     }
     
     if (error.message && error.message.includes('fetch failed')) {

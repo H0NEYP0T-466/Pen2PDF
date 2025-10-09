@@ -5,14 +5,11 @@ const ai = new GoogleGenAI({
   apiKey: process.env.geminiApiKey || process.env.GEMINI_API_KEY,
 });
 
-// Notes generation priority: 2.5 pro -> 2.5 flash -> rest
+// Notes generation priority: 1.5 pro (quality) -> 1.5 flash (fast) -> 2.0 flash (experimental)
 const CANDIDATE_MODELS = [
-  "gemini-2.5-pro-latest",
-  "gemini-2.5-flash-latest",
-  "gemini-2.5-pro-002",
-  "gemini-2.5-flash-002",
-  "gemini-2.0-flash-exp",
-  "gemini-2.0-flash-lite"
+  "gemini-1.5-pro",
+  "gemini-1.5-flash",
+  "gemini-2.0-flash-exp"
 ];
 
 async function generateNotesResponse(parts, retryInstruction = null) {

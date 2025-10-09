@@ -29,7 +29,7 @@ function AIAssistant() {
 
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [selectedModel, setSelectedModel] = useState('gemini-2.5-pro-latest');
+  const [selectedModel, setSelectedModel] = useState('gemini-1.5-pro');
   const [loading, setLoading] = useState(false);
   const [showContextPanel, setShowContextPanel] = useState(false);
   const [notes, setNotes] = useState([]);
@@ -41,11 +41,10 @@ function AIAssistant() {
   const models = [
     { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false },
     { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: false },
-    { value: 'gemini-2.5-pro-latest', label: 'Gemini 2.5 Pro', supportsFiles: true },
-    { value: 'gemini-2.5-flash-latest', label: 'Gemini 2.5 Flash', supportsFiles: true },
-    { value: 'gemini-2.5-flash-002', label: 'Gemini 2.5 Flash (Stable)', supportsFiles: true },
+    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Best Quality)', supportsFiles: true },
+    { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Fast)', supportsFiles: true },
+    { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash-8B (Fastest)', supportsFiles: true },
     { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)', supportsFiles: true },
-    { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash-Lite', supportsFiles: true },
   ];
 
   const currentModel = models.find(m => m.value === selectedModel);
