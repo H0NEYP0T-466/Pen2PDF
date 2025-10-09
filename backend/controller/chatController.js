@@ -15,7 +15,7 @@ const getChatHistory = async (req, res) => {
     
     if (!chat) {
       console.log('📝 [CHAT] No chat history found, creating new chat document');
-      chat = new Chat({ messages: [], currentModel: 'gemini-2.0-flash-exp' });
+      chat = new Chat({ messages: [], currentModel: 'gemini-2.5-pro-latest' });
       await chat.save();
     } else {
       console.log(`📚 [CHAT] Retrieved chat history with ${chat.messages.length} messages`);
@@ -37,8 +37,12 @@ const getChatHistory = async (req, res) => {
 };
 
 const sendMessage = async (req, res) => {
+  let userMessage = null;
+  let model = null;
+  
   try {
-    const { message, model, attachments, contextNotes } = req.body;
+    const { message, model: requestModel, attachments, contextNotes } = req.body;
+    model = requestModel;
 
     console.log('\n' + '='.repeat(80));
     console.log('🤖 [CHATBOT] User accessed chatbot');
@@ -48,12 +52,12 @@ const sendMessage = async (req, res) => {
     let chat = await Chat.findOne();
     if (!chat) {
       console.log('📝 [CHATBOT] Creating new chat session');
-      chat = new Chat({ messages: [], currentModel: model || 'gemini-2.0-flash-exp' });
+      chat = new Chat({ messages: [], currentModel: model || 'gemini-2.5-pro-latest' });
     }
 
     chat.currentModel = model || chat.currentModel;
 
-    const userMessage = {
+    userMessage = {
       id: Date.now().toString(),
       role: 'user',
       content: message,
@@ -114,10 +118,21 @@ const sendMessage = async (req, res) => {
     });
   } catch (error) {
     console.error('❌ [CHATBOT] Error sending message:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to send message',
-      error: error.message
+    console.log('='.repeat(80) + '\n');
+    
+    // Send error message back to user instead of crashing
+    res.status(200).json({
+      success: true,
+      data: {
+        userMessage,
+        assistantMessage: {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `❌ Error: ${error.message}\n\nPlease try again with a different model or wait a moment.`,
+          model: model,
+          timestamp: new Date()
+        }
+      }
     });
   }
 };
@@ -192,6 +207,20 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
       status: error?.status || error?.code,
       stack: error?.stack
     });
+    
+    const code = error?.status || error?.code;
+    const msg = (error?.message || "").toLowerCase();
+    
+    const isRateLimit = code === 429 || msg.includes("quota") || msg.includes("rate limit") || msg.includes("resource has been exhausted");
+    const isServiceUnavailable = code === 503 || msg.includes("overloaded") || msg.includes("unavailable");
+    
+    if (isRateLimit) {
+      console.log('⏳ [GEMINI] Rate limit/quota exceeded for model:', model);
+      throw new Error(`⚠️ Model "${model}" has reached its quota or rate limit. Please try a different model or wait a few moments before trying again.`);
+    } else if (isServiceUnavailable) {
+      console.log('⚠️ [GEMINI] Service unavailable for model:', model);
+      throw new Error(`⚠️ Model "${model}" is currently unavailable or overloaded. Please try a different model.`);
+    }
     
     if (error.message && error.message.includes('fetch failed')) {
       throw new Error('Network error: Unable to connect to Gemini API. Please check your internet connection.');

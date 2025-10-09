@@ -5,12 +5,14 @@ const ai = new GoogleGenAI({
   apiKey: process.env.geminiApiKey || process.env.GEMINI_API_KEY,
 });
 
+// Text extraction priority: 2.5 flash -> 2.5 pro -> 2.0 flash -> rest
 const CANDIDATE_MODELS = [
+  "gemini-2.5-flash-latest",
+  "gemini-2.5-pro-latest",
+  "gemini-2.5-flash-002",
+  "gemini-2.5-pro-002",
   "gemini-2.0-flash-exp",
-  "gemini-1.5-flash-002",
-  "gemini-1.5-flash-001",
-  "gemini-1.5-pro-002",
-  "gemini-1.5-pro-001"
+  "gemini-2.0-flash-lite"
 ];
 
 async function generateGeminiResponse(parts) {
