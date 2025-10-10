@@ -1,8 +1,14 @@
 import { Paragraph, TextRun, HeadingLevel } from 'docx';
 
+// Constants for consistent styling
+const CODE_BACKGROUND_COLOR = 'E5E7EB'; // Light gray background for code
+
 /**
  * Parse markdown text and convert to DOCX paragraphs
  * Handles headings, bold, italic, code, bullets, and numbered lists
+ * 
+ * Note: This is a basic markdown parser. Complex nested formatting
+ * (e.g., *text with **bold** inside*) is not supported by design.
  * 
  * @param {string} content - Markdown content to parse
  * @returns {Array<Paragraph>} Array of DOCX Paragraph objects
@@ -59,14 +65,14 @@ export function parseMarkdownToDocx(content) {
       for (const part of parts) {
         if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
           runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
-        } else if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
-          // The regex [^*] already ensures this won't start with **
+        } else if (part.startsWith('*') && part.endsWith('*') && part.length > 2 && !part.startsWith('**')) {
+          // Explicit check to prevent matching bold markers as italic
           runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
         } else if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
           runs.push(new TextRun({ 
             text: part.slice(1, -1), 
             font: 'Courier New',
-            shading: { fill: 'E5E7EB' }
+            shading: { fill: CODE_BACKGROUND_COLOR }
           }));
         } else if (part) {
           runs.push(new TextRun(part));
