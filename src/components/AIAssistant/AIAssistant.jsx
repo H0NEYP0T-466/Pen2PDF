@@ -4,8 +4,9 @@ import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from "marked-katex-extension";
 import html2pdf from 'html2pdf.js';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { Document, Packer, AlignmentType } from 'docx';
 import TitleInputModal from '../TitleInputModal/TitleInputModal';
+import { parseMarkdownToDocx } from '../../utils/markdownParser';
 import 'katex/dist/katex.min.css';
 import './AIAssistant.css';
 
@@ -306,77 +307,8 @@ function AIAssistant() {
   // Export response to Word (DOCX)
   const exportToWord = async (content, messageId) => {
     try {
-      // Parse markdown and create DOCX paragraphs
-      const lines = content.split('\n');
-      const children = [];
-      
-      for (const line of lines) {
-        if (line.trim() === '') {
-          children.push(new Paragraph({ text: '' }));
-          continue;
-        }
-        
-        // Handle headings
-        if (line.startsWith('# ')) {
-          children.push(new Paragraph({
-            text: line.substring(2),
-            heading: HeadingLevel.HEADING_1,
-            spacing: { before: 240, after: 120 }
-          }));
-        } else if (line.startsWith('## ')) {
-          children.push(new Paragraph({
-            text: line.substring(3),
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 200, after: 100 }
-          }));
-        } else if (line.startsWith('### ')) {
-          children.push(new Paragraph({
-            text: line.substring(4),
-            heading: HeadingLevel.HEADING_3,
-            spacing: { before: 160, after: 80 }
-          }));
-        } else if (line.startsWith('- ') || line.startsWith('* ')) {
-          children.push(new Paragraph({
-            text: line.substring(2),
-            bullet: { level: 0 },
-            spacing: { before: 60, after: 60 }
-          }));
-        } else if (/^\d+\.\s/.test(line)) {
-          const text = line.replace(/^\d+\.\s/, '');
-          children.push(new Paragraph({
-            text: text,
-            numbering: { reference: 'default-numbering', level: 0 },
-            spacing: { before: 60, after: 60 }
-          }));
-        } else {
-          // Regular paragraph - handle basic markdown formatting
-          const runs = [];
-          // Match bold (**text**), italic (*text*), and code (`text`)
-          // Use non-greedy matching and proper precedence
-          const parts = line.split(/(\*\*[^*]+?\*\*|\*[^*]+?\*|`[^`]+?`)/g);
-          
-          for (const part of parts) {
-            if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-              runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
-            } else if (part.startsWith('*') && part.endsWith('*') && part.length > 2 && !part.startsWith('**')) {
-              runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
-            } else if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
-              runs.push(new TextRun({ 
-                text: part.slice(1, -1), 
-                font: 'Courier New',
-                shading: { fill: 'E5E7EB' }
-              }));
-            } else if (part) {
-              runs.push(new TextRun(part));
-            }
-          }
-          
-          children.push(new Paragraph({
-            children: runs.length > 0 ? runs : [new TextRun(line)],
-            spacing: { before: 100, after: 100 }
-          }));
-        }
-      }
+      // Parse markdown and create DOCX paragraphs using shared utility
+      const children = parseMarkdownToDocx(content);
       
       const doc = new Document({
         sections: [{
