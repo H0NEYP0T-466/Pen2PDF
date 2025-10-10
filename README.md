@@ -42,14 +42,15 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
 - [🚀 Features](#-features)
 - [⚡ Tech Stack](#-tech-stack)
 - [📋 Prerequisites](#-prerequisites)
-- [🛠️ Installation](#️-installation)
+- [🛠️ Installation](#-installation)
 - [💻 Usage](#-usage)
 - [📁 Project Structure](#-project-structure)
+- [📦 Submodules](#-submodules)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
-- [🛡️ Security](#️-security)
+- [🛡️ Security](#-security)
 - [📏 Code of Conduct](#-code-of-conduct)
-- [🗺️ Roadmap](#️-roadmap)
+- [🗺️ Roadmap](#-roadmap)
 - [🙏 Acknowledgements](#-acknowledgements)
 
 ## 🚀 Features
@@ -137,6 +138,10 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
 ![html2pdf.js](https://img.shields.io/badge/html2pdf.js-FF6B6B?style=for-the-badge&logo=javascript&logoColor=white)
 ![Papa Parse](https://img.shields.io/badge/Papa_Parse-FF9900?style=for-the-badge&logo=javascript&logoColor=white)
 ![XLSX](https://img.shields.io/badge/XLSX-217346?style=for-the-badge&logo=microsoft-excel&logoColor=white)
+![KaTeX](https://img.shields.io/badge/KaTeX-008080?style=for-the-badge&logo=latex&logoColor=white)
+![Fabric.js](https://img.shields.io/badge/Fabric.js-FF6B6B?style=for-the-badge&logo=javascript&logoColor=white)
+![docx](https://img.shields.io/badge/docx-2B579A?style=for-the-badge&logo=microsoft-word&logoColor=white)
+![CORS](https://img.shields.io/badge/CORS-000000?style=for-the-badge&logo=javascript&logoColor=white)
 
 ### DevOps & Development Tools
 ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white)
@@ -368,6 +373,12 @@ Pen2PDF/
 └── 📄 index.html            # HTML template
 ```
 
+## 📦 Submodules
+
+This project currently does not use any Git submodules. All dependencies are managed through npm package managers and are listed in the respective `package.json` files.
+
+If you're looking to extend Pen2PDF with additional modules, please refer to our [Contributing Guidelines](CONTRIBUTING.md) for best practices on project architecture and integration.
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on:
@@ -432,8 +443,4 @@ This project follows the Contributor Covenant Code of Conduct. Please read our [
 
 ---
 
-<div align="center">
-
-**Made with ❤️ by [H0NEYP0T-466](https://github.com/H0NEYP0T-466)**
-
-</div>
+<p align="center">Made with ❤️ by H0NEYP0T-466</p>
