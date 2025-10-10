@@ -44,7 +44,6 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
 - [📋 Prerequisites](#-prerequisites)
 - [🛠️ Installation](#️-installation)
 - [💻 Usage](#-usage)
-  - [📐 LaTeX Formula Guide](LATEX_GUIDE.md)
 - [📁 Project Structure](#-project-structure)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
@@ -277,13 +276,6 @@ Subject Name, Teacher Name, Class Number, Class Type, Timings, Day
 5. **🔍 Browse Library**: Access and search through your saved notes collection
 6. **📋 Blank Notes**: Create notes from scratch without file upload
 
-#### LaTeX Formula Support
-Notes support LaTeX mathematical notation for beautiful formula rendering in PDF exports:
-- **Inline math**: Use `$formula$` for formulas within text
-- **Display math**: Use `$$formula$$` for standalone equations
-- **AI-generated notes automatically include properly formatted LaTeX**
-- See [LATEX_GUIDE.md](LATEX_GUIDE.md) for comprehensive LaTeX usage guide
-
 
 ### 🤖 AI Assistant (Bella) Usage
 
@@ -301,13 +293,6 @@ Notes support LaTeX mathematical notation for beautiful formula rendering in PDF
 7. **📝 Rich Formatting**: AI responses render with markdown, code blocks, and LaTeX math
 8. **💾 Conversation History**: Your chat is automatically saved and loaded on next visit
 9. **🔄 Switch Models**: Change models anytime to suit your needs
-
-For detailed information about chat context and formatting, see [CHAT_CONTEXT_GUIDE.md](./CHAT_CONTEXT_GUIDE.md)
-
-
-4. **💾 Save to Library**: Store notes in your personal notes library
-5. **🔍 Browse Library**: Access and search through your saved notes collection
-6. **📋 Blank Notes**: Create notes from scratch without file upload
 
 ### 🎯 Navigation
 
