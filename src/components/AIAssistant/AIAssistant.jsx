@@ -8,7 +8,6 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } fro
 import 'katex/dist/katex.min.css';
 import './AIAssistant.css';
 
-// Configure marked with KaTeX extension for LaTeX rendering
 marked.use(markedKatex({
   throwOnError: false,
   nonStandard: true
@@ -232,47 +231,170 @@ function AIAssistant() {
   const copyResponse = async (content) => {
     try {
       await navigator.clipboard.writeText(content);
-      alert('Response copied to clipboard!');
     } catch (error) {
       console.error('Error copying to clipboard:', error);
-      alert('Failed to copy to clipboard');
     }
   };
 
-  // Export response to PDF
+  // Export response to PDF (updated to use the same style as Notes.jsx)
   const exportToPDF = async (content, messageId) => {
     try {
       const html = marked(content);
-      
       const element = document.createElement('div');
-      element.innerHTML = html;
-      element.style.padding = '20px';
-      element.style.fontFamily = 'Inter, Segoe UI, sans-serif';
-      element.style.fontSize = '14px';
-      element.style.lineHeight = '1.7';
-      element.style.color = '#000';
-      element.style.backgroundColor = '#fff';
-      
-      document.body.appendChild(element);
-      
+      element.className = 'printable-light pdf-page';
+
+      // Get KaTeX CSS from the stylesheet
+      const katexCSS = Array.from(document.styleSheets)
+        .filter(sheet => {
+          try {
+            return sheet.href && sheet.href.includes('katex');
+          } catch {
+            return false;
+          }
+        })
+        .map(sheet => {
+          try {
+            return Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
+          } catch {
+            return '';
+          }
+        })
+        .join('\n');
+
+      element.innerHTML = `
+        <style>
+          /* KaTeX styles for math rendering */
+          ${katexCSS}
+          
+          /* Print-safe CSS for PDF generation */
+          @page {
+            margin: 12mm;
+          }
+          
+          .pdf-page {
+            padding: 8mm;
+            position: relative;
+          }
+          
+          /* Prevent word breaking and control text flow */
+          body, p, li, h1, h2, h3, h4, h5, h6 {
+            word-break: normal;
+            overflow-wrap: normal;
+            word-wrap: normal;
+            hyphens: none;
+            -webkit-hyphens: none;
+            -moz-hyphens: none;
+            -ms-hyphens: none;
+            text-align: justify;
+            text-justify: inter-word;
+          }
+          
+          /* Stronger word protection for all text elements */
+          * {
+            word-break: normal !important;
+            overflow-wrap: normal !important;
+            word-wrap: normal !important;
+            hyphens: none !important;
+            -webkit-hyphens: none !important;
+            -moz-hyphens: none !important;
+            -ms-hyphens: none !important;
+          }
+          
+          /* Prevent orphaned elements and bad page breaks */
+          h1, h2, h3, h4, h5, h6, img, table, pre, blockquote {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+          }
+          
+          /* Keep headings with following content */
+          h1, h2, h3, h4, h5, h6 {
+            break-after: avoid;
+            page-break-after: avoid;
+            -webkit-column-break-after: avoid;
+          }
+          
+          /* Math equation page break protection */
+          .katex, .katex-display {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+          }
+          
+          /* Block math equations get extra spacing and centering */
+          .katex-display {
+            margin: 1em 0;
+            text-align: center;
+          }
+          
+          /* Inline math stays with surrounding text */
+          p:has(.katex) {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+          }
+          
+          /* Orphan and widow control */
+          p {
+            orphans: 2;
+            widows: 2;
+          }
+          
+          .printable-light {
+            max-width: none;
+            padding: 0;
+            color: #333;
+            background: #ffffff;
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            position: relative;
+          }
+          
+          .printable-light h1, .printable-light h2, .printable-light h3 {
+            color: #333;
+            margin: 0 0 12px 0;
+            line-height: 1.25;
+            font-weight: 700;
+          }
+          
+          .printable-light p, .printable-light li {
+            font-size: 12.5pt;
+            line-height: 1.6;
+            color: #333;
+          }
+          
+          /* Watermark styles */
+          .watermark {
+            position: fixed;
+            bottom: 16pt;
+            right: 16pt;
+            opacity: 0.2;
+            font-size: 14pt;
+            color: #000;
+            pointer-events: none;
+            z-index: 1000;
+            font-family: 'Arial', sans-serif;
+          }
+        </style>
+        <div class="watermark">~honeypot</div>
+        ${html}
+      `;
+
       const opt = {
-        margin: [15, 15, 15, 15],
+        margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
         filename: `ai-response-${messageId}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
-          mode: ['avoid-all', 'css', 'legacy'],
-          avoid: ['h1', 'h2', 'h3', 'img', 'table', 'pre', 'blockquote', '.katex', '.katex-display']
+          mode: ["css", "legacy"], 
+          avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote", ".katex", ".katex-display"]
         }
       };
-      
+
       await html2pdf().set(opt).from(element).save();
-      document.body.removeChild(element);
-      alert('PDF exported successfully!');
     } catch (error) {
       console.error('Error exporting to PDF:', error);
-      alert('Failed to export PDF');
     }
   };
 
@@ -377,14 +499,11 @@ function AIAssistant() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      alert('Word document exported successfully!');
     } catch (error) {
       console.error('Error exporting to Word:', error);
-      alert('Failed to export to Word');
     }
   };
 
-  // Save response to Notes
   const saveToNotes = async (content) => {
     try {
       const title = prompt('Enter a title for this note:');

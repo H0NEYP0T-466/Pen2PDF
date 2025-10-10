@@ -4,6 +4,7 @@ import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from 'marked-katex-extension';
 import html2pdf from 'html2pdf.js';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import 'katex/dist/katex.min.css';
 import './Notes.css';
 
@@ -412,31 +413,95 @@ function Notes() {
     }
   };
 
-  const handleDownloadWord = () => {
+  // Updated: Use the same DOCX generation logic as AI Assistant
+  const handleDownloadWord = async () => {
     try {
-      // Convert markdown to HTML first
-      const html = marked(extractedText);
-      
-      // Create a simple Word-compatible HTML document
-      const wordContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Study Notes</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 1in; }
-        h1, h2, h3 { color: #333; }
-        code { background-color: #f4f4f4; padding: 2px 4px; }
-        pre { background-color: #f4f4f4; padding: 10px; }
-    </style>
-</head>
-<body>
-    ${html}
-</body>
-</html>`;
-      
-      const blob = new Blob([wordContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const lines = extractedText.split('\n');
+      const children = [];
+
+      for (const line of lines) {
+        if (line.trim() === '') {
+          children.push(new Paragraph({ text: '' }));
+          continue;
+        }
+
+        if (line.startsWith('# ')) {
+          children.push(new Paragraph({
+            text: line.substring(2),
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 }
+          }));
+        } else if (line.startsWith('## ')) {
+          children.push(new Paragraph({
+            text: line.substring(3),
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 200, after: 100 }
+          }));
+        } else if (line.startsWith('### ')) {
+          children.push(new Paragraph({
+            text: line.substring(4),
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 160, after: 80 }
+          }));
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          children.push(new Paragraph({
+            text: line.substring(2),
+            bullet: { level: 0 },
+            spacing: { before: 60, after: 60 }
+          }));
+        } else if (/^\d+\.\s/.test(line)) {
+          const text = line.replace(/^\d+\.\s/, '');
+          children.push(new Paragraph({
+            text: text,
+            numbering: { reference: 'default-numbering', level: 0 },
+            spacing: { before: 60, after: 60 }
+          }));
+        } else {
+          const runs = [];
+          const parts = line.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+
+          for (const part of parts) {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
+            } else if (part.startsWith('*') && part.endsWith('*')) {
+              runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
+            } else if (part.startsWith('`') && part.endsWith('`')) {
+              runs.push(new TextRun({
+                text: part.slice(1, -1),
+                font: 'Courier New',
+                shading: { fill: 'E5E7EB' }
+              }));
+            } else if (part) {
+              runs.push(new TextRun(part));
+            }
+          }
+
+          children.push(new Paragraph({
+            children: runs.length > 0 ? runs : [new TextRun(line)],
+            spacing: { before: 100, after: 100 }
+          }));
+        }
+      }
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: children
+        }],
+        numbering: {
+          config: [{
+            reference: 'default-numbering',
+            levels: [{
+              level: 0,
+              format: 'decimal',
+              text: '%1.',
+              alignment: AlignmentType.START
+            }]
+          }]
+        }
+      });
+
+      const blob = await Packer.toBlob(doc);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
