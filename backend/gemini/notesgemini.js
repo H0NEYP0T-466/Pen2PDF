@@ -5,15 +5,101 @@ const ai = new GoogleGenAI({
   apiKey: process.env.geminiApiKey || process.env.GEMINI_API_KEY,
 });
 
-// Notes generation priority: 2.5 pro -> 2.5 flash -> rest
-const CANDIDATE_MODELS = [
-  "gemini-2.5-pro-latest",
-  "gemini-2.5-flash-latest",
-  "gemini-2.5-pro-002",
-  "gemini-2.5-flash-002",
-  "gemini-2.0-flash-exp",
-  "gemini-2.0-flash-lite"
-];
+// Notes generation: primary = gemini-2.5-pro, fallback = gemini-2.5-flash
+const PRIMARY_MODEL = "gemini-2.5-pro";
+const FALLBACK_MODEL = "gemini-2.5-flash";
+
+/**
+ * Centralized helper function to call Gemini API with fallback logic
+ * @param {string} primaryModel - Primary model to try first
+ * @param {string} fallbackModel - Fallback model if primary fails
+ * @param {Array} parts - Content parts to send to the model
+ * @param {string} systemInstruction - System instruction for the model
+ * @param {string} logPrefix - Prefix for console logs (e.g., "[GEMINI NOTES]")
+ * @returns {Promise<Object>} - Object with text and modelUsed
+ */
+async function callGeminiAPI(primaryModel, fallbackModel, parts, systemInstruction, logPrefix) {
+  const models = [primaryModel, fallbackModel];
+  let lastErr = null;
+
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    const isPrimary = i === 0;
+    
+    try {
+      console.log(`\n🔄 ${logPrefix} Attempting ${model}...`);
+      console.log(`📤 ${logPrefix} Sending request to Gemini API...`);
+      
+      const response = await ai.models.generateContent({
+        model,
+        contents: parts,
+        config: { systemInstruction }
+      });
+
+      console.log(`📦 ${logPrefix} Full API response received:`);
+      console.log('─'.repeat(80));
+      console.log(JSON.stringify(response, null, 2));
+      console.log('─'.repeat(80));
+
+      const text = response.text;
+      if (!text || text.trim().length === 0) {
+        throw new Error("No valid text response received from Gemini.");
+      }
+      
+      console.log(`\n✅ ${logPrefix} ${model} responded successfully.`);
+      console.log(`📊 ${logPrefix} Generated content length: ${text.length} characters`);
+      console.log(`📝 ${logPrefix} Generated notes content:`);
+      console.log('─'.repeat(80));
+      console.log(text);
+      console.log('─'.repeat(80));
+      
+      return { text, modelUsed: model };
+    } catch (err) {
+      lastErr = err;
+      const code = err?.status || err?.code;
+      const msg = (err?.message || "").toLowerCase();
+      
+      console.error(`❌ ${logPrefix} Model ${model} failed:`, {
+        message: err?.message,
+        status: code,
+        stack: err?.stack
+      });
+      
+      // Check for retryable errors
+      const isQuotaError = code === 429 || msg.includes("quota") || msg.includes("rate limit");
+      const isNotFound = code === 404 || msg.includes("not found");
+      const isForbidden = code === 403;
+      const isServiceUnavailable = code === 503 || msg.includes("overloaded") || msg.includes("unavailable");
+      
+      const isRetryable = isQuotaError || isNotFound || isForbidden || isServiceUnavailable;
+      
+      if (isRetryable && !isPrimary) {
+        // Already on fallback, no more models to try
+        console.error(`❌ ${logPrefix} Fallback model also failed. No more models to try.`);
+        break;
+      } else if (isRetryable && isPrimary) {
+        // Try fallback
+        if (isQuotaError) {
+          console.log(`⏳ ${logPrefix} Model ${model} quota reached or unavailable, retrying ${fallbackModel}...`);
+        } else if (isForbidden) {
+          console.log(`🚫 ${logPrefix} Model ${model} access forbidden (403), retrying ${fallbackModel}...`);
+        } else if (isNotFound) {
+          console.log(`🔍 ${logPrefix} Model ${model} not found (404), retrying ${fallbackModel}...`);
+        } else if (isServiceUnavailable) {
+          console.log(`⚠️ ${logPrefix} Model ${model} service unavailable (503), retrying ${fallbackModel}...`);
+        }
+        continue;
+      } else {
+        // Non-retryable error
+        console.log(`❌ ${logPrefix} Non-retryable error for ${model}, stopping attempts.`);
+        break;
+      }
+    }
+  }
+
+  console.error(`❌ ${logPrefix} All models failed. Last error:`, lastErr);
+  throw lastErr || new Error("Gemini API call failed");
+}
 
 async function generateNotesResponse(parts, retryInstruction = null) {
 const systemInstruction = `
@@ -69,74 +155,9 @@ ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
 
   console.log('🔄 [GEMINI NOTES] Starting notes generation with model fallback strategy');
   console.log('📋 [GEMINI NOTES] System instruction:', systemInstruction.substring(0, 200) + '...');
+  console.log(`📊 [GEMINI NOTES] Primary model: ${PRIMARY_MODEL}, Fallback: ${FALLBACK_MODEL}`);
 
-  let lastErr = null;
-
-  for (const model of CANDIDATE_MODELS) {
-    try {
-      console.log(`\n🔄 [GEMINI NOTES] Trying model: ${model}`);
-      console.log(`📤 [GEMINI NOTES] Sending request to Gemini API...`);
-      
-      const response = await ai.models.generateContent({
-        model,
-        contents: parts,
-        config: { systemInstruction }
-      });
-
-      console.log('📦 [GEMINI NOTES] Full API response received:');
-      console.log('─'.repeat(80));
-      console.log(JSON.stringify(response, null, 2));
-      console.log('─'.repeat(80));
-
-      const text = response.text;
-      if (!text || text.trim().length === 0) {
-        throw new Error("No valid text response received from Gemini.");
-      }
-      
-      console.log(`\n✅ [GEMINI NOTES] Notes generation successful using model: ${model}`);
-      console.log(`📊 [GEMINI NOTES] Generated content length: ${text.length} characters`);
-      console.log('📝 [GEMINI NOTES] Generated notes content:');
-      console.log('─'.repeat(80));
-      console.log(text);
-      console.log('─'.repeat(80));
-      
-      return { text, modelUsed: model };
-    } catch (err) {
-      console.error(`\n❌ [GEMINI NOTES] Model ${model} failed:`, {
-        message: err?.message,
-        status: err?.status || err?.code,
-        stack: err?.stack
-      });
-      lastErr = err;
-      
-      const code = err?.status || err?.code;
-      const msg = (err?.message || "").toLowerCase();
-      
-      const isRateLimit = code === 429 || msg.includes("quota") || msg.includes("rate limit");
-      
-      const isServiceUnavailable = code === 503 || msg.includes("overloaded") || msg.includes("unavailable");
-      
-      const isRetryable = 
-        code === 404 ||
-        msg.includes("not found") ||
-        msg.includes("unsupported") ||
-        msg.includes("does not support") ||
-        msg.includes("text parameter") ||
-        isRateLimit ||
-        isServiceUnavailable;
-      
-      if (isRateLimit) {
-        console.log(`⏳ [GEMINI NOTES] Rate limit hit for ${model}, trying next model...`);
-      } else if (isServiceUnavailable) {
-        console.log(`⚠️ [GEMINI NOTES] Model ${model} is overloaded/unavailable, trying next model...`);
-      } else if (!isRetryable) {
-        console.log(`❌ [GEMINI NOTES] Non-retryable error for ${model}, stopping attempts.`);
-        break;
-      }
-    }
-  }
-
-  throw new Error(`All models failed. Last error: ${lastErr?.message || 'Unknown error'}`);
+  return await callGeminiAPI(PRIMARY_MODEL, FALLBACK_MODEL, parts, systemInstruction, '[GEMINI NOTES]');
 }
 
 module.exports = { generateNotesResponse };
