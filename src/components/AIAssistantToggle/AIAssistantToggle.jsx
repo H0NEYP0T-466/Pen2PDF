@@ -11,10 +11,11 @@ function AIAssistantToggle() {
 
   return (
     <div className="ai-assistant-toggle" onClick={handleClick}>
-      <span className="ai-label">AI Assistant</span>
+      <span className="ai-label">AI Assistant </span>
       <span className="ai-icon">🤖</span>
     </div>
   );
 }
 
 export default AIAssistantToggle;
+  

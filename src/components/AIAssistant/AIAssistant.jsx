@@ -4,9 +4,7 @@ import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from "marked-katex-extension";
 import html2pdf from 'html2pdf.js';
-import { Document, Packer, AlignmentType } from 'docx';
-import TitleInputModal from '../TitleInputModal/TitleInputModal';
-import { parseMarkdownToDocx } from '../../utils/markdownParser';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import 'katex/dist/katex.min.css';
 import './AIAssistant.css';
 
@@ -41,8 +39,6 @@ function AIAssistant() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNotes, setSelectedNotes] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [showTitleModal, setShowTitleModal] = useState(false);
-  const [currentSaveContent, setCurrentSaveContent] = useState('');
 
   const models = [
     { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false },
@@ -170,7 +166,6 @@ function AIAssistant() {
       contextNotes: selectedNotes
     };
 
-    // Add user message to UI immediately
     setMessages([...messages, userMessage]);
     setInputMessage('');
     setUploadedFiles([]);
@@ -257,21 +252,6 @@ function AIAssistant() {
       element.style.lineHeight = '1.7';
       element.style.color = '#000';
       element.style.backgroundColor = '#fff';
-      element.style.wordSpacing = 'normal';
-      element.style.letterSpacing = 'normal';
-      element.style.whiteSpace = 'pre-wrap';
-      element.style.wordBreak = 'normal';
-      element.style.overflowWrap = 'break-word';
-      
-      // Apply styles to all paragraphs and text elements
-      const allTextElements = element.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, div, span');
-      allTextElements.forEach(el => {
-        el.style.wordSpacing = 'normal';
-        el.style.letterSpacing = 'normal';
-        el.style.wordBreak = 'normal';
-        el.style.overflowWrap = 'break-word';
-        el.style.whiteSpace = 'pre-wrap';
-      });
       
       document.body.appendChild(element);
       
@@ -279,15 +259,7 @@ function AIAssistant() {
         margin: [15, 15, 15, 15],
         filename: `ai-response-${messageId}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          letterRendering: true,
-          allowTaint: false,
-          logging: false,
-          windowWidth: 800,
-          windowHeight: 1200
-        },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
           mode: ['avoid-all', 'css', 'legacy'],
@@ -307,8 +279,75 @@ function AIAssistant() {
   // Export response to Word (DOCX)
   const exportToWord = async (content, messageId) => {
     try {
-      // Parse markdown and create DOCX paragraphs using shared utility
-      const children = parseMarkdownToDocx(content);
+      // Parse markdown and create DOCX paragraphs
+      const lines = content.split('\n');
+      const children = [];
+      
+      for (const line of lines) {
+        if (line.trim() === '') {
+          children.push(new Paragraph({ text: '' }));
+          continue;
+        }
+        
+        // Handle headings
+        if (line.startsWith('# ')) {
+          children.push(new Paragraph({
+            text: line.substring(2),
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 }
+          }));
+        } else if (line.startsWith('## ')) {
+          children.push(new Paragraph({
+            text: line.substring(3),
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 200, after: 100 }
+          }));
+        } else if (line.startsWith('### ')) {
+          children.push(new Paragraph({
+            text: line.substring(4),
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 160, after: 80 }
+          }));
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          children.push(new Paragraph({
+            text: line.substring(2),
+            bullet: { level: 0 },
+            spacing: { before: 60, after: 60 }
+          }));
+        } else if (/^\d+\.\s/.test(line)) {
+          const text = line.replace(/^\d+\.\s/, '');
+          children.push(new Paragraph({
+            text: text,
+            numbering: { reference: 'default-numbering', level: 0 },
+            spacing: { before: 60, after: 60 }
+          }));
+        } else {
+          // Regular paragraph - handle basic markdown formatting
+          const runs = [];
+          const parts = line.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+          
+          for (const part of parts) {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
+            } else if (part.startsWith('*') && part.endsWith('*')) {
+              runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
+            } else if (part.startsWith('`') && part.endsWith('`')) {
+              runs.push(new TextRun({ 
+                text: part.slice(1, -1), 
+                font: 'Courier New',
+                shading: { fill: 'E5E7EB' }
+              }));
+            } else if (part) {
+              runs.push(new TextRun(part));
+            }
+          }
+          
+          children.push(new Paragraph({
+            children: runs.length > 0 ? runs : [new TextRun(line)],
+            spacing: { before: 100, after: 100 }
+          }));
+        }
+      }
       
       const doc = new Document({
         sections: [{
@@ -346,16 +385,14 @@ function AIAssistant() {
   };
 
   // Save response to Notes
-  const saveToNotes = (content) => {
-    setCurrentSaveContent(content);
-    setShowTitleModal(true);
-  };
-
-  const handleSaveToNotes = async (title) => {
+  const saveToNotes = async (content) => {
     try {
+      const title = prompt('Enter a title for this note:');
+      if (!title) return;
+      
       const noteData = {
         title: title,
-        generatedNotes: currentSaveContent,
+        generatedNotes: content,
         modelUsed: 'AI Assistant',
         originalFiles: []
       };
@@ -366,8 +403,6 @@ function AIAssistant() {
         alert('Note saved successfully!');
         // Reload notes in case context panel is open
         loadNotes();
-        setShowTitleModal(false);
-        setCurrentSaveContent('');
       }
     } catch (error) {
       console.error('Error saving to notes:', error);
@@ -593,17 +628,6 @@ function AIAssistant() {
           </div>
         </div>
       </div>
-
-      {/* Title Input Modal */}
-      <TitleInputModal
-        isOpen={showTitleModal}
-        onClose={() => {
-          setShowTitleModal(false);
-          setCurrentSaveContent('');
-        }}
-        onSubmit={handleSaveToNotes}
-        title="Save to Notes Library"
-      />
     </div>
   );
 }
