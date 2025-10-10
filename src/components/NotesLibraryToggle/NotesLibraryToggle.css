@@ -1,0 +1,58 @@
+/* Notes Library Toggle - Fixed at bottom-right corner, above AI Assistant */
+.notes-library-toggle {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3), 0 2px 4px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.notes-library-toggle:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5), 0 3px 6px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+.notes-library-toggle:active {
+  transform: translateY(0) scale(1.02);
+}
+
+.notes-label {
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.notes-icon {
+  font-size: 20px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+  .notes-library-toggle {
+    bottom: 80px;
+    right: 12px;
+    padding: 10px 16px;
+  }
+
+  .notes-label {
+    font-size: 12px;
+  }
+
+  .notes-icon {
+    font-size: 18px;
+  }
+}

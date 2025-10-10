@@ -27,6 +27,7 @@ function Notes() {
   const [showLibrary, setShowLibrary] = useState(false);
   const [savedNotes, setSavedNotes] = useState([]);
   const [modelUsed, setModelUsed] = useState('');
+  const [notesSearchQuery, setNotesSearchQuery] = useState('');
 
   const textareaRef = useRef(null);
 
@@ -500,6 +501,14 @@ function Notes() {
   };
 
   if (showLibrary) {
+    // Filter notes based on search query
+    const filteredNotes = notesSearchQuery.trim()
+      ? savedNotes.filter(note =>
+          note.title.toLowerCase().includes(notesSearchQuery.toLowerCase()) ||
+          note.generatedNotes.toLowerCase().includes(notesSearchQuery.toLowerCase())
+        )
+      : savedNotes;
+
     return (
       <div className="notes-container">
         <div className="notes-header">
@@ -521,13 +530,23 @@ function Notes() {
           </button>
         </div>
 
+        <div className="notes-search-container">
+          <input
+            type="text"
+            placeholder="Search Notes..."
+            value={notesSearchQuery}
+            onChange={(e) => setNotesSearchQuery(e.target.value)}
+            className="notes-search-input"
+          />
+        </div>
+
         <div className="library-grid">
-          {savedNotes.length === 0 ? (
+          {filteredNotes.length === 0 ? (
             <div className="empty-state">
-              <p>No saved notes yet. Create your first study notes!</p>
+              <p>{notesSearchQuery.trim() ? 'No notes found matching your search.' : 'No saved notes yet. Create your first study notes!'}</p>
             </div>
           ) : (
-            savedNotes.map(note => (
+            filteredNotes.map(note => (
               <div key={note._id} className="note-card">
                 <h3>{note.title}</h3>
                 <p className="note-meta">
