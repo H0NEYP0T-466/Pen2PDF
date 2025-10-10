@@ -283,16 +283,7 @@ Notes support LaTeX mathematical notation for beautiful formula rendering in PDF
 - **Display math**: Use `$$formula$$` for standalone equations
 - **AI-generated notes automatically include properly formatted LaTeX**
 - See [LATEX_GUIDE.md](LATEX_GUIDE.md) for comprehensive LaTeX usage guide
-### 🎨 Whiteboard Usage
 
-1. **🖌️ Drawing Tools**: Select pen tool, choose color and stroke width
-2. **📝 Add Text**: Click text tool, then click anywhere on the board to add text
-3. **🖼️ Add Images**: Paste from clipboard or drag and drop images onto the board
-4. **🔧 Manipulate Elements**: Click to select, then move, resize, or delete elements
-5. **↩️ Undo/Redo**: Use undo/redo buttons to navigate through your changes
-6. **💾 Save**: Whiteboard auto-saves; click save button to manually save
-7. **📤 Export**: Export to PNG image or PDF document
-8. **🔄 Load**: Your last saved whiteboard is automatically loaded when you open the tool
 
 ### 🤖 AI Assistant (Bella) Usage
 
