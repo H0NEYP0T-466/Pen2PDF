@@ -1,0 +1,124 @@
+/* Modal Overlay */
+.title-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.title-modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.title-modal h3 {
+  margin: 0 0 24px 0;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.title-modal .modal-section {
+  margin-bottom: 20px;
+}
+
+.title-modal .modal-section input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 15px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.title-modal .modal-section input:focus {
+  outline: none;
+  border-color: #00d9ff;
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.2);
+}
+
+.title-modal .modal-section input::placeholder {
+  color: var(--muted);
+}
+
+.title-modal .modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.title-modal .btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.title-modal .btn.primary {
+  background: linear-gradient(135deg, #00d9ff 0%, #00a8cc 100%);
+  color: #000;
+}
+
+.title-modal .btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.4);
+}
+
+.title-modal .btn.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.title-modal .btn.outline {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.title-modal .btn.outline:hover {
+  background: var(--panel-2);
+  border-color: var(--muted);
+}

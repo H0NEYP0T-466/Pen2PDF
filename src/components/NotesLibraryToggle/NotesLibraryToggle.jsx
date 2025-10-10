@@ -6,7 +6,7 @@ function NotesLibraryToggle() {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate("/notes");
+    navigate("/notes?view=library");
   };
 
   return (

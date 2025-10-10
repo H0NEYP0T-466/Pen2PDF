@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from 'marked-katex-extension';
@@ -16,6 +16,7 @@ marked.use(markedKatex({
 
 function Notes() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [files, setFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [extracted, setExtracted] = useState(false);
@@ -60,7 +61,13 @@ function Notes() {
   // Load saved notes on component mount
   useEffect(() => {
     fetchSavedNotes();
-  }, []);
+    
+    // Check if we should show library view based on URL parameter
+    const params = new URLSearchParams(location.search);
+    if (params.get('view') === 'library') {
+      setShowLibrary(true);
+    }
+  }, [location.search]);
 
   const fetchSavedNotes = async () => {
     try {
@@ -275,25 +282,30 @@ function Notes() {
           /* Prevent word breaking and control text flow */
           body, p, li, h1, h2, h3, h4, h5, h6 {
             word-break: normal;
-            overflow-wrap: normal;
-            word-wrap: normal;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
             hyphens: none;
             -webkit-hyphens: none;
             -moz-hyphens: none;
             -ms-hyphens: none;
             text-align: justify;
             text-justify: inter-word;
+            word-spacing: normal;
+            letter-spacing: normal;
+            white-space: pre-wrap;
           }
           
           /* Stronger word protection for all text elements */
           * {
             word-break: normal !important;
-            overflow-wrap: normal !important;
-            word-wrap: normal !important;
+            overflow-wrap: break-word !important;
+            word-wrap: break-word !important;
             hyphens: none !important;
             -webkit-hyphens: none !important;
             -moz-hyphens: none !important;
             -ms-hyphens: none !important;
+            word-spacing: normal !important;
+            letter-spacing: normal !important;
           }
           
           /* Prevent orphaned elements and bad page breaks */
@@ -380,7 +392,16 @@ function Notes() {
         margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
         filename: `${fileName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          backgroundColor: '#ffffff',
+          letterRendering: true,
+          allowTaint: false,
+          logging: false,
+          windowWidth: 800,
+          windowHeight: 1200
+        },
         jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
           mode: ["css", "legacy"], 
@@ -671,13 +692,6 @@ function Notes() {
               onClick={startBlankDocument}
             >
               Start with Empty Document
-            </button>
-
-            <button
-              className="btn subtle block"
-              onClick={() => setShowLibrary(true)}
-            >
-              View Notes Library
             </button>
           </div>
 

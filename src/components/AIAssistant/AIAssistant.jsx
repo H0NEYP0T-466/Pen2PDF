@@ -5,6 +5,7 @@ import { marked } from 'marked';
 import markedKatex from "marked-katex-extension";
 import html2pdf from 'html2pdf.js';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import TitleInputModal from '../TitleInputModal/TitleInputModal';
 import 'katex/dist/katex.min.css';
 import './AIAssistant.css';
 
@@ -39,6 +40,8 @@ function AIAssistant() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNotes, setSelectedNotes] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [showTitleModal, setShowTitleModal] = useState(false);
+  const [currentSaveContent, setCurrentSaveContent] = useState('');
 
   const models = [
     { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false },
@@ -253,6 +256,21 @@ function AIAssistant() {
       element.style.lineHeight = '1.7';
       element.style.color = '#000';
       element.style.backgroundColor = '#fff';
+      element.style.wordSpacing = 'normal';
+      element.style.letterSpacing = 'normal';
+      element.style.whiteSpace = 'pre-wrap';
+      element.style.wordBreak = 'normal';
+      element.style.overflowWrap = 'break-word';
+      
+      // Apply styles to all paragraphs and text elements
+      const allTextElements = element.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, div, span');
+      allTextElements.forEach(el => {
+        el.style.wordSpacing = 'normal';
+        el.style.letterSpacing = 'normal';
+        el.style.wordBreak = 'normal';
+        el.style.overflowWrap = 'break-word';
+        el.style.whiteSpace = 'pre-wrap';
+      });
       
       document.body.appendChild(element);
       
@@ -260,7 +278,15 @@ function AIAssistant() {
         margin: [15, 15, 15, 15],
         filename: `ai-response-${messageId}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          allowTaint: false,
+          logging: false,
+          windowWidth: 800,
+          windowHeight: 1200
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
           mode: ['avoid-all', 'css', 'legacy'],
@@ -386,14 +412,16 @@ function AIAssistant() {
   };
 
   // Save response to Notes
-  const saveToNotes = async (content) => {
+  const saveToNotes = (content) => {
+    setCurrentSaveContent(content);
+    setShowTitleModal(true);
+  };
+
+  const handleSaveToNotes = async (title) => {
     try {
-      const title = prompt('Enter a title for this note:');
-      if (!title) return;
-      
       const noteData = {
         title: title,
-        generatedNotes: content,
+        generatedNotes: currentSaveContent,
         modelUsed: 'AI Assistant',
         originalFiles: []
       };
@@ -404,6 +432,8 @@ function AIAssistant() {
         alert('Note saved successfully!');
         // Reload notes in case context panel is open
         loadNotes();
+        setShowTitleModal(false);
+        setCurrentSaveContent('');
       }
     } catch (error) {
       console.error('Error saving to notes:', error);
@@ -629,6 +659,17 @@ function AIAssistant() {
           </div>
         </div>
       </div>
+
+      {/* Title Input Modal */}
+      <TitleInputModal
+        isOpen={showTitleModal}
+        onClose={() => {
+          setShowTitleModal(false);
+          setCurrentSaveContent('');
+        }}
+        onSubmit={handleSaveToNotes}
+        title="Save to Notes Library"
+      />
     </div>
   );
 }
