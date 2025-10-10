@@ -481,14 +481,16 @@ function Notes() {
         } else {
           // Regular paragraph - handle basic markdown formatting
           const runs = [];
-          const parts = line.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+          // Match bold (**text**), italic (*text*), and code (`text`)
+          // Use non-greedy matching and proper precedence
+          const parts = line.split(/(\*\*[^*]+?\*\*|\*[^*]+?\*|`[^`]+?`)/g);
           
           for (const part of parts) {
-            if (part.startsWith('**') && part.endsWith('**')) {
+            if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
               runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
-            } else if (part.startsWith('*') && part.endsWith('*')) {
+            } else if (part.startsWith('*') && part.endsWith('*') && part.length > 2 && !part.startsWith('**')) {
               runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
-            } else if (part.startsWith('`') && part.endsWith('`')) {
+            } else if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
               runs.push(new TextRun({ 
                 text: part.slice(1, -1), 
                 font: 'Courier New',
@@ -534,7 +536,8 @@ function Notes() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      alert('Word document exported successfully!');
+      // Success feedback (could be replaced with a toast notification in the future)
+      setError('');
     } catch (e) {
       console.error('Word download failed:', e);
       setError('Failed to download Word document.');
