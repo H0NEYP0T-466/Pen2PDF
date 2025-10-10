@@ -2,33 +2,42 @@
 
 ## AI Assistant Model Selector
 
-### Before
+### Before (Previous Update - 7 models)
 ```
 ┌─────────────────────────────────────┐
 │ Model Selection Dropdown:           │
 ├─────────────────────────────────────┤
 │ • LongCat-Flash-Chat               │
 │ • LongCat-Flash-Thinking           │
-│ • Gemini 2.0 Flash (Experimental)  │ ← Default
-│ • Gemini 1.5 Flash                 │
-│ • Gemini 1.5 Pro                   │
+│ • Gemini 2.5 Pro                   │ ← Default
+│ • Gemini 2.5 Flash                 │
+│ • Gemini 2.5 Flash (Stable)        │
+│ • Gemini 2.0 Flash (Experimental)  │
+│ • Gemini 2.0 Flash-Lite            │
 └─────────────────────────────────────┘
+Total: 7 models (2 Longcat + 5 Gemini)
 ```
 
-### After
+### After (Current Refactor - 4 models) ✅
 ```
 ┌─────────────────────────────────────┐
 │ Model Selection Dropdown:           │
 ├─────────────────────────────────────┤
 │ • LongCat-Flash-Chat               │
 │ • LongCat-Flash-Thinking           │
-│ • Gemini 2.5 Pro                   │ ← New Default ⭐
-│ • Gemini 2.5 Flash                 │ ← New
-│ • Gemini 2.5 Flash (Stable)        │ ← New
-│ • Gemini 2.0 Flash (Experimental)  │
-│ • Gemini 2.0 Flash-Lite            │ ← New
+│ • Gemini 2.5 Pro                   │ ← Default ⭐
+│ • Gemini 2.5 Flash                 │
 └─────────────────────────────────────┘
+Total: 4 models (2 Longcat + 2 Gemini) ✅
 ```
+
+**Changes:**
+- ❌ Removed: Gemini 2.5 Flash (Stable)
+- ❌ Removed: Gemini 2.0 Flash (Experimental)
+- ❌ Removed: Gemini 2.0 Flash-Lite
+- ✅ Kept: 2 Longcat models (unchanged)
+- ✅ Kept: 2 Gemini models (gemini-2.5-pro, gemini-2.5-flash)
+- ✅ Model names simplified (removed "-latest" suffix)
 
 ---
 
@@ -83,36 +92,40 @@ Then user can:
 ```
 User Action: Upload a scanned PDF for text extraction
 
-Backend Process:
-1. Try: gemini-2.5-flash-latest ⚡ → ❌ Quota exceeded
-2. Try: gemini-2.5-pro-latest 🎯 → ❌ Quota exceeded  
-3. Try: gemini-2.5-flash-002 ⚡ → ✅ Success!
+Backend Process (NEW - Refactored):
+1. Try: gemini-2.5-flash ⚡ → ❌ Quota exceeded (429)
+   Log: "⏳ [GEMINI TEXT] Model gemini-2.5-flash quota reached or unavailable, retrying gemini-2.5-pro..."
+2. Try: gemini-2.5-pro 🎯 → ✅ Success!
+   Log: "✅ [GEMINI TEXT] gemini-2.5-pro responded successfully."
 
-Result: Text extracted using gemini-2.5-flash-002
+Result: Text extracted using gemini-2.5-pro (fallback)
 ```
 
 ### Notes Generation (Upload Lecture Slides)
 ```
 User Action: Upload lecture slides for notes generation
 
-Backend Process:
-1. Try: gemini-2.5-pro-latest 🎯 → ✅ Success!
+Backend Process (NEW - Refactored):
+1. Try: gemini-2.5-pro 🎯 → ✅ Success!
+   Log: "✅ [GEMINI NOTES] gemini-2.5-pro responded successfully."
 
-Result: High-quality notes generated using gemini-2.5-pro-latest
+Result: High-quality notes generated using gemini-2.5-pro (primary)
 ```
 
-### Chat with AI (Manual Model Selection)
+### Chat with AI (Automatic Fallback - NEW!)
 ```
 User Action: Send message to Bella
 
-User Selected: gemini-2.5-pro-latest
+User Selected: gemini-2.5-pro
 
-Backend Process:
-1. Try: gemini-2.5-pro-latest → ❌ Rate limit
+Backend Process (NEW - Automatic Fallback):
+1. Try: gemini-2.5-pro → ❌ Rate limit (429)
+   Log: "⏳ [GEMINI] Model gemini-2.5-pro quota reached or unavailable, retrying gemini-2.5-flash..."
+2. Try: gemini-2.5-flash → ✅ Success!
+   Log: "✅ [GEMINI] gemini-2.5-flash responded successfully."
 
-Result: Error message shown, user manually switches to:
-- gemini-2.5-flash-latest (faster alternative)
-- OR wait and retry with same model
+Result: Response delivered using gemini-2.5-flash (automatic fallback)
+User sees successful response, no manual switching needed! ✅
 ```
 
 ---
@@ -163,7 +176,7 @@ Gemini Models:
 
 ## Console Log Examples
 
-### Successful Text Extraction
+### Successful Text Extraction (NEW - Refactored)
 ```
 =============================================================================
 📄 [TEXT EXTRACT] Text extraction request received
@@ -173,67 +186,85 @@ Gemini Models:
 🚀 [TEXT EXTRACT] Sending to Gemini API for extraction...
 
 🔄 [GEMINI TEXT] Starting text extraction with model fallback strategy
-🔄 [GEMINI TEXT] Trying model: gemini-2.5-flash-latest
-✅ [GEMINI TEXT] Text extraction successful using model: gemini-2.5-flash-latest
-📊 [GEMINI TEXT] Extracted text length: 3542 characters
+📊 [GEMINI TEXT] Primary model: gemini-2.5-flash, Fallback: gemini-2.5-pro
+
+🔄 [GEMINI TEXT] Attempting gemini-2.5-flash...
+📤 [GEMINI TEXT] Sending request to Gemini API...
+✅ [GEMINI TEXT] gemini-2.5-flash responded successfully.
+📊 [GEMINI TEXT] Response length: 3542 characters
 ✅ [TEXT EXTRACT] Text extracted successfully
 =============================================================================
 ```
 
-### Quota Error with Fallback
+### Quota Error with Fallback (NEW - Refactored)
 ```
 =============================================================================
 📚 [NOTES GENERATION] Notes generation request received
 🔄 [GEMINI NOTES] Starting notes generation with model fallback strategy
+📊 [GEMINI NOTES] Primary model: gemini-2.5-pro, Fallback: gemini-2.5-flash
 
-🔄 [GEMINI NOTES] Trying model: gemini-2.5-pro-latest
-❌ [GEMINI NOTES] Model gemini-2.5-pro-latest failed: {
+🔄 [GEMINI NOTES] Attempting gemini-2.5-pro...
+📤 [GEMINI NOTES] Sending request to Gemini API...
+❌ [GEMINI NOTES] Model gemini-2.5-pro failed: {
   message: 'Resource has been exhausted (e.g. check quota)',
   status: 429
 }
-⏳ [GEMINI NOTES] Rate limit hit for gemini-2.5-pro-latest, trying next model...
+⏳ [GEMINI NOTES] Model gemini-2.5-pro quota reached or unavailable, retrying gemini-2.5-flash...
 
-🔄 [GEMINI NOTES] Trying model: gemini-2.5-flash-latest
-✅ [GEMINI NOTES] Notes generation successful using model: gemini-2.5-flash-latest
+🔄 [GEMINI NOTES] Attempting gemini-2.5-flash...
+📤 [GEMINI NOTES] Sending request to Gemini API...
+✅ [GEMINI NOTES] gemini-2.5-flash responded successfully.
 📊 [GEMINI NOTES] Generated content length: 5600 characters
 ✅ [NOTES GENERATION] Notes generated successfully
 =============================================================================
 ```
 
-### Chat Error (No Crash)
+### Chat with Automatic Fallback (NEW!)
 ```
 =============================================================================
 🤖 [CHATBOT] User accessed chatbot
-📊 [CHATBOT] Model requested: gemini-2.5-pro-latest
+📊 [CHATBOT] Model requested: gemini-2.5-pro
 💬 [CHATBOT] User query: Explain quantum mechanics
 
 🔄 [CHATBOT] Using Gemini API
-❌ [GEMINI] API error: {
+🚀 [GEMINI] Primary model: gemini-2.5-pro
+🔄 [GEMINI] Fallback model: gemini-2.5-flash
+
+🔄 [GEMINI] Attempting gemini-2.5-pro...
+📤 [GEMINI] Making API call to Gemini...
+❌ [GEMINI] Model gemini-2.5-pro failed: {
   message: 'Resource has been exhausted (e.g. check quota)',
   status: 429
 }
-⏳ [GEMINI] Rate limit/quota exceeded for model: gemini-2.5-pro-latest
-❌ [CHATBOT] Error sending message: Model "gemini-2.5-pro-latest" has reached...
+⏳ [GEMINI] Model gemini-2.5-pro quota reached or unavailable, retrying gemini-2.5-flash...
+
+🔄 [GEMINI] Attempting gemini-2.5-flash...
+📤 [GEMINI] Making API call to Gemini...
+✅ [GEMINI] gemini-2.5-flash responded successfully.
+✅ [CHATBOT] Response sent successfully using model: gemini-2.5-pro
 =============================================================================
 
 [Server continues running - no crash]
-[User receives error message in chat]
-[User can switch models and continue]
+[User receives successful response from fallback model]
+[No manual model switching needed! ✅]
 ```
 
 ---
 
 ## Feature Comparison Table
 
-| Feature | Before | After |
-|---------|--------|-------|
-| **Latest Model Version** | 1.5 | 2.5 ✅ |
-| **Model Count (Gemini)** | 3 | 5 ✅ |
-| **Default Model** | 2.0-flash-exp | 2.5-pro-latest ✅ |
-| **Text Extraction Priority** | Generic | Speed-first ✅ |
-| **Notes Priority** | Generic | Quality-first ✅ |
-| **Quota Error Handling** | Server crash | Graceful message ✅ |
-| **User Can Switch Models** | ❌ (after crash) | ✅ (immediately) |
-| **File Upload Support** | 3 models | 5 models ✅ |
-| **Error Messages** | Generic | Specific & helpful ✅ |
-| **Server Uptime** | Unstable | 100% stable ✅ |
+| Feature | Before (Previous Update) | After (Current Refactor) |
+|---------|--------------------------|--------------------------|
+| **Total Models Available** | 7 (2 Longcat + 5 Gemini) | 4 (2 Longcat + 2 Gemini) ✅ |
+| **Gemini Model Count** | 5 models | 2 models ✅ |
+| **Gemini Models** | 2.5-pro, 2.5-flash, 2.5-flash-002, 2.0-exp, 2.0-lite | gemini-2.5-pro, gemini-2.5-flash ✅ |
+| **Default Model** | gemini-2.5-pro-latest | gemini-2.5-pro ✅ |
+| **Text Extraction Strategy** | 6-model fallback chain | Primary→Fallback (2 models) ✅ |
+| **Notes Generation Strategy** | 6-model fallback chain | Primary→Fallback (2 models) ✅ |
+| **Chat Fallback** | Manual model switching | Automatic fallback ✅ |
+| **Error Detection** | 429, 503 | 403, 429, 503, 404 ✅ |
+| **Fallback Logging** | Basic | Descriptive with model names ✅ |
+| **Centralized Helper** | Separate logic per file | callGeminiAPI() reusable ✅ |
+| **Code Complexity** | Medium | Simplified ✅ |
+| **Server Uptime** | 100% stable | 100% stable ✅ |
+| **Longcat Models** | Unchanged | Unchanged ✅ |
