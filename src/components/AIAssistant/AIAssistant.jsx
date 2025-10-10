@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from "marked-katex-extension";
-import MarkdownIt from 'markdown-it';
 import html2pdf from 'html2pdf.js';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import 'katex/dist/katex.min.css';
@@ -14,9 +13,6 @@ marked.use(markedKatex({
   throwOnError: false,
   nonStandard: true
 }));
-
-// Initialize markdown-it for DOCX conversion
-const md = new MarkdownIt();
 
 /*
  * AI Assistant (Bella) Component
