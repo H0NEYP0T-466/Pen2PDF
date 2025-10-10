@@ -4,8 +4,6 @@ require("dotenv").config();
 const ai = new GoogleGenAI({
   apiKey: process.env.geminiApiKey || process.env.GEMINI_API_KEY,
 });
-
-// Notes generation: primary = gemini-2.5-pro, fallback = gemini-2.5-flash
 const PRIMARY_MODEL = "gemini-2.5-pro";
 const FALLBACK_MODEL = "gemini-2.5-flash";
 

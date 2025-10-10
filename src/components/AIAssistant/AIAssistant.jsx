@@ -231,7 +231,7 @@ function AIAssistant() {
           >
             ←
           </button>
-          <h1>AI Assistant - Bella</h1>
+          <h1>~Isabella</h1>
         </div>
         <div className="header-right">
           <button
@@ -293,7 +293,7 @@ function AIAssistant() {
           <div className="messages-container">
             {messages.length === 0 ? (
               <div className="welcome-message">
-                <h2>👋 Hello! I'm Bella</h2>
+                <h2>👋 Hello! I'm Isabella</h2>
                 <p>Your AI assistant in the Pen2PDF suite.</p>
                 <p>Ask me anything or select notes from the context panel to get insights!</p>
               </div>

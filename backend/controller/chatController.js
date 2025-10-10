@@ -7,7 +7,6 @@ const ai = new GoogleGenAI({
   apiKey: process.env.geminiApiKey || process.env.GEMINI_API_KEY,
 });
 
-// Available Gemini models for chat
 const GEMINI_PRIMARY_MODEL = "gemini-2.5-pro";
 const GEMINI_FALLBACK_MODEL = "gemini-2.5-flash";
 
@@ -181,9 +180,9 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
       });
     }
 
-    const systemInstruction = `You are Bella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
+    const systemInstruction = `You are Isabella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
 
-    // Determine primary and fallback models based on selected model
+  
     let primaryModel = model;
     let fallbackModel = null;
     
@@ -198,7 +197,6 @@ async function callGeminiAPI(model, message, attachments, contextNotes, chatHist
       console.log('🔄 [GEMINI] Fallback model:', fallbackModel);
     }
 
-    // Try primary model first
     const models = fallbackModel ? [primaryModel, fallbackModel] : [primaryModel];
     let lastError = null;
 

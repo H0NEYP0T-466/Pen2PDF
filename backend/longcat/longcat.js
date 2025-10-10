@@ -16,7 +16,7 @@ async function callLongCatAPI(model, message, contextNotes = [], chatHistory = [
       throw new Error('LongCat API key not configured');
     }
 
-    const systemInstruction = `You are Bella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
+    const systemInstruction = `You are Isabella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
 
     const messages = [
       { role: 'system', content: systemInstruction }
@@ -79,6 +79,7 @@ async function callLongCatAPI(model, message, contextNotes = [], chatHistory = [
 
     const responseContent = data.choices[0].message.content || 'I apologize, but I could not generate a response.';
     console.log('✅ [LONGCAT] Response content extracted successfully');
+    console.log('Here is the responce from the model:',{responseContent})
 
     return responseContent;
   } catch (error) {
