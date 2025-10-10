@@ -99,12 +99,10 @@ app.get('/api/notes/:id', getNotesById);
 app.put('/api/notes/:id', updateNotes);
 app.delete('/api/notes/:id', deleteNotes);
 
-// ✅ Chat routes
 app.get('/api/chat', getChatHistory);
 app.post('/api/chat/message', sendMessage);
 app.delete('/api/chat', clearChatHistory);
 
-// ✅ DB connections and server start
 Promise.all([
   todoConnection.asPromise(),
   timetableConnection.asPromise(),
