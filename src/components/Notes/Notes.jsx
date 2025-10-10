@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from 'marked-katex-extension';
 import html2pdf from 'html2pdf.js';
+import { Document, Packer, AlignmentType } from 'docx';
+import { parseMarkdownToDocx } from '../../utils/markdownParser';
 import 'katex/dist/katex.min.css';
 import './Notes.css';
 
@@ -16,6 +18,7 @@ marked.use(markedKatex({
 
 function Notes() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [files, setFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [extracted, setExtracted] = useState(false);
@@ -60,7 +63,13 @@ function Notes() {
   // Load saved notes on component mount
   useEffect(() => {
     fetchSavedNotes();
-  }, []);
+    
+    // Check if we should show library view based on URL parameter
+    const params = new URLSearchParams(location.search);
+    if (params.get('view') === 'library') {
+      setShowLibrary(true);
+    }
+  }, [location.search]);
 
   const fetchSavedNotes = async () => {
     try {
@@ -275,25 +284,30 @@ function Notes() {
           /* Prevent word breaking and control text flow */
           body, p, li, h1, h2, h3, h4, h5, h6 {
             word-break: normal;
-            overflow-wrap: normal;
-            word-wrap: normal;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
             hyphens: none;
             -webkit-hyphens: none;
             -moz-hyphens: none;
             -ms-hyphens: none;
             text-align: justify;
             text-justify: inter-word;
+            word-spacing: normal;
+            letter-spacing: normal;
+            white-space: pre-wrap;
           }
           
           /* Stronger word protection for all text elements */
           * {
             word-break: normal !important;
-            overflow-wrap: normal !important;
-            word-wrap: normal !important;
+            overflow-wrap: break-word !important;
+            word-wrap: break-word !important;
             hyphens: none !important;
             -webkit-hyphens: none !important;
             -moz-hyphens: none !important;
             -ms-hyphens: none !important;
+            word-spacing: normal !important;
+            letter-spacing: normal !important;
           }
           
           /* Prevent orphaned elements and bad page breaks */
@@ -380,7 +394,16 @@ function Notes() {
         margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
         filename: `${fileName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          backgroundColor: '#ffffff',
+          letterRendering: true,
+          allowTaint: false,
+          logging: false,
+          windowWidth: 800,
+          windowHeight: 1200
+        },
         jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
           mode: ["css", "legacy"], 
@@ -412,31 +435,30 @@ function Notes() {
     }
   };
 
-  const handleDownloadWord = () => {
+  const handleDownloadWord = async () => {
     try {
-      // Convert markdown to HTML first
-      const html = marked(extractedText);
+      // Parse markdown and create DOCX paragraphs using shared utility
+      const children = parseMarkdownToDocx(extractedText);
       
-      // Create a simple Word-compatible HTML document
-      const wordContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Study Notes</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 1in; }
-        h1, h2, h3 { color: #333; }
-        code { background-color: #f4f4f4; padding: 2px 4px; }
-        pre { background-color: #f4f4f4; padding: 10px; }
-    </style>
-</head>
-<body>
-    ${html}
-</body>
-</html>`;
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: children
+        }],
+        numbering: {
+          config: [{
+            reference: 'default-numbering',
+            levels: [{
+              level: 0,
+              format: 'decimal',
+              text: '%1.',
+              alignment: AlignmentType.START
+            }]
+          }]
+        }
+      });
       
-      const blob = new Blob([wordContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const blob = await Packer.toBlob(doc);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -445,6 +467,9 @@ function Notes() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      
+      // Success feedback (could be replaced with a toast notification in the future)
+      setError('');
     } catch (e) {
       console.error('Word download failed:', e);
       setError('Failed to download Word document.');
@@ -671,13 +696,6 @@ function Notes() {
               onClick={startBlankDocument}
             >
               Start with Empty Document
-            </button>
-
-            <button
-              className="btn subtle block"
-              onClick={() => setShowLibrary(true)}
-            >
-              View Notes Library
             </button>
           </div>
 
