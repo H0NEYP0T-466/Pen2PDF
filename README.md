@@ -198,7 +198,6 @@ The application will automatically create the following databases:
 - `todolist` - For todo management data
 - `timetable` - For timetable and schedule data  
 - `notes` - For notes and study materials
-- `whiteboard` - For whiteboard state and elements
 - `chat` - For AI assistant chat history
 
 ### 5. Environment Setup
@@ -330,9 +329,6 @@ Pen2PDF/
 │       ├── 📁 TodoList/      # Task management
 │       │   ├── TodoList.jsx
 │       │   └── TodoList.css
-│       ├── 📁 Whiteboard/    # Digital whiteboard
-│       │   ├── Whiteboard.jsx
-│       │   └── Whiteboard.css
 │       ├── 📁 AIAssistant/   # AI chat assistant
 │       │   ├── AIAssistant.jsx
 │       │   └── AIAssistant.css
