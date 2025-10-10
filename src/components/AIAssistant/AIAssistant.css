@@ -4,7 +4,7 @@
   flex-direction: column;
   background: #0A0A0A;
   color: #FAFAFA;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: 'Inter', 'Segoe UI', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .ai-header {
@@ -195,8 +195,8 @@
 }
 
 .message {
-  margin-bottom: 24px;
-  padding: 16px;
+  margin-bottom: 28px;
+  padding: 20px;
   background: #141414;
   border: 1px solid #222;
   border-radius: 8px;
@@ -218,26 +218,27 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  font-size: 13px;
+  margin-bottom: 14px;
+  font-size: 14px;
   color: #B3B3B3;
 }
 
 .message-role {
   font-weight: 600;
   color: #FAFAFA;
+  font-size: 15px;
 }
 
 .message-model {
   color: #666;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .message-content {
   color: #FAFAFA;
-  line-height: 1.6;
+  line-height: 1.7;
   word-wrap: break-word;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* Markdown styling */
@@ -396,6 +397,49 @@
   font-size: 12px;
   color: #B3B3B3;
 }
+
+/* Message Actions */
+.message-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  background: #1A1A1A;
+  border: 1px solid #333;
+  color: #FAFAFA;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-btn:hover {
+  background: #2A2A2A;
+  border-color: #444;
+  transform: translateY(-1px);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+}
+
+.action-btn.success {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.action-btn.success:hover {
+  background: #15803d;
+  border-color: #15803d;
+}
+
 
 /* Input Area */
 .input-area {

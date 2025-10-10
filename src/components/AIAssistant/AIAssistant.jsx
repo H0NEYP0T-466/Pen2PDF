@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from "marked-katex-extension";
+import MarkdownIt from 'markdown-it';
+import html2pdf from 'html2pdf.js';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import 'katex/dist/katex.min.css';
 import './AIAssistant.css';
 
@@ -11,6 +14,9 @@ marked.use(markedKatex({
   throwOnError: false,
   nonStandard: true
 }));
+
+// Initialize markdown-it for DOCX conversion
+const md = new MarkdownIt();
 
 /*
  * AI Assistant (Bella) Component
@@ -72,11 +78,12 @@ function AIAssistant() {
     }
   }, [searchQuery, notes]);
 
-  // Load chat history from backend
+  // Load chat history from backend (last 50 messages only)
   const loadChatHistory = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/chat');
       if (response.data.success) {
+        // Backend returns only last 50 messages
         setMessages(response.data.data.messages || []);
         if (response.data.data.currentModel) {
           setSelectedModel(response.data.data.currentModel);
@@ -181,7 +188,14 @@ function AIAssistant() {
         // Re-fetch to get the latest messages including the assistant's response
         const chatResponse = await axios.get('http://localhost:8000/api/chat');
         if (chatResponse.data.success) {
-          setMessages(chatResponse.data.data.messages || []);
+          let updatedMessages = chatResponse.data.data.messages || [];
+          
+          // Maintain only last 50 messages in memory
+          if (updatedMessages.length > 50) {
+            updatedMessages = updatedMessages.slice(-50);
+          }
+          
+          setMessages(updatedMessages);
         }
       }
     } catch (error) {
@@ -216,6 +230,188 @@ function AIAssistant() {
       } catch (error) {
         console.error('Error clearing chat:', error);
       }
+    }
+  };
+
+  // Copy response to clipboard
+  const copyResponse = async (content) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      alert('Response copied to clipboard!');
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+      alert('Failed to copy to clipboard');
+    }
+  };
+
+  // Export response to PDF
+  const exportToPDF = async (content, messageId) => {
+    try {
+      const html = marked(content);
+      
+      const element = document.createElement('div');
+      element.innerHTML = html;
+      element.style.padding = '20px';
+      element.style.fontFamily = 'Inter, Segoe UI, sans-serif';
+      element.style.fontSize = '14px';
+      element.style.lineHeight = '1.7';
+      element.style.color = '#000';
+      element.style.backgroundColor = '#fff';
+      
+      document.body.appendChild(element);
+      
+      const opt = {
+        margin: [15, 15, 15, 15],
+        filename: `ai-response-${messageId}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { 
+          mode: ['avoid-all', 'css', 'legacy'],
+          avoid: ['h1', 'h2', 'h3', 'img', 'table', 'pre', 'blockquote', '.katex', '.katex-display']
+        }
+      };
+      
+      await html2pdf().set(opt).from(element).save();
+      document.body.removeChild(element);
+      alert('PDF exported successfully!');
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      alert('Failed to export PDF');
+    }
+  };
+
+  // Export response to Word (DOCX)
+  const exportToWord = async (content, messageId) => {
+    try {
+      // Parse markdown and create DOCX paragraphs
+      const lines = content.split('\n');
+      const children = [];
+      
+      for (const line of lines) {
+        if (line.trim() === '') {
+          children.push(new Paragraph({ text: '' }));
+          continue;
+        }
+        
+        // Handle headings
+        if (line.startsWith('# ')) {
+          children.push(new Paragraph({
+            text: line.substring(2),
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 }
+          }));
+        } else if (line.startsWith('## ')) {
+          children.push(new Paragraph({
+            text: line.substring(3),
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 200, after: 100 }
+          }));
+        } else if (line.startsWith('### ')) {
+          children.push(new Paragraph({
+            text: line.substring(4),
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 160, after: 80 }
+          }));
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          children.push(new Paragraph({
+            text: line.substring(2),
+            bullet: { level: 0 },
+            spacing: { before: 60, after: 60 }
+          }));
+        } else if (/^\d+\.\s/.test(line)) {
+          const text = line.replace(/^\d+\.\s/, '');
+          children.push(new Paragraph({
+            text: text,
+            numbering: { reference: 'default-numbering', level: 0 },
+            spacing: { before: 60, after: 60 }
+          }));
+        } else {
+          // Regular paragraph - handle basic markdown formatting
+          const runs = [];
+          const parts = line.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+          
+          for (const part of parts) {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
+            } else if (part.startsWith('*') && part.endsWith('*')) {
+              runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
+            } else if (part.startsWith('`') && part.endsWith('`')) {
+              runs.push(new TextRun({ 
+                text: part.slice(1, -1), 
+                font: 'Courier New',
+                shading: { fill: 'E5E7EB' }
+              }));
+            } else if (part) {
+              runs.push(new TextRun(part));
+            }
+          }
+          
+          children.push(new Paragraph({
+            children: runs.length > 0 ? runs : [new TextRun(line)],
+            spacing: { before: 100, after: 100 }
+          }));
+        }
+      }
+      
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: children
+        }],
+        numbering: {
+          config: [{
+            reference: 'default-numbering',
+            levels: [{
+              level: 0,
+              format: 'decimal',
+              text: '%1.',
+              alignment: AlignmentType.START
+            }]
+          }]
+        }
+      });
+      
+      const blob = await Packer.toBlob(doc);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ai-response-${messageId}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('Word document exported successfully!');
+    } catch (error) {
+      console.error('Error exporting to Word:', error);
+      alert('Failed to export to Word');
+    }
+  };
+
+  // Save response to Notes
+  const saveToNotes = async (content) => {
+    try {
+      const title = prompt('Enter a title for this note:');
+      if (!title) return;
+      
+      const noteData = {
+        title: title,
+        generatedNotes: content,
+        modelUsed: 'AI Assistant',
+        originalFiles: []
+      };
+      
+      const response = await axios.post('http://localhost:8000/api/notes', noteData);
+      
+      if (response.data.success) {
+        alert('Note saved successfully!');
+        // Reload notes in case context panel is open
+        loadNotes();
+      }
+    } catch (error) {
+      console.error('Error saving to notes:', error);
+      alert('Failed to save to notes');
     }
   };
 
@@ -321,6 +517,38 @@ function AIAssistant() {
                   {msg.contextNotes && msg.contextNotes.length > 0 && (
                     <div className="message-context">
                       <span>📚 Using {msg.contextNotes.length} note{msg.contextNotes.length > 1 ? 's' : ''} as context</span>
+                    </div>
+                  )}
+                  {msg.role === 'assistant' && (
+                    <div className="message-actions">
+                      <button 
+                        className="action-btn" 
+                        onClick={() => copyResponse(msg.content)}
+                        title="Copy response to clipboard"
+                      >
+                        📋 Copy Response
+                      </button>
+                      <button 
+                        className="action-btn" 
+                        onClick={() => exportToPDF(msg.content, msg.id)}
+                        title="Export response to PDF"
+                      >
+                        📄 Export to PDF
+                      </button>
+                      <button 
+                        className="action-btn" 
+                        onClick={() => exportToWord(msg.content, msg.id)}
+                        title="Export response to Word"
+                      >
+                        📝 Export to Word
+                      </button>
+                      <button 
+                        className="action-btn" 
+                        onClick={() => saveToNotes(msg.content)}
+                        title="Save response to Notes"
+                      >
+                        💾 Save to Notes
+                      </button>
                     </div>
                   )}
                 </div>

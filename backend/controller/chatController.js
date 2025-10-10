@@ -24,11 +24,17 @@ const getChatHistory = async (req, res) => {
       console.log(`📚 [CHAT] Retrieved chat history with ${chat.messages.length} messages`);
     }
 
+    // Fetch only last 50 messages for performance
+    const last50Messages = chat.messages.slice(-50);
+    
     res.json({
       success: true,
-      data: chat
+      data: {
+        messages: last50Messages,
+        currentModel: chat.currentModel
+      }
     });
-    console.log('✅ [CHAT] Chat history sent successfully');
+    console.log(`✅ [CHAT] Chat history sent successfully (${last50Messages.length} messages)`);
   } catch (error) {
     console.error('❌ [CHAT] Error fetching chat history:', error);
     res.status(500).json({
