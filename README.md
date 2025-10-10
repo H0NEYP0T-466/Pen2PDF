@@ -88,16 +88,6 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
 - **💾 Persistent Storage**: Save and organize notes in a dedicated library
 - **🎯 Blank Note Creation**: Start with empty documents for manual note-taking
 
-### 🎨 Whiteboard - Digital Collaboration
-- **✏️ Freehand Drawing**: Draw with customizable pen colors and stroke widths
-- **📝 Text Elements**: Add text anywhere on the board with formatting
-- **🖼️ Image Support**: Paste or drag-and-drop images onto the whiteboard
-- **🔧 Element Manipulation**: Move, resize, and delete elements easily
-- **↩️ Undo/Redo**: Full undo/redo support for all actions
-- **💾 Auto-Save**: Automatically saves your work as you edit
-- **📤 Export Options**: Export whiteboard to image or PDF format
-- **🔄 State Persistence**: Automatically loads your last saved whiteboard on open
-
 ### 🤖 AI Assistant (Bella) - Intelligent Help
 - **💬 Multi-Model Support**: Switch between LongCat and Gemini models
   - LongCat-Flash-Chat
