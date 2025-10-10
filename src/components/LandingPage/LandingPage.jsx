@@ -17,9 +17,8 @@ function LandingPage() {
       navigate("/timetable");
     } else if (cardType === "notes") {
       navigate("/notes");
-    } else {
-      console.log("Coming soon");
     }
+    // Coming soon features - no action needed
   };
 
   return (

@@ -178,8 +178,7 @@ function App() {
     const value = extractedText;
     const { start, end } = getSelectionRange();
     if (start === end) {
-      alert("Select some text to bold.");
-      return;
+      return; // No selection, do nothing silently
     }
     const sel = value.slice(start, end);
     let newSel;
@@ -243,8 +242,7 @@ function App() {
       setExtractedText(combined);
       setExtracted(true);
     } catch (error) {
-      console.error("Extraction error:", error);
-      alert(
+      setError(
         error?.response?.data?.error ||
           "Extraction failed for one of the files. Check server logs."
       );
@@ -415,8 +413,7 @@ function App() {
       await html2pdf().set(opt).from(el).save();
       document.body.removeChild(el);
     } catch (e) {
-      console.error("PDF download failed:", e);
-      alert("Failed to generate PDF. See console for details.");
+      setError("Failed to generate PDF.");
     }
   };
 
@@ -434,8 +431,7 @@ function App() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (e) {
-      console.error("Markdown download failed:", e);
-      alert("Failed to download markdown.");
+      setError("Failed to download markdown.");
     }
   };
 

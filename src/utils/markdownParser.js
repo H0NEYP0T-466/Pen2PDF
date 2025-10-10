@@ -5,7 +5,7 @@ const CODE_BACKGROUND_COLOR = 'E5E7EB'; // Light gray background for code
 
 /**
  * Parse markdown text and convert to DOCX paragraphs
- * Handles headings, bold, italic, code, bullets, and numbered lists
+ * Handles headings, bold, italic, code, code blocks, bullets, and numbered lists
  * 
  * Note: This is a basic markdown parser. Complex nested formatting
  * (e.g., *text with **bold** inside*) is not supported by design.
@@ -16,8 +16,49 @@ const CODE_BACKGROUND_COLOR = 'E5E7EB'; // Light gray background for code
 export function parseMarkdownToDocx(content) {
   const lines = content.split('\n');
   const children = [];
+  let inCodeBlock = false;
+  let codeBlockContent = [];
   
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Handle code blocks (```)
+    if (line.trim().startsWith('```')) {
+      if (inCodeBlock) {
+        // End of code block - add accumulated code
+        if (codeBlockContent.length > 0) {
+          children.push(new Paragraph({
+            children: [new TextRun({
+              text: codeBlockContent.join('\n'),
+              font: 'Courier New',
+              size: 20 // 10pt
+            })],
+            shading: { fill: CODE_BACKGROUND_COLOR },
+            spacing: { before: 120, after: 120 },
+            border: {
+              top: { color: 'CCCCCC', space: 1, style: 'single', size: 6 },
+              bottom: { color: 'CCCCCC', space: 1, style: 'single', size: 6 },
+              left: { color: 'CCCCCC', space: 1, style: 'single', size: 6 },
+              right: { color: 'CCCCCC', space: 1, style: 'single', size: 6 }
+            }
+          }));
+        }
+        codeBlockContent = [];
+        inCodeBlock = false;
+      } else {
+        // Start of code block
+        inCodeBlock = true;
+      }
+      continue;
+    }
+    
+    // If inside code block, accumulate lines
+    if (inCodeBlock) {
+      codeBlockContent.push(line);
+      continue;
+    }
+    
+    // Empty lines
     if (line.trim() === '') {
       children.push(new Paragraph({ text: '' }));
       continue;
@@ -42,43 +83,33 @@ export function parseMarkdownToDocx(content) {
         heading: HeadingLevel.HEADING_3,
         spacing: { before: 160, after: 80 }
       }));
-    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+    } else if (line.startsWith('#### ')) {
       children.push(new Paragraph({
-        text: line.substring(2),
+        text: line.substring(5),
+        heading: HeadingLevel.HEADING_4,
+        spacing: { before: 140, after: 70 }
+      }));
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      // Handle bullet lists with inline formatting
+      const text = line.substring(2);
+      const runs = parseInlineFormatting(text);
+      children.push(new Paragraph({
+        children: runs,
         bullet: { level: 0 },
         spacing: { before: 60, after: 60 }
       }));
     } else if (/^\d+\.\s/.test(line)) {
+      // Handle numbered lists with inline formatting
       const text = line.replace(/^\d+\.\s/, '');
+      const runs = parseInlineFormatting(text);
       children.push(new Paragraph({
-        text: text,
+        children: runs,
         numbering: { reference: 'default-numbering', level: 0 },
         spacing: { before: 60, after: 60 }
       }));
     } else {
-      // Regular paragraph - handle basic markdown formatting
-      const runs = [];
-      // Match bold (**text**), italic (*text*), and code (`text`)
-      // The [^*] and [^`] patterns ensure we don't match across different markers
-      const parts = line.split(/(\*\*[^*]+?\*\*|\*[^*]+?\*|`[^`]+?`)/g);
-      
-      for (const part of parts) {
-        if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-          runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
-        } else if (part.startsWith('*') && part.endsWith('*') && part.length > 2 && !part.startsWith('**')) {
-          // Explicit check to prevent matching bold markers as italic
-          runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
-        } else if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
-          runs.push(new TextRun({ 
-            text: part.slice(1, -1), 
-            font: 'Courier New',
-            shading: { fill: CODE_BACKGROUND_COLOR }
-          }));
-        } else if (part) {
-          runs.push(new TextRun(part));
-        }
-      }
-      
+      // Regular paragraph - handle inline markdown formatting
+      const runs = parseInlineFormatting(line);
       children.push(new Paragraph({
         children: runs.length > 0 ? runs : [new TextRun(line)],
         spacing: { before: 100, after: 100 }
@@ -87,4 +118,40 @@ export function parseMarkdownToDocx(content) {
   }
   
   return children;
+}
+
+/**
+ * Parse inline markdown formatting (bold, italic, code)
+ * @param {string} text - Text with inline markdown
+ * @returns {Array<TextRun>} Array of TextRun objects
+ */
+function parseInlineFormatting(text) {
+  const runs = [];
+  // Match bold (**text**), italic (*text*), and code (`text`)
+  // The regex ensures we match the markers properly
+  const parts = text.split(/(\*\*[^*]+?\*\*|\*[^*]+?\*|`[^`]+?`)/g);
+  
+  for (const part of parts) {
+    if (!part) continue;
+    
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      // Bold text
+      runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
+    } else if (part.startsWith('*') && part.endsWith('*') && part.length > 2 && !part.startsWith('**')) {
+      // Italic text (make sure it's not bold)
+      runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
+    } else if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      // Inline code
+      runs.push(new TextRun({ 
+        text: part.slice(1, -1), 
+        font: 'Courier New',
+        shading: { fill: CODE_BACKGROUND_COLOR }
+      }));
+    } else {
+      // Plain text
+      runs.push(new TextRun(part));
+    }
+  }
+  
+  return runs;
 }

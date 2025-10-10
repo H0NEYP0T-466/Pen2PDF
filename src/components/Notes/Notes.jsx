@@ -271,106 +271,118 @@ function Notes() {
           /* KaTeX styles for math rendering */
           ${katexCSS}
           
-          /* Print-safe CSS for PDF generation */
+          /* PDF generation styles */
           @page {
-            margin: 12mm;
+            margin: 15mm;
           }
           
           .pdf-page {
-            padding: 8mm;
+            padding: 0;
             position: relative;
           }
           
-          /* Prevent word breaking and control text flow */
-          body, p, li, h1, h2, h3, h4, h5, h6 {
-            word-break: normal;
+          /* Prevent word breaking and ensure proper spacing */
+          body, p, li, h1, h2, h3, h4, h5, h6, div, span {
+            word-break: keep-all;
             overflow-wrap: break-word;
             word-wrap: break-word;
             hyphens: none;
             -webkit-hyphens: none;
-            -moz-hyphens: none;
-            -ms-hyphens: none;
-            text-align: justify;
-            text-justify: inter-word;
-            word-spacing: normal;
+            word-spacing: 0.15em;
             letter-spacing: normal;
-            white-space: pre-wrap;
+            white-space: normal;
           }
           
-          /* Stronger word protection for all text elements */
-          * {
-            word-break: normal !important;
-            overflow-wrap: break-word !important;
-            word-wrap: break-word !important;
-            hyphens: none !important;
-            -webkit-hyphens: none !important;
-            -moz-hyphens: none !important;
-            -ms-hyphens: none !important;
-            word-spacing: normal !important;
-            letter-spacing: normal !important;
+          /* Typography */
+          .printable-light {
+            font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #1a1a1a;
+            background: #ffffff;
+            max-width: none;
+            padding: 0;
           }
           
-          /* Prevent orphaned elements and bad page breaks */
-          h1, h2, h3, h4, h5, h6, img, table, pre, blockquote {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            -webkit-column-break-inside: avoid;
-          }
-          
-          /* Keep headings with following content */
+          /* Headings */
           h1, h2, h3, h4, h5, h6 {
+            margin: 1em 0 0.5em 0;
+            font-weight: 600;
+            line-height: 1.3;
+            color: #1a1a1a;
             break-after: avoid;
             page-break-after: avoid;
-            -webkit-column-break-after: avoid;
           }
           
-          /* Math equation page break protection */
+          h1 { font-size: 1.8em; }
+          h2 { font-size: 1.5em; }
+          h3 { font-size: 1.3em; }
+          
+          /* Paragraphs and lists */
+          p {
+            margin: 0.4em 0;
+            font-size: 11pt;
+            orphans: 2;
+            widows: 2;
+          }
+          
+          ul, ol {
+            margin: 0.5em 0;
+            padding-left: 2em;
+          }
+          
+          li {
+            margin: 0.25em 0;
+            font-size: 11pt;
+          }
+          
+          /* Code blocks */
+          pre {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1em;
+            margin: 0.8em 0;
+            overflow-x: auto;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          
+          code {
+            background: #f0f0f0;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+          }
+          
+          pre code {
+            background: transparent;
+            padding: 0;
+          }
+          
+          /* Math equations */
           .katex, .katex-display {
             break-inside: avoid;
             page-break-inside: avoid;
-            -webkit-column-break-inside: avoid;
           }
           
-          /* Block math equations get extra spacing and centering */
           .katex-display {
             margin: 1em 0;
             text-align: center;
           }
           
-          /* Inline math stays with surrounding text */
-          p:has(.katex) {
+          /* Prevent orphaned elements */
+          blockquote, table, img {
             break-inside: avoid;
             page-break-inside: avoid;
-            -webkit-column-break-inside: avoid;
           }
           
-          /* Orphan and widow control */
-          p {
-            orphans: 2;
-            widows: 2;
-          }
-          
-          .printable-light {
-            max-width: none;
-            padding: 0;
-            color: #333;
-            background: #ffffff;
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            position: relative;
-          }
-          
-          .printable-light h1, .printable-light h2, .printable-light h3 {
-            color: #333;
-            margin: 0 0 12px 0;
-            line-height: 1.25;
-            font-weight: 700;
-          }
-          
-          .printable-light p, .printable-light li {
-            font-size: 12.5pt;
-            line-height: 1.6;
-            color: #333;
+          blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 1em;
+            margin: 0.8em 0;
+            color: #666;
           }
           
           /* Watermark styles */
@@ -391,29 +403,28 @@ function Notes() {
       `;
 
       const opt = {
-        margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
+        margin: [15, 15, 15, 15],
         filename: `${fileName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
-          scale: 2, 
+          scale: 2.5,
           useCORS: true, 
           backgroundColor: '#ffffff',
           letterRendering: true,
           allowTaint: false,
           logging: false,
-          windowWidth: 800,
+          windowWidth: 900,
           windowHeight: 1200
         },
-        jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
-          mode: ["css", "legacy"], 
-          avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote", ".katex", ".katex-display"]
+          mode: ['avoid-all', 'css', 'legacy'],
+          avoid: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'table', 'pre', 'blockquote', '.katex', '.katex-display']
         }
       };
 
       await html2pdf().set(opt).from(element).save();
     } catch (e) {
-      console.error('PDF generation failed:', e);
       setError('Failed to generate PDF.');
     }
   };
@@ -430,7 +441,6 @@ function Notes() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (e) {
-      console.error('Markdown download failed:', e);
       setError('Failed to download markdown.');
     }
   };
@@ -468,10 +478,8 @@ function Notes() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      // Success feedback (could be replaced with a toast notification in the future)
       setError('');
     } catch (e) {
-      console.error('Word download failed:', e);
       setError('Failed to download Word document.');
     }
   };
@@ -492,13 +500,11 @@ function Notes() {
 
       if (response.data.success) {
         setError('');
-        alert('Notes saved to library successfully!');
         fetchSavedNotes();
       } else {
         setError('Failed to save notes');
       }
     } catch (error) {
-      console.error('Error saving notes:', error);
       setError('Failed to save notes');
     }
   };
