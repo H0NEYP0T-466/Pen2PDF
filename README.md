@@ -42,15 +42,15 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
 - [🚀 Features](#-features)
 - [⚡ Tech Stack](#-tech-stack)
 - [📋 Prerequisites](#-prerequisites)
-- [🛠️ Installation](#️-installation)
+- [🛠️ Installation](#-installation)
 - [💻 Usage](#-usage)
 - [📁 Project Structure](#-project-structure)
 - [📦 Submodules](#-submodules)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
-- [🛡️ Security](#️-security)
+- [🛡️ Security](#-security)
 - [📏 Code of Conduct](#-code-of-conduct)
-- [🗺️ Roadmap](#️-roadmap)
+- [🗺️ Roadmap](#-roadmap)
 - [🙏 Acknowledgements](#-acknowledgements)
 
 ## 🚀 Features
