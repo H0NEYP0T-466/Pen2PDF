@@ -1,3 +1,15 @@
+/* Lock page scroll: only chat messages and notes list can scroll */
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Prevent page (document) scroll */
+}
+
+#root,
+.ai-assistant-container {
+  height: 100vh; /* Fill viewport */
+}
+
 .ai-assistant-container {
   height: 100vh;
   display: flex;
@@ -5,6 +17,8 @@
   background: #0A0A0A;
   color: #FAFAFA;
   font-family: 'Inter', 'Segoe UI', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 0; /* allow inner flex children to scroll */
+  overflow-x: hidden; /* avoid accidental horizontal page scroll */
 }
 
 .ai-header {
@@ -14,6 +28,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex: 0 0 auto; /* fixed height header */
 }
 
 .header-left {
@@ -57,7 +72,8 @@
 .ai-content {
   flex: 1;
   display: flex;
-  overflow: hidden;
+  overflow: hidden; /* no scroll here */
+  min-height: 0;   /* allow children to scroll instead of growing page */
 }
 
 /* Context Panel */
@@ -68,7 +84,8 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  overflow-y: auto;
+  overflow: hidden; /* panel itself does not scroll */
+  min-height: 0;    /* let notes-list handle scroll */
 }
 
 .context-panel h3 {
@@ -98,7 +115,9 @@
 
 .notes-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto;            /* ONLY notes list scrolls */
+  overscroll-behavior: contain; /* prevent scroll chaining to page */
+  min-height: 0;
 }
 
 .empty-notes {
@@ -167,14 +186,19 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden; /* chat wrapper doesn't scroll */
+  min-height: 0;    /* let messages-container handle scroll */
+  min-width: 0;     /* avoid horizontal overflow from long content */
 }
 
 .messages-container {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto;             /* ONLY messages container scrolls */
+  overscroll-behavior: contain; /* prevent scroll chaining to page */
+  overflow-x: hidden;           /* avoid horizontal scrollbar from wide content */
   padding: 24px;
   background: #0A0A0A;
+  min-height: 0;
 }
 
 .welcome-message {
@@ -446,6 +470,7 @@
   background: #141414;
   border-top: 1px solid #222;
   padding: 16px 24px;
+  flex: 0 0 auto; /* fixed at bottom, no scrolling */
 }
 
 .input-controls {
@@ -539,6 +564,8 @@
   resize: none;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   line-height: 1.5;
+  max-height: 40vh;   /* keep input from growing the page */
+  overflow-y: auto;   /* internal scroll for long drafts */
 }
 
 .message-input:focus {
@@ -570,29 +597,25 @@
   border-color: #333;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling: ONLY chat and notes have scrollbars */
 .messages-container::-webkit-scrollbar,
-.notes-list::-webkit-scrollbar,
-.context-panel::-webkit-scrollbar {
+.notes-list::-webkit-scrollbar {
   width: 8px;
 }
 
 .messages-container::-webkit-scrollbar-track,
-.notes-list::-webkit-scrollbar-track,
-.context-panel::-webkit-scrollbar-track {
+.notes-list::-webkit-scrollbar-track {
   background: #141414;
 }
 
 .messages-container::-webkit-scrollbar-thumb,
-.notes-list::-webkit-scrollbar-thumb,
-.context-panel::-webkit-scrollbar-thumb {
+.notes-list::-webkit-scrollbar-thumb {
   background: #333;
   border-radius: 4px;
 }
 
 .messages-container::-webkit-scrollbar-thumb:hover,
-.notes-list::-webkit-scrollbar-thumb:hover,
-.context-panel::-webkit-scrollbar-thumb:hover {
+.notes-list::-webkit-scrollbar-thumb:hover {
   background: #444;
 }
 
@@ -618,6 +641,7 @@
     width: 280px;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
+    overflow: hidden; /* still no panel scroll on mobile */
   }
 
   .context-panel.visible {

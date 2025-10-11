@@ -26,6 +26,7 @@ marked.use(markedKatex({
 function AIAssistant() {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const [messages, setMessages] = useState([]);
@@ -54,10 +55,15 @@ function AIAssistant() {
     loadNotes();
   }, []);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll only the messages container to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    // Ensure DOM is laid out before scrolling
+    requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+    });
+  }, [messages, loading]);
 
   // Filter notes based on search query
   useEffect(() => {
@@ -253,7 +259,7 @@ function AIAssistant() {
           }
         })
         .map(sheet => {
-          try {
+                   try {
             return Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
           } catch {
             return '';
@@ -295,9 +301,6 @@ function AIAssistant() {
             overflow-wrap: normal !important;
             word-wrap: normal !important;
             hyphens: none !important;
-            -webkit-hyphens: none !important;
-            -moz-hyphens: none !important;
-            -ms-hyphens: none !important;
           }
           
           /* Prevent orphaned elements and bad page breaks */
@@ -600,7 +603,7 @@ function AIAssistant() {
 
         {/* Chat Area */}
         <div className="chat-area">
-          <div className="messages-container">
+          <div className="messages-container" ref={messagesContainerRef}>
             {messages.length === 0 ? (
               <div className="welcome-message">
                 <h2>👋 Hello! I'm Isabella</h2>
