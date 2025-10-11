@@ -1,115 +1,103 @@
+/* Minimal dark theme dialog, main color #111, no fancy hover interactions */
+
 .dialog-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .dialog-content {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  min-width: 320px;
-  max-width: 500px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideUp 0.2s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  background: #111;
+  color: #e5e7eb;
+  border: 1px solid #1f1f1f;
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 340px;
+  max-width: 540px;
 }
 
 .dialog-content h3 {
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
   font-size: 18px;
   font-weight: 600;
-  color: #111827;
+  color: #fafafa;
 }
 
 .dialog-message {
-  margin: 0 0 16px 0;
-  color: #4b5563;
-  line-height: 1.5;
+  margin: 0 0 12px 0;
+  color: #9ca3af;
+  line-height: 1.55;
 }
 
 .dialog-input {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border: 1px solid #1f1f1f;
+  border-radius: 8px;
   font-size: 14px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   box-sizing: border-box;
+  color: #e5e7eb;
+  background: #0e0e0e;
 }
-
+.dialog-input::placeholder {
+  color: #6b7280;
+}
+.dialog-input:hover {
+  border-color: #262626; /* simple state change */
+}
 .dialog-input:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 0;
-  border-color: #3b82f6;
+  outline: 2px solid #d4d4d4;
+  outline-offset: 2px;
+  border-color: #2a2a2a;
 }
 
 .dialog-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #1a1a1a;
 }
 
-.dialog-actions button {
-  padding: 8px 16px;
-  border-radius: 6px;
+.dialog-actions .btn {
+  appearance: none;
+  padding: 10px 14px;
+  border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
-  border: none;
-  font-weight: 500;
-  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  font-weight: 600;
+  line-height: 1;
 }
 
+/* Secondary (Cancel) */
 .dialog-actions .btn.outline {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: #151515;
+  color: #d1d5db;
+  border-color: #2a2a2a;
 }
-
 .dialog-actions .btn.outline:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #1b1b1b; /* simple state change, no animation */
 }
 
+/* Primary (OK) */
 .dialog-actions .btn.primary {
-  background: #3b82f6;
-  color: white;
+  background: #e5e5e5;
+  color: #111;
+  border-color: #e5e5e5;
 }
-
 .dialog-actions .btn.primary:hover {
-  background: #2563eb;
+  background: #dcdcdc; /* simple state change, no animation */
 }
 
-.dialog-actions .btn.primary:focus,
-.dialog-actions .btn.outline:focus {
-  outline: 2px solid #3b82f6;
+/* Accessible focus */
+.dialog-actions .btn:focus-visible {
+  outline: 2px solid #d4d4d4;
   outline-offset: 2px;
 }

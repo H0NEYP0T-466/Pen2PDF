@@ -1,18 +1,19 @@
 import React, { useEffect, useRef } from 'react';
 import './ConfirmDialog.css';
 
-function ConfirmDialog({ 
-  open, 
-  title = 'Confirm', 
-  message, 
-  confirmText = 'Confirm', 
-  cancelText = 'Cancel', 
-  onConfirm, 
-  onCancel 
+function ConfirmDialog({
+  open,
+  title = 'Confirm',
+  message,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  onConfirm,
+  onCancel
 }) {
   const confirmBtnRef = useRef(null);
   const cancelBtnRef = useRef(null);
   const dialogRef = useRef(null);
+  const messageIdRef = useRef(`dialog-message-${Math.random().toString(36).slice(2)}`);
 
   useEffect(() => {
     if (open && confirmBtnRef.current) {
@@ -33,10 +34,10 @@ function ConfirmDialog({
       } else if (e.key === 'Tab') {
         const focusableElements = dialogRef.current?.querySelectorAll('button');
         if (!focusableElements || focusableElements.length === 0) return;
-        
+
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
-        
+
         if (e.shiftKey) {
           if (document.activeElement === firstElement) {
             e.preventDefault();
@@ -59,27 +60,32 @@ function ConfirmDialog({
 
   return (
     <div className="dialog-overlay" onClick={onCancel}>
-      <div 
-        className="dialog-content" 
+      <div
+        className="dialog-content"
         onClick={(e) => e.stopPropagation()}
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
+        aria-describedby={message ? messageIdRef.current : undefined}
       >
         <h3 id="dialog-title">{title}</h3>
-        <p className="dialog-message">{message}</p>
+        {message && (
+          <p id={messageIdRef.current} className="dialog-message">
+            {message}
+          </p>
+        )}
         <div className="dialog-actions">
-          <button 
+          <button
             ref={cancelBtnRef}
-            className="btn outline" 
+            className="btn outline"
             onClick={onCancel}
           >
             {cancelText}
           </button>
-          <button 
+          <button
             ref={confirmBtnRef}
-            className="btn primary" 
+            className="btn primary"
             onClick={onConfirm}
           >
             {confirmText}
