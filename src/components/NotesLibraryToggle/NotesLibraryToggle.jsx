@@ -2,12 +2,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./NotesLibraryToggle.css";
 
-function NotesLibraryToggle({ setShowLibrary }) {
+function NotesLibraryToggle() {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate("/notes");
-    setShowLibrary(true);
+    navigate("/notes-library");
   };
 
   return (
