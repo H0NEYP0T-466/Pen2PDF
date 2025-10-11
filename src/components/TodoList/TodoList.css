@@ -372,7 +372,7 @@
   background: transparent !important;
 }
 
-/* Existing button styles from App.css are inherited */
+
 .btn {
   padding: 10px 16px;
   border-radius: 6px;
@@ -426,7 +426,7 @@
   filter: brightness(1.07); 
 }
 
-/* Responsive design */
+
 @media (max-width: 768px) {
   .todo-container {
     padding: 16px;

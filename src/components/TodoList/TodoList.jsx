@@ -14,9 +14,9 @@ function TodoList() {
   const [newSubTodoText, setNewSubTodoText] = useState('');
   const [expandedCards, setExpandedCards] = useState(new Set());
 
-  // Fetch all todos on component mount
+  
   useEffect(() => {
-    // Add some mock data for testing when backend is not available
+    
     const mockData = [
       {
         _id: 'mock1',
@@ -40,7 +40,7 @@ function TodoList() {
       }
     ];
     
-    // Try to fetch from backend first, if it fails use mock data
+    
     fetchTodos().catch(() => {
       setTodoCards(mockData);
       setLoading(false);
@@ -54,10 +54,10 @@ function TodoList() {
       if (response.data.success) {
         setTodoCards(response.data.data);
       }
-    } catch (error) {
-      console.error('Error fetching todos:', error);
+    } catch {
+      
       setError('Using mock data - backend not available');
-      // Don't throw error here so mock data can be used
+      
       throw error;
     } finally {
       setLoading(false);
@@ -65,7 +65,7 @@ function TodoList() {
   };
 
   const createNewCard = async () => {
-    // Create an empty card for inline editing
+    
     const newCard = {
       _id: 'temp-' + Date.now(),
       title: '',
@@ -79,7 +79,7 @@ function TodoList() {
 
   const saveNewCard = async (tempId) => {
     if (!newCardTitle.trim()) {
-      // Remove the empty card if no title
+      
       setTodoCards(prev => prev.filter(card => card._id !== tempId));
       setEditingCard(null);
       setNewCardTitle('');
@@ -97,10 +97,10 @@ function TodoList() {
         setEditingCard(null);
         setNewCardTitle('');
       }
-    } catch (error) {
-      console.error('Error creating todo card:', error);
+    } catch {
+      
       setError('Failed to create todo card');
-      // Remove the temporary card on error
+      
       setTodoCards(prev => prev.filter(card => card._id !== tempId));
       setEditingCard(null);
       setNewCardTitle('');
@@ -108,7 +108,7 @@ function TodoList() {
   };
 
   const deleteCard = async (cardId) => {
-    // Handle temporary cards (those created locally but not saved to backend)
+    
     if (cardId.startsWith('temp-')) {
       setTodoCards(prev => prev.filter(card => card._id !== cardId));
       return;
@@ -119,14 +119,14 @@ function TodoList() {
       if (response.data.success) {
         setTodoCards(prev => prev.filter(card => card._id !== cardId));
       }
-    } catch (error) {
-      console.error('Error deleting card:', error);
+    } catch {
+      
       setError('Failed to delete card');
     }
   };
 
   const addSubTodo = async (cardId) => {
-    // Add empty sub-todo for inline editing
+    
     const tempSubTodo = {
       _id: 'temp-subtodo-' + Date.now(),
       text: '',
@@ -145,7 +145,7 @@ function TodoList() {
 
   const saveNewSubTodo = async (cardId, tempSubTodoId) => {
     if (!newSubTodoText.trim()) {
-      // Remove empty sub-todo
+      
       setTodoCards(prev => prev.map(card => 
         card._id === cardId 
           ? { ...card, subTodos: card.subTodos.filter(st => st._id !== tempSubTodoId) }
@@ -167,10 +167,10 @@ function TodoList() {
         setEditingSubTodo(null);
         setNewSubTodoText('');
       }
-    } catch (error) {
-      console.error('Error adding sub-todo:', error);
+    } catch {
+      
       setError('Failed to add sub-todo');
-      // Remove temp sub-todo on error
+      
       setTodoCards(prev => prev.map(card => 
         card._id === cardId 
           ? { ...card, subTodos: card.subTodos.filter(st => st._id !== tempSubTodoId) }
@@ -189,14 +189,14 @@ function TodoList() {
           card._id === cardId ? response.data.data : card
         ));
       }
-    } catch (error) {
-      console.error('Error updating sub-todo:', error);
+    } catch {
+      
       setError('Failed to update sub-todo');
     }
   };
 
   const deleteSubTodo = async (cardId, subTodoId) => {
-    // Handle temporary subtodos (those created locally but not saved to backend)
+    
     if (subTodoId.startsWith('temp-')) {
       setTodoCards(prev => prev.map(card => 
         card._id === cardId 
@@ -213,8 +213,8 @@ function TodoList() {
           card._id === cardId ? response.data.data : card
         ));
       }
-    } catch (error) {
-      console.error('Error deleting sub-todo:', error);
+    } catch {
+      
       setError('Failed to delete sub-todo');
     }
   };
@@ -242,8 +242,8 @@ function TodoList() {
         setEditingSubTodo(null);
         setNewSubTodoText('');
       }
-    } catch (error) {
-      console.error('Error updating sub-todo:', error);
+    } catch {
+      
       setError('Failed to update sub-todo');
     }
   };
@@ -267,7 +267,7 @@ function TodoList() {
           card._id === cardId ? response.data.data : card
         ));
       } else {
-        // Fallback local update if API returns success: false
+        
         setTodoCards(prev => prev.map(card => 
           card._id === cardId 
             ? {
@@ -282,7 +282,7 @@ function TodoList() {
         ));
       }
     } catch {
-      // For mock data or network errors, update locally
+      
       setTodoCards(prev => prev.map(card => 
         card._id === cardId 
           ? {
@@ -315,12 +315,12 @@ function TodoList() {
     const isExpanded = expandedCards.has(card._id);
     
     if (isExpanded) {
-      // Show all todos when expanded
+      
       return subTodos;
     } else {
-      // Show only first 4 todos plus all pinned ones when collapsed
+      
       const pinnedTodos = subTodos.filter(todo => todo.pinned);
-      const unpinnedLimit = Math.max(0, 4 - pinnedTodos.length); // prevent negative slicing
+      const unpinnedLimit = Math.max(0, 4 - pinnedTodos.length); 
       const unpinnedTodos = subTodos.filter(todo => !todo.pinned).slice(0, unpinnedLimit);
       return [...pinnedTodos, ...unpinnedTodos];
     }
@@ -349,13 +349,13 @@ function TodoList() {
         setEditingCard(null);
         setNewCardTitle('');
       }
-    } catch (error) {
-      console.error('Error updating card title:', error);
+    } catch {
+      
       setError('Failed to update card title');
     }
   };
 
-  // Updated: Accept cardId to handle temp-cancel by removing the temp card
+  
   const cancelCardTitleEdit = (cardId) => {
     if (cardId && cardId.startsWith('temp-')) {
       setTodoCards(prev => prev.filter(card => card._id !== cardId));
@@ -424,20 +424,20 @@ function TodoList() {
                         }
                       }}
                       onBlur={() => {
-                        // Auto-delete empty main todos when user clicks elsewhere
+                        
                         setTimeout(() => {
                           if (card._id.startsWith('temp-') && !newCardTitle.trim()) {
-                            // Remove empty temp card
+                            
                             setTodoCards(prev => prev.filter(c => c._id !== card._id));
                             setEditingCard(null);
                             setNewCardTitle('');
                           } else if (newCardTitle.trim()) {
-                            // Save non-empty cards
+                            
                             card._id.startsWith('temp-') 
                               ? saveNewCard(card._id)
                               : saveCardTitleEdit(card._id);
                           }
-                        }, 100); // Small delay to allow button clicks to register
+                        }, 100); 
                       }}
                     />
                     <div className="edit-actions">
@@ -512,10 +512,10 @@ function TodoList() {
                                 }
                               }}
                               onBlur={() => {
-                                // Auto-delete empty todos when user clicks elsewhere
+                                
                                 setTimeout(() => {
                                   if (subTodo._id.startsWith('temp-') && !newSubTodoText.trim()) {
-                                    // Remove empty temp subtodo
+                                    
                                     setTodoCards(prev => prev.map(card => 
                                       card._id === card._id 
                                         ? { ...card, subTodos: card.subTodos.filter(st => st._id !== subTodo._id) }
@@ -524,12 +524,12 @@ function TodoList() {
                                     setEditingSubTodo(null);
                                     setNewSubTodoText('');
                                   } else {
-                                    // Save non-empty todos
+                                    
                                     subTodo._id.startsWith('temp-') 
                                       ? saveNewSubTodo(card._id, subTodo._id)
                                       : saveSubTodoEdit(card._id, subTodo._id);
                                   }
-                                }, 100); // Small delay to allow button clicks to register
+                                }, 100); 
                               }}
                             />
                             <div className="edit-actions">

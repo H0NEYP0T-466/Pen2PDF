@@ -1,4 +1,4 @@
-/* AI Assistant Toggle - Fixed at bottom-right corner */
+
 .ai-assistant-toggle {
   position: fixed;
   bottom: 20px;
@@ -40,7 +40,7 @@
   font-size: 20px;
 }
 
-/* Mobile Responsiveness */
+
 @media (max-width: 640px) {
   .ai-assistant-toggle {
     bottom: 12px;

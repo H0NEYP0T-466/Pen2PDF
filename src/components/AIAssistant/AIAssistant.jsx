@@ -6,22 +6,20 @@ import markedKatex from "marked-katex-extension";
 import html2pdf from 'html2pdf.js';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import 'katex/dist/katex.min.css';
+import ConfirmDialog from '../ui/ConfirmDialog';
+import PromptDialog from '../ui/PromptDialog';
 import './AIAssistant.css';
+
+/* eslint-disable no-empty */
+
+
 
 marked.use(markedKatex({
   throwOnError: false,
   nonStandard: true
 }));
 
-/*
- * AI Assistant (Bella) Component
- * - CLI-style chat interface
- * - Model selection: LongCat and Gemini models
- * - File upload for Gemini models only
- * - Context panel to select notes as context
- * - Persistent chat history
- * - Markdown and LaTeX rendering support
- */
+
 
 function AIAssistant() {
   const navigate = useNavigate();
@@ -39,6 +37,10 @@ function AIAssistant() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNotes, setSelectedNotes] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [clearChatDialogOpen, setClearChatDialogOpen] = useState(false);
+  const [saveNoteDialogOpen, setSaveNoteDialogOpen] = useState(false);
+  const [noteContentToSave, setNoteContentToSave] = useState('');
+  const [saveError, setSaveError] = useState('');
 
   const models = [
     { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false },
@@ -49,7 +51,7 @@ function AIAssistant() {
 
   const currentModel = models.find(m => m.value === selectedModel);
 
-  // Lock page scroll only while this component is mounted
+  
   useEffect(() => {
     document.body.classList.add('no-scroll');
     return () => {
@@ -57,13 +59,13 @@ function AIAssistant() {
     };
   }, []);
 
-  // Load chat history and notes on mount
+  
   useEffect(() => {
     loadChatHistory();
     loadNotes();
   }, []);
 
-  // Auto-scroll only the messages container to bottom when new messages arrive or loading state changes
+  
   useEffect(() => {
     const el = messagesContainerRef.current;
     if (!el) return;
@@ -72,7 +74,7 @@ function AIAssistant() {
     });
   }, [messages, loading]);
 
-  // Filter notes based on search query
+  
   useEffect(() => {
     if (searchQuery.trim()) {
       setFilteredNotes(
@@ -86,7 +88,7 @@ function AIAssistant() {
     }
   }, [searchQuery, notes]);
 
-  // Load chat history from backend (last 50 messages only)
+  
   const loadChatHistory = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/chat');
@@ -96,12 +98,9 @@ function AIAssistant() {
           setSelectedModel(response.data.data.currentModel);
         }
       }
-    } catch (error) {
-      console.error('Error loading chat history:', error);
-    }
+    } catch {  }
   };
 
-  // Load notes from backend
   const loadNotes = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/notes');
@@ -109,12 +108,10 @@ function AIAssistant() {
         setNotes(response.data.data || []);
         setFilteredNotes(response.data.data || []);
       }
-    } catch (error) {
-      console.error('Error loading notes:', error);
-    }
+    } catch {  }
   };
 
-  // Toggle note selection
+  
   const toggleNoteSelection = (note) => {
     const isSelected = selectedNotes.find(n => n.noteId === note._id);
     if (isSelected) {
@@ -128,13 +125,13 @@ function AIAssistant() {
     }
   };
 
-  // Render markdown with LaTeX support
+  
   const renderMarkdown = (content) => {
     const html = marked(content);
     return { __html: html };
   };
 
-  // Handle file upload
+  
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     const newFiles = [];
@@ -159,12 +156,12 @@ function AIAssistant() {
     setUploadedFiles([...uploadedFiles, ...newFiles]);
   };
 
-  // Remove uploaded file
+  
   const removeFile = (index) => {
     setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
   };
 
-  // Send message
+  
   const sendMessage = async () => {
     if (!inputMessage.trim() && uploadedFiles.length === 0) return;
 
@@ -191,7 +188,7 @@ function AIAssistant() {
       });
 
       if (response.data.success) {
-        // Re-fetch to get the latest messages including the assistant's response
+        
         const chatResponse = await axios.get('http://localhost:8000/api/chat');
         if (chatResponse.data.success) {
           let updatedMessages = chatResponse.data.data.messages || [];
@@ -201,9 +198,7 @@ function AIAssistant() {
           setMessages(updatedMessages);
         }
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setMessages([...messages, userMessage, {
+    } catch {      setMessages([...messages, userMessage, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: 'Sorry, I encountered an error processing your request. Please try again.',
@@ -215,7 +210,7 @@ function AIAssistant() {
     }
   };
 
-  // Handle Enter key to send message
+  
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -223,35 +218,39 @@ function AIAssistant() {
     }
   };
 
-  // Clear chat history
   const clearChat = async () => {
-    if (window.confirm('Are you sure you want to clear the chat history?')) {
-      try {
-        await axios.delete('http://localhost:8000/api/chat');
-        setMessages([]);
-      } catch (error) {
-        console.error('Error clearing chat:', error);
-      }
-    }
+    setClearChatDialogOpen(true);
   };
 
-  // Copy response to clipboard
+  const handleClearChatConfirm = async () => {
+    try {
+      await axios.delete('http://localhost:8000/api/chat');
+      setMessages([]);
+    } catch {
+    }
+
+    setClearChatDialogOpen(false);
+  };
+
+  const handleClearChatCancel = () => {
+    setClearChatDialogOpen(false);
+  };
+
   const copyResponse = async (content) => {
     try {
       await navigator.clipboard.writeText(content);
-    } catch (error) {
-      console.error('Error copying to clipboard:', error);
+    } catch {
     }
+
   };
 
-  // Export response to PDF
   const exportToPDF = async (content, messageId) => {
     try {
       const html = marked(content);
       const element = document.createElement('div');
       element.className = 'printable-light pdf-page';
 
-      // Get KaTeX CSS from the stylesheet
+      
       const katexCSS = Array.from(document.styleSheets)
         .filter(sheet => {
           try {
@@ -303,12 +302,9 @@ function AIAssistant() {
       };
 
       await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-      console.error('Error exporting to PDF:', error);
-    }
+    } catch {  }
   };
 
-  // Export response to Word (DOCX)
   const exportToWord = async (content, messageId) => {
     try {
       const lines = content.split('\n');
@@ -359,35 +355,49 @@ function AIAssistant() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error exporting to Word:', error);
-    }
+    } catch {  }
   };
 
   const saveToNotes = async (content) => {
+    setNoteContentToSave(content);
+    setSaveNoteDialogOpen(true);
+  };
+
+  const handleSaveNoteConfirm = async (title) => {
+    if (!title || !title.trim()) {
+      setSaveNoteDialogOpen(false);
+      return;
+    }
+
     try {
-      const title = prompt('Enter a title for this note:');
-      if (!title) return;
       const noteData = {
-        title: title,
-        generatedNotes: content,
+        title: title.trim(),
+        generatedNotes: noteContentToSave,
         modelUsed: 'AI Assistant',
         originalFiles: []
       };
       const response = await axios.post('http://localhost:8000/api/notes', noteData);
       if (response.data.success) {
-        alert('Note saved successfully!');
         loadNotes();
+        setSaveError('');
+      } else {
+        setSaveError('Failed to save to notes');
       }
-    } catch (error) {
-      console.error('Error saving to notes:', error);
-      alert('Failed to save to notes');
+    } catch {
+      setSaveError('Failed to save to notes');
     }
+    setSaveNoteDialogOpen(false);
+    setNoteContentToSave('');
+  };
+
+  const handleSaveNoteCancel = () => {
+    setSaveNoteDialogOpen(false);
+    setNoteContentToSave('');
+    setSaveError('');
   };
 
   return (
     <div className="ai-assistant-container">
-      {/* Header */}
       <div className="ai-header">
         <div className="header-left">
           <button className="back-btn" onClick={() => navigate('/')} title="Back to main page">←</button>
@@ -402,7 +412,6 @@ function AIAssistant() {
       </div>
 
       <div className="ai-content">
-        {/* Context Panel */}
         {showContextPanel && (
           <div className="context-panel">
             <h3>Notes Context</h3>
@@ -443,7 +452,6 @@ function AIAssistant() {
           </div>
         )}
 
-        {/* Chat Area */}
         <div className="chat-area">
           <div className="messages-container" ref={messagesContainerRef}>
             {messages.length === 0 ? (
@@ -557,6 +565,43 @@ function AIAssistant() {
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        open={clearChatDialogOpen}
+        title="Clear Chat History"
+        message="Are you sure you want to clear the chat history?"
+        confirmText="Clear"
+        cancelText="Cancel"
+        onConfirm={handleClearChatConfirm}
+        onCancel={handleClearChatCancel}
+      />
+
+      <PromptDialog
+        open={saveNoteDialogOpen}
+        title="Save to Notes"
+        message="Enter a title for this note:"
+        placeholder="Note title"
+        defaultValue=""
+        confirmText="Save"
+        cancelText="Cancel"
+        onConfirm={handleSaveNoteConfirm}
+        onCancel={handleSaveNoteCancel}
+      />
+
+      {saveError && (
+        <div className="error-toast" style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#ef4444',
+          color: 'white',
+          padding: '12px 16px',
+          borderRadius: '6px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          zIndex: 10001
+        }}>
+          {saveError}
+        </div>
+      )}
     </div>
   );
 }

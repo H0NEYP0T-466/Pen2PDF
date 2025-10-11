@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import './Timetable.css';
 
 function Timetable() {
@@ -21,6 +22,9 @@ function Timetable() {
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [importError, setImportError] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState(null);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Sat/Sun'];
   const classTypes = ['Theory', 'Lab'];
@@ -36,8 +40,8 @@ function Timetable() {
       if (response.data.success) {
         setTimetableEntries(response.data.data);
       }
-    } catch (error) {
-      console.error('Error fetching timetable entries:', error);
+    } catch {
+      
       setError('Failed to fetch timetable entries. Make sure the backend server is running.');
     } finally {
       setLoading(false);
@@ -60,8 +64,8 @@ function Timetable() {
         });
         setShowAddForm(false);
       }
-    } catch (error) {
-      console.error('Error adding entry:', error);
+    } catch {
+      
       setError('Failed to add timetable entry');
     }
   };
@@ -75,38 +79,57 @@ function Timetable() {
         ));
         setEditingEntry(null);
       }
-    } catch (error) {
-      console.error('Error updating entry:', error);
+    } catch {
+      
       setError('Failed to update timetable entry');
     }
   };
 
   const handleDeleteEntry = async (id) => {
-    if (window.confirm('Are you sure you want to delete this entry?')) {
-      try {
-        const response = await axios.delete(`http://localhost:8000/api/timetable/${id}`);
-        if (response.data.success) {
-          setTimetableEntries(timetableEntries.filter(entry => entry._id !== id));
-        }
-      } catch (error) {
-        console.error('Error deleting entry:', error);
-        setError('Failed to delete timetable entry');
+    setEntryToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!entryToDelete) return;
+
+    try {
+      const response = await axios.delete(`http://localhost:8000/api/timetable/${entryToDelete}`);
+      if (response.data.success) {
+        setTimetableEntries(timetableEntries.filter(entry => entry._id !== entryToDelete));
       }
+    } catch {
+      setError('Failed to delete timetable entry');
+    } finally {
+      setDeleteDialogOpen(false);
+      setEntryToDelete(null);
     }
   };
 
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setEntryToDelete(null);
+  };
+
   const handleDeleteAll = async () => {
-    if (window.confirm('Are you sure you want to delete the entire timetable? This action cannot be undone.')) {
-      try {
-        const response = await axios.delete('http://localhost:8000/api/timetable');
-        if (response.data.success) {
-          setTimetableEntries([]);
-        }
-      } catch (error) {
-        console.error('Error deleting all entries:', error);
-        setError('Failed to delete all timetable entries');
+    setDeleteAllDialogOpen(true);
+  };
+
+  const handleDeleteAllConfirm = async () => {
+    try {
+      const response = await axios.delete('http://localhost:8000/api/timetable');
+      if (response.data.success) {
+        setTimetableEntries([]);
       }
+    } catch {
+      setError('Failed to delete all timetable entries');
+    } finally {
+      setDeleteAllDialogOpen(false);
     }
+  };
+
+  const handleDeleteAllCancel = () => {
+    setDeleteAllDialogOpen(false);
   };
 
   const handleFileUpload = (event) => {
@@ -122,7 +145,7 @@ function Timetable() {
     }
 
     if (fileExtension === 'csv') {
-      // Handle CSV files with Papa Parse
+      
       Papa.parse(file, {
         header: true,
         complete: (results) => {
@@ -133,35 +156,35 @@ function Timetable() {
         }
       });
     } else {
-      // Handle Excel files with xlsx
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
           
-          // Get the first worksheet
+          
           const worksheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[worksheetName];
           
-          // Convert to JSON
+          
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           processFileData(jsonData);
-        } catch (error) {
+        } catch {
           setImportError('Error parsing Excel file: ' + error.message);
         }
       };
       reader.readAsArrayBuffer(file);
     }
 
-    // Reset file input
+    
     event.target.value = '';
   };
 
   const processFileData = (data) => {
     setImportError('');
     
-    // Validate data structure
+    
     const requiredHeaders = ['Subject Name', 'Teacher Name', 'Class Number', 'Class Type', 'Timings', 'Day'];
     const headers = Object.keys(data[0] || {});
     
@@ -171,9 +194,9 @@ function Timetable() {
       return;
     }
 
-    // Transform data to match backend schema
+    
     const transformedData = data
-      .filter(row => row['Subject Name'] && row['Teacher Name']) // Filter empty rows
+      .filter(row => row['Subject Name'] && row['Teacher Name']) 
       .map(row => ({
         subjectName: row['Subject Name'],
         teacherName: row['Teacher Name'],
@@ -199,8 +222,8 @@ function Timetable() {
         setImportError('');
         alert(`Successfully imported ${response.data.data.length} entries`);
       }
-    } catch (error) {
-      console.error('Error importing data:', error);
+    } catch {
+      
       if (error.response?.data?.details) {
         setImportError(`Import failed: ${error.response.data.details.join(', ')}`);
       } else {
@@ -496,6 +519,26 @@ function Timetable() {
         </p>
       </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Delete Entry"
+        message="Are you sure you want to delete this entry?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
+
+      <ConfirmDialog
+        open={deleteAllDialogOpen}
+        title="Delete All Entries"
+        message="Are you sure you want to delete the entire timetable? This action cannot be undone."
+        confirmText="Delete All"
+        cancelText="Cancel"
+        onConfirm={handleDeleteAllConfirm}
+        onCancel={handleDeleteAllCancel}
+      />
     </div>
   );
 }

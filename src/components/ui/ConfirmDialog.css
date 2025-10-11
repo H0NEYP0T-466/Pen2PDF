@@ -1,0 +1,99 @@
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dialog-content {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 320px;
+  max-width: 500px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.dialog-content h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.dialog-message {
+  margin: 0 0 20px 0;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.dialog-actions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.dialog-actions .btn.outline {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.dialog-actions .btn.outline:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.dialog-actions .btn.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.dialog-actions .btn.primary:hover {
+  background: #2563eb;
+}
+
+.dialog-actions .btn.primary:focus,
+.dialog-actions .btn.outline:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from 'marked-katex-extension';
@@ -8,15 +8,15 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } fro
 import 'katex/dist/katex.min.css';
 import './Notes.css';
 
-// Configure marked to use KaTeX extension for LaTeX math rendering
 marked.use(markedKatex({
   throwOnError: false,
   output: 'html',
-  nonStandard: true  // Allow parsing without spaces around $ delimiters
+  nonStandard: true
 }));
 
 function Notes() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [files, setFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [extracted, setExtracted] = useState(false);
@@ -25,16 +25,22 @@ function Notes() {
   const [error, setError] = useState('');
   const [replaceWith, setReplaceWith] = useState('');
   const [fileName, setFileName] = useState('study-notes');
-  const [showLibrary, setShowLibrary] = useState(false);
-  const [savedNotes, setSavedNotes] = useState([]);
   const [modelUsed, setModelUsed] = useState('');
-  const [notesSearchQuery, setNotesSearchQuery] = useState('');
 
   const textareaRef = useRef(null);
 
   const acceptMime = "image/*,.pdf,.ppt,.pptx,.txt,.md,.markdown";
 
-  // Lock body scroll when extracted screen active
+  useEffect(() => {
+    if (location.state?.extracted) {
+      setExtracted(true);
+      setExtractedText(location.state.extractedText || '');
+      setFileName(location.state.fileName || 'study-notes');
+      setModelUsed(location.state.modelUsed || '');
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   useEffect(() => {
     if (extracted) {
       document.documentElement.style.overflow = "hidden";
@@ -49,7 +55,6 @@ function Notes() {
     };
   }, [extracted]);
 
-  // Cleanup object URLs
   useEffect(() => {
     return () => {
       files.forEach((f) => {
@@ -57,22 +62,6 @@ function Notes() {
       });
     };
   }, [files]);
-
-  // Load saved notes on component mount
-  useEffect(() => {
-    fetchSavedNotes();
-  }, []);
-
-  const fetchSavedNotes = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/notes');
-      if (response.data.success) {
-        setSavedNotes(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching saved notes:', error);
-    }
-  };
 
   const handleDragEnter = (e) => {
     e.preventDefault();
@@ -167,8 +156,7 @@ function Notes() {
       } else {
         setError(response.data.error || 'Failed to generate notes');
       }
-    } catch (error) {
-      console.error('Notes generation error:', error);
+    } catch {
       setError('Failed to generate notes. Please try again.');
     } finally {
       setLoading(false);
@@ -184,7 +172,7 @@ function Notes() {
       formData.append(`files`, file);
     });
     
-    // Add retry instruction
+    
     formData.append('retryInstruction', 'The user didn\'t like the previous result. Please make this better with more detailed and comprehensive notes.');
 
     try {
@@ -199,8 +187,7 @@ function Notes() {
       } else {
         setError(response.data.error || 'Failed to regenerate notes');
       }
-    } catch (error) {
-      console.error('Notes regeneration error:', error);
+    } catch {
       setError('Failed to regenerate notes. Please try again.');
     } finally {
       setLoading(false);
@@ -212,6 +199,7 @@ function Notes() {
     setExtractedText('');
     setError('');
     setModelUsed('');
+    setFiles([]);
   };
 
   const replaceSelection = () => {
@@ -240,7 +228,7 @@ function Notes() {
       const element = document.createElement('div');
       element.className = 'printable-light pdf-page';
       
-      // Get KaTeX CSS from the stylesheet
+      
       const katexCSS = Array.from(document.styleSheets)
         .filter(sheet => {
           try {
@@ -378,7 +366,7 @@ function Notes() {
       `;
 
       const opt = {
-        margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
+        margin: [34, 34, 34, 34], 
         filename: `${fileName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
@@ -390,8 +378,7 @@ function Notes() {
       };
 
       await html2pdf().set(opt).from(element).save();
-    } catch (e) {
-      console.error('PDF generation failed:', e);
+    } catch {
       setError('Failed to generate PDF.');
     }
   };
@@ -407,13 +394,12 @@ function Notes() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error('Markdown download failed:', e);
+    } catch {
       setError('Failed to download markdown.');
     }
   };
 
-  // Updated: Use the same DOCX generation logic as AI Assistant
+  
   const handleDownloadWord = async () => {
     try {
       const lines = extractedText.split('\n');
@@ -510,8 +496,7 @@ function Notes() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error('Word download failed:', e);
+    } catch {
       setError('Failed to download Word document.');
     }
   };
@@ -532,124 +517,13 @@ function Notes() {
 
       if (response.data.success) {
         setError('');
-        alert('Notes saved to library successfully!');
-        fetchSavedNotes();
       } else {
         setError('Failed to save notes');
       }
-    } catch (error) {
-      console.error('Error saving notes:', error);
+    } catch {
       setError('Failed to save notes');
     }
   };
-
-  const deleteNote = async (noteId) => {
-    if (!window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const response = await axios.delete(`http://localhost:8000/api/notes/${noteId}`);
-      
-      if (response.data.success) {
-        // Remove the deleted note from the local state
-        setSavedNotes(prev => prev.filter(note => note._id !== noteId));
-        // Optional: Show success message
-        // alert('Note deleted successfully!');
-      } else {
-        setError('Failed to delete note');
-      }
-    } catch (error) {
-      console.error('Error deleting note:', error);
-      setError('Failed to delete note');
-    }
-  };
-
-  if (showLibrary) {
-    // Filter notes based on search query
-    const filteredNotes = notesSearchQuery.trim()
-      ? savedNotes.filter(note =>
-          note.title.toLowerCase().includes(notesSearchQuery.toLowerCase()) ||
-          note.generatedNotes.toLowerCase().includes(notesSearchQuery.toLowerCase())
-        )
-      : savedNotes;
-
-    return (
-      <div className="notes-container">
-        <div className="notes-header">
-          <div className="header-left">
-            <button 
-              className="back-btn"
-              onClick={() => navigate('/')}
-              title="Back to main page"
-            >
-              ←
-            </button>
-            <h1>Notes Library</h1>
-          </div>
-          <button 
-            className="btn outline"
-            onClick={() => setShowLibrary(false)}
-          >
-            New Notes
-          </button>
-        </div>
-
-        <div className="notes-search-container">
-          <input
-            type="text"
-            placeholder="Search Notes..."
-            value={notesSearchQuery}
-            onChange={(e) => setNotesSearchQuery(e.target.value)}
-            className="notes-search-input"
-          />
-        </div>
-
-        <div className="library-grid">
-          {filteredNotes.length === 0 ? (
-            <div className="empty-state">
-              <p>{notesSearchQuery.trim() ? 'No notes found matching your search.' : 'No saved notes yet. Create your first study notes!'}</p>
-            </div>
-          ) : (
-            filteredNotes.map(note => (
-              <div key={note._id} className="note-card">
-                <h3>{note.title}</h3>
-                <p className="note-meta">
-                  Created: {new Date(note.createdAt).toLocaleDateString()}
-                </p>
-                <p className="note-meta">
-                  Files: {note.originalFiles?.join(', ') || 'N/A'}
-                </p>
-                <p className="note-meta">
-                  Model: {note.modelUsed}
-                </p>
-                <div className="note-actions">
-                  <button 
-                    className="btn outline small"
-                    onClick={() => {
-                      setExtractedText(note.generatedNotes);
-                      setFileName(note.title);
-                      setModelUsed(note.modelUsed);
-                      setExtracted(true);
-                      setShowLibrary(false);
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    className="btn danger small"
-                    onClick={() => deleteNote(note._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="notes-container">
@@ -736,13 +610,6 @@ function Notes() {
               onClick={startBlankDocument}
             >
               Start with Empty Document
-            </button>
-
-            <button
-              className="btn subtle block"
-              onClick={() => setShowLibrary(true)}
-            >
-              View Notes Library
             </button>
           </div>
 

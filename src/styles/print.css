@@ -1,4 +1,4 @@
-/* Print-safe CSS for PDF generation */
+
 @page {
   margin: 12mm;
 }
@@ -7,7 +7,7 @@
   padding: 8mm;
 }
 
-/* Prevent word breaking and control text flow */
+
 body, p, li, h1, h2, h3, h4, h5, h6 {
   word-break: normal;
   overflow-wrap: normal;
@@ -20,7 +20,7 @@ body, p, li, h1, h2, h3, h4, h5, h6 {
   text-justify: inter-word;
 }
 
-/* Stronger word protection for all text elements */
+
 * {
   word-break: normal !important;
   overflow-wrap: normal !important;
@@ -31,40 +31,40 @@ body, p, li, h1, h2, h3, h4, h5, h6 {
   -ms-hyphens: none !important;
 }
 
-/* Prevent orphaned elements and bad page breaks */
+
 h1, h2, h3, h4, h5, h6, img, table, pre, blockquote {
   break-inside: avoid;
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid;
 }
 
-/* Keep headings with following content */
+
 h1, h2, h3, h4, h5, h6 {
   break-after: avoid;
   page-break-after: avoid;
   -webkit-column-break-after: avoid;
 }
 
-/* Orphan and widow control */
+
 p {
   orphans: 2;
   widows: 2;
 }
 
-/* Utility class for forcing page breaks */
+
 .page-break {
   break-before: page;
   page-break-before: always;
 }
 
-/* Avoid breaking these elements */
+
 .avoid-break {
   break-inside: avoid;
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid;
 }
 
-/* Watermark positioning for manual implementation */
+
 .watermark {
   position: absolute;
   bottom: 12mm;
