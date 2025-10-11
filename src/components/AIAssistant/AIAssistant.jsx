@@ -398,7 +398,6 @@ function AIAssistant() {
 
   return (
     <div className="ai-assistant-container">
-      {}
       <div className="ai-header">
         <div className="header-left">
           <button className="back-btn" onClick={() => navigate('/')} title="Back to main page">←</button>
@@ -413,7 +412,6 @@ function AIAssistant() {
       </div>
 
       <div className="ai-content">
-        {}
         {showContextPanel && (
           <div className="context-panel">
             <h3>Notes Context</h3>
@@ -454,7 +452,6 @@ function AIAssistant() {
           </div>
         )}
 
-        {}
         <div className="chat-area">
           <div className="messages-container" ref={messagesContainerRef}>
             {messages.length === 0 ? (
