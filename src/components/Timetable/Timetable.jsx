@@ -145,7 +145,7 @@ function Timetable() {
     }
 
     if (fileExtension === 'csv') {
-      // Handle CSV files with Papa Parse
+      
       Papa.parse(file, {
         header: true,
         complete: (results) => {
@@ -156,18 +156,18 @@ function Timetable() {
         }
       });
     } else {
-      // Handle Excel files with xlsx
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
           
-          // Get the first worksheet
+          
           const worksheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[worksheetName];
           
-          // Convert to JSON
+          
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           processFileData(jsonData);
         } catch {
@@ -177,14 +177,14 @@ function Timetable() {
       reader.readAsArrayBuffer(file);
     }
 
-    // Reset file input
+    
     event.target.value = '';
   };
 
   const processFileData = (data) => {
     setImportError('');
     
-    // Validate data structure
+    
     const requiredHeaders = ['Subject Name', 'Teacher Name', 'Class Number', 'Class Type', 'Timings', 'Day'];
     const headers = Object.keys(data[0] || {});
     
@@ -194,9 +194,9 @@ function Timetable() {
       return;
     }
 
-    // Transform data to match backend schema
+    
     const transformedData = data
-      .filter(row => row['Subject Name'] && row['Teacher Name']) // Filter empty rows
+      .filter(row => row['Subject Name'] && row['Teacher Name']) 
       .map(row => ({
         subjectName: row['Subject Name'],
         teacherName: row['Teacher Name'],

@@ -9,7 +9,7 @@ import "./App.css";
 marked.use(markedKatex({
   throwOnError: false,
   output: 'html',
-  nonStandard: true  // Allow parsing without spaces around $ delimiters
+  nonStandard: true  
 }));
 
 function App() {
@@ -26,7 +26,7 @@ function App() {
 
   const textareaRef = useRef(null);
 
-  // Lock body scroll when extracted screen active
+  
   useEffect(() => {
     if (extracted) {
       document.documentElement.style.overflow = "hidden";
@@ -41,7 +41,7 @@ function App() {
     };
   }, [extracted]);
 
-  // Cleanup object URLs
+  
   useEffect(() => {
     return () => {
       files.forEach((f) => {
@@ -127,7 +127,7 @@ function App() {
   };
 
   const startBlankDocument = () => {
-    // Enter manual mode with an empty document (no backend usage)
+    
     setManualMode(true);
     setExtractedText("");
     setExtracted(true);
@@ -214,7 +214,7 @@ function App() {
     setLoading(true);
     setExtracted(false);
     setExtractedText("");
-    setManualMode(false); // We are using backend extraction now
+    setManualMode(false); 
     try {
       let combined = "";
       for (let i = 0; i < files.length; i++) {
@@ -245,7 +245,7 @@ function App() {
       const el = document.createElement("div");
       el.className = "printable-light pdf-page";
       
-      // Get KaTeX CSS from the stylesheet
+      
       const katexCSS = Array.from(document.styleSheets)
         .filter(sheet => {
           try {
@@ -388,7 +388,7 @@ function App() {
       `;
       document.body.appendChild(el);
       const opt = {
-        margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
+        margin: [34, 34, 34, 34], 
         filename: "Pen2PDF.pdf",
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },

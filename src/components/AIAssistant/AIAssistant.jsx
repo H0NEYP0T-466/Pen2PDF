@@ -12,6 +12,8 @@ import './AIAssistant.css';
 
 /* eslint-disable no-empty */
 
+
+
 marked.use(markedKatex({
   throwOnError: false,
   nonStandard: true
@@ -49,7 +51,7 @@ function AIAssistant() {
 
   const currentModel = models.find(m => m.value === selectedModel);
 
-  // Lock page scroll only while this component is mounted
+  
   useEffect(() => {
     document.body.classList.add('no-scroll');
     return () => {
@@ -57,13 +59,13 @@ function AIAssistant() {
     };
   }, []);
 
-  // Load chat history and notes on mount
+  
   useEffect(() => {
     loadChatHistory();
     loadNotes();
   }, []);
 
-  // Auto-scroll only the messages container to bottom when new messages arrive or loading state changes
+  
   useEffect(() => {
     const el = messagesContainerRef.current;
     if (!el) return;
@@ -72,7 +74,7 @@ function AIAssistant() {
     });
   }, [messages, loading]);
 
-  // Filter notes based on search query
+  
   useEffect(() => {
     if (searchQuery.trim()) {
       setFilteredNotes(
@@ -86,7 +88,7 @@ function AIAssistant() {
     }
   }, [searchQuery, notes]);
 
-  // Load chat history from backend (last 50 messages only)
+  
   const loadChatHistory = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/chat');
@@ -96,7 +98,7 @@ function AIAssistant() {
           setSelectedModel(response.data.data.currentModel);
         }
       }
-    } catch { /* Silent */ }
+    } catch {  }
   };
 
   const loadNotes = async () => {
@@ -106,10 +108,10 @@ function AIAssistant() {
         setNotes(response.data.data || []);
         setFilteredNotes(response.data.data || []);
       }
-    } catch { /* Silent */ }
+    } catch {  }
   };
 
-  // Toggle note selection
+  
   const toggleNoteSelection = (note) => {
     const isSelected = selectedNotes.find(n => n.noteId === note._id);
     if (isSelected) {
@@ -123,13 +125,13 @@ function AIAssistant() {
     }
   };
 
-  // Render markdown with LaTeX support
+  
   const renderMarkdown = (content) => {
     const html = marked(content);
     return { __html: html };
   };
 
-  // Handle file upload
+  
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     const newFiles = [];
@@ -154,12 +156,12 @@ function AIAssistant() {
     setUploadedFiles([...uploadedFiles, ...newFiles]);
   };
 
-  // Remove uploaded file
+  
   const removeFile = (index) => {
     setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
   };
 
-  // Send message
+  
   const sendMessage = async () => {
     if (!inputMessage.trim() && uploadedFiles.length === 0) return;
 
@@ -186,7 +188,7 @@ function AIAssistant() {
       });
 
       if (response.data.success) {
-        // Re-fetch to get the latest messages including the assistant's response
+        
         const chatResponse = await axios.get('http://localhost:8000/api/chat');
         if (chatResponse.data.success) {
           let updatedMessages = chatResponse.data.data.messages || [];
@@ -208,7 +210,7 @@ function AIAssistant() {
     }
   };
 
-  // Handle Enter key to send message
+  
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -248,7 +250,7 @@ function AIAssistant() {
       const element = document.createElement('div');
       element.className = 'printable-light pdf-page';
 
-      // Get KaTeX CSS from the stylesheet
+      
       const katexCSS = Array.from(document.styleSheets)
         .filter(sheet => {
           try {
@@ -300,7 +302,7 @@ function AIAssistant() {
       };
 
       await html2pdf().set(opt).from(element).save();
-    } catch { /* Silent */ }
+    } catch {  }
   };
 
   const exportToWord = async (content, messageId) => {
@@ -353,7 +355,7 @@ function AIAssistant() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch { /* Silent */ }
+    } catch {  }
   };
 
   const saveToNotes = async (content) => {
@@ -396,7 +398,7 @@ function AIAssistant() {
 
   return (
     <div className="ai-assistant-container">
-      {/* Header */}
+      {}
       <div className="ai-header">
         <div className="header-left">
           <button className="back-btn" onClick={() => navigate('/')} title="Back to main page">←</button>
@@ -411,7 +413,7 @@ function AIAssistant() {
       </div>
 
       <div className="ai-content">
-        {/* Context Panel */}
+        {}
         {showContextPanel && (
           <div className="context-panel">
             <h3>Notes Context</h3>
@@ -452,7 +454,7 @@ function AIAssistant() {
           </div>
         )}
 
-        {/* Chat Area */}
+        {}
         <div className="chat-area">
           <div className="messages-container" ref={messagesContainerRef}>
             {messages.length === 0 ? (

@@ -172,7 +172,7 @@ function Notes() {
       formData.append(`files`, file);
     });
     
-    // Add retry instruction
+    
     formData.append('retryInstruction', 'The user didn\'t like the previous result. Please make this better with more detailed and comprehensive notes.');
 
     try {
@@ -228,7 +228,7 @@ function Notes() {
       const element = document.createElement('div');
       element.className = 'printable-light pdf-page';
       
-      // Get KaTeX CSS from the stylesheet
+      
       const katexCSS = Array.from(document.styleSheets)
         .filter(sheet => {
           try {
@@ -366,7 +366,7 @@ function Notes() {
       `;
 
       const opt = {
-        margin: [34, 34, 34, 34], // 12mm converted to pt (12mm ≈ 34pt)
+        margin: [34, 34, 34, 34], 
         filename: `${fileName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
@@ -399,7 +399,7 @@ function Notes() {
     }
   };
 
-  // Updated: Use the same DOCX generation logic as AI Assistant
+  
   const handleDownloadWord = async () => {
     try {
       const lines = extractedText.split('\n');

@@ -6,7 +6,7 @@ function WeekCounter() {
   const [showModal, setShowModal] = useState(false);
   const [manualWeek, setManualWeek] = useState("");
 
-  // Initialize week counter from localStorage or set defaults
+  
   useEffect(() => {
     const initializeWeekCounter = () => {
       const storedWeek = localStorage.getItem("universityWeek");
@@ -16,15 +16,15 @@ function WeekCounter() {
         const startDate = new Date(storedStartDate);
         const now = new Date();
         
-        // Calculate the number of weeks that have passed since start date
+        
         const weeksPassed = Math.floor((now - startDate) / (7 * 24 * 60 * 60 * 1000));
         const calculatedWeek = parseInt(storedWeek) + weeksPassed;
         
         setCurrentWeek(calculatedWeek);
       } else {
-        // First time initialization - set to Week 3 and record the start date
+        
         const now = new Date();
-        // Set to the most recent Monday at 12:00 AM
+        
         const lastMonday = new Date(now);
         lastMonday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
         lastMonday.setHours(0, 0, 0, 0);
@@ -38,7 +38,7 @@ function WeekCounter() {
     initializeWeekCounter();
   }, []);
 
-  // Check for week increment every minute
+  
   useEffect(() => {
     const checkWeekIncrement = () => {
       const storedStartDate = localStorage.getItem("universityWeekStartDate");
@@ -48,7 +48,7 @@ function WeekCounter() {
         const startDate = new Date(storedStartDate);
         const now = new Date();
         
-        // Calculate weeks passed
+        
         const weeksPassed = Math.floor((now - startDate) / (7 * 24 * 60 * 60 * 1000));
         const calculatedWeek = parseInt(storedWeek) + weeksPassed;
         
@@ -58,14 +58,14 @@ function WeekCounter() {
       }
     };
 
-    // Check every minute for week changes
+    
     const interval = setInterval(checkWeekIncrement, 60000);
     return () => clearInterval(interval);
   }, [currentWeek]);
 
   const handleResetWeek = () => {
     const now = new Date();
-    // Set to the most recent Monday at 12:00 AM
+    
     const lastMonday = new Date(now);
     lastMonday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     lastMonday.setHours(0, 0, 0, 0);
@@ -80,7 +80,7 @@ function WeekCounter() {
     const weekNum = parseInt(manualWeek);
     if (!isNaN(weekNum) && weekNum > 0) {
       const now = new Date();
-      // Set to the most recent Monday at 12:00 AM
+      
       const lastMonday = new Date(now);
       lastMonday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
       lastMonday.setHours(0, 0, 0, 0);

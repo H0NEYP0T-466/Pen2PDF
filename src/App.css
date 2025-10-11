@@ -211,7 +211,7 @@ body, html, #root {
   margin-top: 4px;
 }
 
-/* Extracted layout: lock page scroll, only textarea scrolls */
+
 .extracted-panel {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -219,7 +219,7 @@ body, html, #root {
   padding: 18px;
   width: min(1400px, 96vw);
   margin: 0 auto;
-  height: 100vh; /* Full viewport height since navbar removed */
+  height: 100vh; 
   overflow: hidden;
 }
 
@@ -310,7 +310,7 @@ body, html, #root {
 
 .right-panel {
   flex-shrink: 0;
-  overflow: hidden; /* prevent panel scroll */
+  overflow: hidden; 
 }
 
 .input {

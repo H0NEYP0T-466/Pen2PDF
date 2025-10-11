@@ -1,4 +1,4 @@
-/* Notes Library Toggle - Fixed at bottom-right corner, above AI Assistant */
+
 .notes-library-toggle {
   position: fixed;
   bottom: 90px;
@@ -40,7 +40,7 @@
   font-size: 20px;
 }
 
-/* Mobile Responsiveness */
+
 @media (max-width: 640px) {
   .notes-library-toggle {
     bottom: 80px;

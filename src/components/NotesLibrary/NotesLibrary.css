@@ -1,4 +1,4 @@
-/* Notes component styles - Based on existing App.css patterns */
+
 
 .notes-container {
   min-height: 100vh;
@@ -78,7 +78,7 @@
   opacity: 0.6;
 }
 
-/* Upload container styles */
+
 .upload-container {
   padding: 24px;
   max-width: 1200px;
@@ -114,7 +114,7 @@
   display: none;
 }
 
-/* Files section */
+
 .files-section {
   margin: 24px 0;
   padding: 16px;
@@ -168,7 +168,7 @@
   color: var(--accent);
 }
 
-/* Action buttons */
+
 .action-buttons {
   display: flex;
   flex-direction: column;
@@ -176,7 +176,7 @@
   margin-top: 24px;
 }
 
-/* Button styles */
+
 .btn {
   padding: 12px 20px;
   border-radius: 10px;
@@ -249,7 +249,7 @@
   font-size: 12px;
 }
 
-/* Extracted panel styles */
+
 .extracted-panel {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -310,7 +310,7 @@
   background: var(--bg);
 }
 
-/* Right panel options */
+
 .option-group {
   display: flex;
   flex-direction: column;
@@ -355,7 +355,7 @@
   border-top: 1px solid var(--border);
 }
 
-/* Library styles */
+
 .library-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -404,7 +404,7 @@
   color: var(--accent);
 }
 
-/* Error and loading messages */
+
 .error-message {
   background: #fee;
   color: #c33;
@@ -429,7 +429,7 @@
   color: var(--accent);
 }
 
-/* Responsive styles */
+
 @media (max-width: 768px) {
   .extracted-panel {
     grid-template-columns: 1fr;
