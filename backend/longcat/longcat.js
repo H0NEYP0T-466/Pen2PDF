@@ -47,6 +47,12 @@ async function callLongCatAPI(model, message, contextNotes = [], chatHistory = [
 
     console.log('🚀 [LONGCAT] Sending request to model:', model);
     console.log('🌐 [LONGCAT] API endpoint: https://api.longcat.chat/openai/v1/chat/completions');
+     const requestBody = { 
+      model: model,
+      messages: messages,
+      max_tokens: 8192
+    };
+    console.log('🔵 [LONGCAT] Sending API request body:', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch('https://api.longcat.chat/openai/v1/chat/completions', {
       method: 'POST',
@@ -54,11 +60,7 @@ async function callLongCatAPI(model, message, contextNotes = [], chatHistory = [
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify({
-        model: model,
-        messages: messages,
-        max_token: 8192,
-      })
+      body: JSON.stringify(requestBody) 
     });
 
     if (!response.ok) {
@@ -80,7 +82,8 @@ async function callLongCatAPI(model, message, contextNotes = [], chatHistory = [
 
     const responseContent = data.choices[0].message.content || 'I apologize, but I could not generate a response.';
     console.log('✅ [LONGCAT] Response content extracted successfully');
-    console.log('Here is the responce from the model:',{responseContent})
+    console.log('Here is the response from the model:', { responseContent });
+    console.log('📚 [LONGCAT] Context window size:', chatHistory.length, 'messages');
 
     return responseContent;
   } catch (error) {

@@ -76,7 +76,7 @@ const sendMessage = async (req, res) => {
     };
     chat.messages.push(userMessage);
 
-    const contextWindow = chat.messages.slice(-21, -1).map(msg => ({
+    const contextWindow = chat.messages.slice(-11, -1).map(msg => ({
       role: msg.role,
       content: msg.content
     }));
