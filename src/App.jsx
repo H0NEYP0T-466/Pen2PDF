@@ -6,17 +6,6 @@ import markedKatex from 'marked-katex-extension';
 import html2pdf from "html2pdf.js";
 import 'katex/dist/katex.min.css';
 import "./App.css";
-
-/*
-New additions in this version:
-- Added "manualMode" state to distinguish between backend extraction vs manual blank document.
-- Added a "Start with blank document" button on the upload page.
-- Added startBlankDocument() which opens the extracted editor empty (no backend calls).
-- Footer now reflects manual mode.
-- Added KaTeX support for LaTeX math rendering in PDF exports.
-*/
-
-// Configure marked to use KaTeX extension for LaTeX math rendering
 marked.use(markedKatex({
   throwOnError: false,
   output: 'html',
@@ -30,9 +19,10 @@ function App() {
   const [extracted, setExtracted] = useState(false);
   const [extractedText, setExtractedText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [replaceWith, setReplaceWith] = useState("");
-  const [manualMode, setManualMode] = useState(false); // NEW: track manual (blank) mode
+  const [manualMode, setManualMode] = useState(false);
 
   const textareaRef = useRef(null);
 
@@ -178,7 +168,7 @@ function App() {
     const value = extractedText;
     const { start, end } = getSelectionRange();
     if (start === end) {
-      alert("Select some text to bold.");
+      setError("Select some text to bold.");
       return;
     }
     const sel = value.slice(start, end);
@@ -242,12 +232,8 @@ function App() {
       combined = combined.replace(/^\s*Source\s+WhatsApp.*$/gim, "");
       setExtractedText(combined);
       setExtracted(true);
-    } catch (error) {
-      console.error("Extraction error:", error);
-      alert(
-        error?.response?.data?.error ||
-          "Extraction failed for one of the files. Check server logs."
-      );
+    } catch {
+      setError("Extraction failed for one of the files. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -414,9 +400,8 @@ function App() {
       };
       await html2pdf().set(opt).from(el).save();
       document.body.removeChild(el);
-    } catch (e) {
-      console.error("PDF download failed:", e);
-      alert("Failed to generate PDF. See console for details.");
+    } catch {
+      setError("Failed to generate PDF.");
     }
   };
 
@@ -433,9 +418,8 @@ function App() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error("Markdown download failed:", e);
-      alert("Failed to download markdown.");
+    } catch {
+      setError("Failed to download markdown.");
     }
   };
 
@@ -666,6 +650,35 @@ function App() {
               Pen2PDF • {manualMode ? "Manual entry mode (no backend)" : "Spacing normal • Markdown export"}
             </div>
           </div>
+        </div>
+      )}
+      
+      {error && (
+        <div className="error-toast" style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#ef4444',
+          color: 'white',
+          padding: '12px 16px',
+          borderRadius: '6px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          zIndex: 10001
+        }}>
+          {error}
+          <button 
+            onClick={() => setError('')}
+            style={{
+              marginLeft: '12px',
+              background: 'transparent',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '16px'
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
     </div>

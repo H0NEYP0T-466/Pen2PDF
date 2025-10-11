@@ -54,8 +54,8 @@ function TodoList() {
       if (response.data.success) {
         setTodoCards(response.data.data);
       }
-    } catch (error) {
-      console.error('Error fetching todos:', error);
+    } catch {
+      
       setError('Using mock data - backend not available');
       // Don't throw error here so mock data can be used
       throw error;
@@ -97,8 +97,8 @@ function TodoList() {
         setEditingCard(null);
         setNewCardTitle('');
       }
-    } catch (error) {
-      console.error('Error creating todo card:', error);
+    } catch {
+      
       setError('Failed to create todo card');
       // Remove the temporary card on error
       setTodoCards(prev => prev.filter(card => card._id !== tempId));
@@ -119,8 +119,8 @@ function TodoList() {
       if (response.data.success) {
         setTodoCards(prev => prev.filter(card => card._id !== cardId));
       }
-    } catch (error) {
-      console.error('Error deleting card:', error);
+    } catch {
+      
       setError('Failed to delete card');
     }
   };
@@ -167,8 +167,8 @@ function TodoList() {
         setEditingSubTodo(null);
         setNewSubTodoText('');
       }
-    } catch (error) {
-      console.error('Error adding sub-todo:', error);
+    } catch {
+      
       setError('Failed to add sub-todo');
       // Remove temp sub-todo on error
       setTodoCards(prev => prev.map(card => 
@@ -189,8 +189,8 @@ function TodoList() {
           card._id === cardId ? response.data.data : card
         ));
       }
-    } catch (error) {
-      console.error('Error updating sub-todo:', error);
+    } catch {
+      
       setError('Failed to update sub-todo');
     }
   };
@@ -213,8 +213,8 @@ function TodoList() {
           card._id === cardId ? response.data.data : card
         ));
       }
-    } catch (error) {
-      console.error('Error deleting sub-todo:', error);
+    } catch {
+      
       setError('Failed to delete sub-todo');
     }
   };
@@ -242,8 +242,8 @@ function TodoList() {
         setEditingSubTodo(null);
         setNewSubTodoText('');
       }
-    } catch (error) {
-      console.error('Error updating sub-todo:', error);
+    } catch {
+      
       setError('Failed to update sub-todo');
     }
   };
@@ -349,8 +349,8 @@ function TodoList() {
         setEditingCard(null);
         setNewCardTitle('');
       }
-    } catch (error) {
-      console.error('Error updating card title:', error);
+    } catch {
+      
       setError('Failed to update card title');
     }
   };
