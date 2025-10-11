@@ -56,7 +56,8 @@ async function callLongCatAPI(model, message, contextNotes = [], chatHistory = [
       },
       body: JSON.stringify({
         model: model,
-        messages: messages
+        messages: messages,
+        max_token: 8192,
       })
     });
 
