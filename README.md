@@ -254,7 +254,7 @@ This project uses carefully selected packages across frontend and backend to del
 | **vite** | Fast build tool and dev server | Dev - Build Tool |
 | **eslint** | Code linting and quality checks | Dev - Code Quality |
 
-> **Note**: All dependencies are managed through npm. Version numbers shown are current package versions from npm registry. The project uses semantic versioning (^) for flexible updates within major versions.
+> **Note**: All dependencies are managed through npm. Badges display the latest available versions from the npm registry. The project uses semantic versioning (^) for flexible updates within major versions. See `package.json` files for exact version constraints used in this project.
 
 ## 📋 Prerequisites
 
