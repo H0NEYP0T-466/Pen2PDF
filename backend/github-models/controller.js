@@ -119,7 +119,7 @@ async function chat(req, res) {
     }
 
     // Handle file upload if present - validate BEFORE checking PAT
-    let processedMessages = messages;
+    let processedMessages = [...messages];
     if (req.files && req.files.file) {
       const file = req.files.file;
       
@@ -145,7 +145,6 @@ async function chat(req, res) {
       const imageUrl = `data:${file.mimetype};base64,${base64}`;
       
       // Add image to the last user message
-      processedMessages = [...messages];
       const lastUserMsgIndex = processedMessages.map(m => m.role).lastIndexOf('user');
       
       if (lastUserMsgIndex >= 0) {
@@ -199,8 +198,6 @@ async function chat(req, res) {
     const systemInstruction = `You are Isabella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
 
     // Process context notes (same as LongCat/Gemini)
-    let processedMessages = [...messages];
-    
     // Add context notes to the user's message if present
     if (contextNotes && contextNotes.length > 0) {
       console.log('📄 [GITHUB MODELS] Context notes included:', contextNotes.length, 'notes');
@@ -215,10 +212,20 @@ async function chat(req, res) {
       const lastUserMsgIndex = processedMessages.map(m => m.role).lastIndexOf('user');
       if (lastUserMsgIndex >= 0) {
         const originalContent = processedMessages[lastUserMsgIndex].content;
-        processedMessages[lastUserMsgIndex] = {
-          ...processedMessages[lastUserMsgIndex],
-          content: contextText + '\n\n' + originalContent
-        };
+        
+        // Handle both string and multipart content
+        if (typeof originalContent === 'string') {
+          processedMessages[lastUserMsgIndex] = {
+            ...processedMessages[lastUserMsgIndex],
+            content: contextText + '\n\n' + originalContent
+          };
+        } else if (Array.isArray(originalContent)) {
+          // If content is already multipart (has images), prepend context to text part
+          const textPart = originalContent.find(part => part.type === 'text');
+          if (textPart) {
+            textPart.text = contextText + '\n\n' + textPart.text;
+          }
+        }
       }
     }
 
