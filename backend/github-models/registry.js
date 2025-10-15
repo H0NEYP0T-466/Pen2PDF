@@ -10,7 +10,8 @@ const { getFilePolicy, isVisionCapable } = require('./filePolicy');
  * https://github.com/marketplace/models
  */
 const FALLBACK_MODELS = [
-  // OpenAI GPT-4 series
+  // OpenAI GPT series
+  'gpt-5',
   'gpt-4o',
   'gpt-4o-mini',
   'gpt-4-turbo',
@@ -18,6 +19,7 @@ const FALLBACK_MODELS = [
   'gpt-3.5-turbo',
   
   // Anthropic Claude series
+  'claude-3-5-sonnet-4.5',
   'claude-3-5-sonnet-20241022',
   'claude-3-5-sonnet',
   'claude-3-opus-20240229',
