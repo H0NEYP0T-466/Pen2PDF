@@ -24,8 +24,7 @@ const getChatHistory = async (req, res) => {
       console.log(`📚 [CHAT] Retrieved chat history with ${chat.messages.length} messages`);
     }
 
-    // Fetch only last 50 messages for performance
-    const last50Messages = chat.messages.slice(-50);
+    const last50Messages = chat.messages.slice(-30);
     
     res.json({
       success: true,
