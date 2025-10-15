@@ -391,16 +391,19 @@ async function chat(req, res) {
 
       chat.currentModel = model;
 
+      // Extract original user message content (before context was added)
+      const originalUserMessage = messages.find(m => m.role === 'user')?.content || '';
+      
       // Add user message
       const userMsg = {
         id: Date.now().toString(),
         role: 'user',
-        content: typeof userMessage === 'string' ? userMessage : '[multipart message]',
+        content: typeof originalUserMessage === 'string' ? originalUserMessage : '[multipart message]',
         timestamp: new Date(),
-        attachments: req.files ? [{
-          fileName: req.files.file?.name,
-          fileType: req.files.file?.mimetype,
-          fileData: req.files.file ? Buffer.from(req.files.file.data).toString('base64') : ''
+        attachments: req.files && req.files.file ? [{
+          fileName: req.files.file.name,
+          fileType: req.files.file.mimetype,
+          fileData: Buffer.from(req.files.file.data).toString('base64')
         }] : [],
         contextNotes: contextNotes || []
       };
