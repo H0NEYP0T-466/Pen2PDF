@@ -56,12 +56,48 @@ function logChatEvent(level, event, data) {
  */
 async function chat(req, res) {
   try {
-    const { model, messages, temperature, max_tokens } = req.body;
+    let { model, messages, temperature, max_tokens } = req.body;
     
     if (!model || !messages) {
       const error = {
         type: 'validation_error',
         message: 'Missing required fields: model and messages',
+        status: 400
+      };
+      
+      logChatEvent('error', 'validation_error', {
+        model,
+        error: error.message
+      });
+      
+      return res.status(400).json({ error });
+    }
+
+    // Parse messages if it's a JSON string (sent from FormData)
+    if (typeof messages === 'string') {
+      try {
+        messages = JSON.parse(messages);
+      } catch (parseError) {
+        const error = {
+          type: 'validation_error',
+          message: 'Invalid messages format: must be a valid JSON array',
+          status: 400
+        };
+        
+        logChatEvent('error', 'validation_error', {
+          model,
+          error: error.message
+        });
+        
+        return res.status(400).json({ error });
+      }
+    }
+
+    // Validate messages is an array
+    if (!Array.isArray(messages)) {
+      const error = {
+        type: 'validation_error',
+        message: 'Messages must be an array',
         status: 400
       };
       
