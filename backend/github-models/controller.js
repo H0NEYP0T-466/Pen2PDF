@@ -55,23 +55,6 @@ function logChatEvent(level, event, data) {
  * Chat with a GitHub Model
  */
 async function chat(req, res) {
-  const pat = process.env.githubModelsPAT;
-  
-  // Check PAT
-  if (!pat) {
-    const error = {
-      type: 'configuration_error',
-      message: 'GitHub Models PAT not configured. Please set githubModelsPAT in environment.',
-      status: 500
-    };
-    
-    logChatEvent('error', 'validation_error', {
-      error: error.message
-    });
-    
-    return res.status(500).json({ error });
-  }
-
   try {
     const { model, messages, temperature, max_tokens } = req.body;
     
@@ -90,7 +73,7 @@ async function chat(req, res) {
       return res.status(400).json({ error });
     }
 
-    // Handle file upload if present
+    // Handle file upload if present - validate BEFORE checking PAT
     let processedMessages = messages;
     if (req.files && req.files.file) {
       const file = req.files.file;
@@ -137,6 +120,23 @@ async function chat(req, res) {
           ]
         };
       }
+    }
+
+    // NOW check PAT (after file validation)
+    const pat = process.env.githubModelsPAT;
+    
+    if (!pat) {
+      const error = {
+        type: 'configuration_error',
+        message: 'GitHub Models PAT not configured. Please set githubModelsPAT in environment.',
+        status: 500
+      };
+      
+      logChatEvent('error', 'validation_error', {
+        error: error.message
+      });
+      
+      return res.status(500).json({ error });
     }
 
     // Extract user message for logging
