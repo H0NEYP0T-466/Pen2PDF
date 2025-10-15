@@ -179,13 +179,17 @@ async function chat(req, res) {
       }
     });
 
-    // Handle rate limit errors
+    // Handle rate limit errors - don't crash, log and inform user
     if (response.status === 429) {
       const errorText = await response.text();
       
+      console.log(`⚠️ [GITHUB MODELS] Rate limit/quota reached for model: ${model}`);
+      console.log(`   User should switch to a different model`);
+      console.log(`   Error details: ${errorText.substring(0, 200)}`);
+      
       const error = {
         type: 'rate_limit',
-        message: 'Model quota/limit reached. Please switch models.',
+        message: `Model "${model}" has reached its quota or rate limit. Please switch to a different model.`,
         status: 429
       };
       
@@ -200,9 +204,13 @@ async function chat(req, res) {
       return res.status(429).json({ error });
     }
 
-    // Handle other errors
+    // Handle other errors - don't crash, log and inform user
     if (!response.ok) {
       const errorText = await response.text();
+      
+      console.log(`⚠️ [GITHUB MODELS] API error for model: ${model}`);
+      console.log(`   Status: ${response.status} ${response.statusText}`);
+      console.log(`   Error details: ${errorText.substring(0, 200)}`);
       
       const error = {
         type: 'api_error',
@@ -253,6 +261,7 @@ async function chat(req, res) {
 
   } catch (error) {
     console.error('❌ [GITHUB MODELS] Chat error:', error);
+    console.log('   Server will continue running - user can switch models');
     
     logChatEvent('error', 'chat_error', {
       error: error.message,
@@ -262,7 +271,7 @@ async function chat(req, res) {
     res.status(500).json({
       error: {
         type: 'internal_error',
-        message: 'An error occurred processing your request',
+        message: 'An error occurred processing your request. Please try a different model.',
         status: 500
       }
     });

@@ -1,28 +1,66 @@
 /**
- * Model registry - merges discovery with fallback catalog
+ * Model registry - comprehensive catalog of GitHub Models
  */
 
-const { discoverModels } = require('./discovery');
 const { getFilePolicy } = require('./filePolicy');
 
 /**
- * Fallback model catalog
+ * Comprehensive model catalog for GitHub Models
+ * Based on models available via GitHub Models marketplace
+ * https://github.com/marketplace/models
  */
 const FALLBACK_MODELS = [
-  'gpt-5',
-  'gpt-4.0',
+  // OpenAI GPT-4 series
   'gpt-4o',
   'gpt-4o-mini',
-  'gpt-4.1',
+  'gpt-4-turbo',
   'gpt-4',
   'gpt-3.5-turbo',
-  'gpt-mini',
-  'claude-4.5',
-  'claude-4',
+  
+  // Anthropic Claude series
+  'claude-3-5-sonnet-20241022',
   'claude-3-5-sonnet',
+  'claude-3-opus-20240229',
   'claude-3-opus',
+  'claude-3-sonnet-20240229',
+  'claude-3-sonnet',
+  'claude-3-haiku-20240307',
   'claude-3-haiku',
-  'claude-2.1'
+  
+  // Meta Llama series
+  'llama-3.3-70b-instruct',
+  'llama-3.2-90b-vision-instruct',
+  'llama-3.2-11b-vision-instruct',
+  'llama-3.1-405b-instruct',
+  'llama-3.1-70b-instruct',
+  'llama-3.1-8b-instruct',
+  
+  // Google Gemini series
+  'gemini-1.5-pro',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  
+  // Mistral AI series
+  'mistral-large-2411',
+  'mistral-large',
+  'mistral-small',
+  'mistral-nemo',
+  
+  // Cohere series
+  'cohere-command-r-plus',
+  'cohere-command-r',
+  
+  // AI21 Labs series
+  'ai21-jamba-1.5-large',
+  'ai21-jamba-1.5-mini',
+  
+  // Microsoft Phi series
+  'phi-4',
+  'phi-3.5-moe-instruct',
+  'phi-3.5-mini-instruct',
+  'phi-3-medium-instruct',
+  'phi-3-small-instruct',
+  'phi-3-mini-instruct'
 ];
 
 /**
@@ -50,6 +88,9 @@ function inferProvider(modelId) {
   if (id.includes('gemini')) return 'google';
   if (id.includes('llama')) return 'meta';
   if (id.includes('mistral')) return 'mistral';
+  if (id.includes('cohere')) return 'cohere';
+  if (id.includes('ai21') || id.includes('jamba')) return 'ai21';
+  if (id.includes('phi')) return 'microsoft';
   
   return 'unknown';
 }
@@ -60,33 +101,33 @@ function inferProvider(modelId) {
 function supportsImages(modelId) {
   const id = modelId.toLowerCase();
   
+  // Vision-capable models from GitHub Models marketplace
   const imagePatterns = [
-    '4o',
-    '4.0',
-    'mini',
-    'vision',
-    'claude-3',
-    'claude-4'
+    'gpt-4o',          // GPT-4o and GPT-4o-mini
+    'gpt-4-turbo',     // GPT-4 Turbo
+    'claude-3',        // All Claude 3 variants
+    'llama-3.2',       // Llama 3.2 vision models
+    'gemini',          // All Gemini models support vision
+    'phi-3.5-moe',     // Phi-3.5 MoE
+    'phi-4'            // Phi-4
   ];
   
   return imagePatterns.some(pattern => id.includes(pattern));
 }
 
 /**
- * Get models list (discovered or fallback)
+ * Get models list
+ * Note: GitHub Models doesn't have a public API for model discovery
+ * Using comprehensive catalog based on GitHub Models marketplace
  */
 async function getModels(pat) {
-  // Try discovery first
-  const discovered = await discoverModels(pat);
-  
-  if (discovered && discovered.length > 0) {
-    console.log(`✅ [GITHUB MODELS] Returning ${discovered.length} discovered models`);
-    return discovered;
+  if (!pat) {
+    console.warn('⚠️ [GITHUB MODELS] No PAT configured');
   }
   
-  // Fallback to catalog
-  console.warn('⚠️ [GITHUB MODELS] Using fallback catalog');
-  const fallbackModels = FALLBACK_MODELS.map(modelId => {
+  console.log(`📋 [GITHUB MODELS] Loading ${FALLBACK_MODELS.length} available models from catalog`);
+  
+  const models = FALLBACK_MODELS.map(modelId => {
     const provider = inferProvider(modelId);
     const filePolicy = getFilePolicy(modelId);
     
@@ -99,11 +140,11 @@ async function getModels(pat) {
         images: supportsImages(modelId)
       },
       filePolicy,
-      available: false // Not confirmed available
+      available: !!pat // Models are available if PAT is configured
     };
   });
   
-  return fallbackModels;
+  return models;
 }
 
 module.exports = {
