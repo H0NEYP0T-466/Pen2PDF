@@ -3,23 +3,22 @@
  */
 
 const { getFilePolicy, isVisionCapable } = require('./filePolicy');
+const { discoverModels } = require('./discovery');
 
 /**
  * Comprehensive model catalog for GitHub Models
  * Based on models available via GitHub Models marketplace
  * https://github.com/marketplace/models
+ * Note: Only includes models verified to work with GitHub Models API
  */
 const FALLBACK_MODELS = [
-  // OpenAI GPT series
-  'gpt-5',
+  // OpenAI GPT series (verified models only)
   'gpt-4o',
   'gpt-4o-mini',
-  'gpt-4-turbo',
-  'gpt-4',
-  'gpt-3.5-turbo',
+  'o1-preview',
+  'o1-mini',
   
   // Anthropic Claude series
-  'claude-3-5-sonnet-4.5',
   'claude-3-5-sonnet-20241022',
   'claude-3-5-sonnet',
   'claude-3-opus-20240229',
@@ -85,7 +84,7 @@ function prettifyModelName(modelId) {
 function inferProvider(modelId) {
   const id = modelId.toLowerCase();
   
-  if (id.includes('gpt')) return 'openai';
+  if (id.includes('gpt') || id.includes('o1')) return 'openai';
   if (id.includes('claude')) return 'anthropic';
   if (id.includes('gemini')) return 'google';
   if (id.includes('llama')) return 'meta';
@@ -99,17 +98,30 @@ function inferProvider(modelId) {
 
 /**
  * Get models list
- * Note: GitHub Models doesn't have a public API for model discovery
- * Using comprehensive catalog based on GitHub Models marketplace
+ * First tries to discover models from GitHub API
+ * Falls back to comprehensive catalog if discovery fails
  */
 async function getModels(pat) {
   if (!pat) {
     console.warn('⚠️ [GITHUB MODELS] No PAT configured');
   }
   
-  console.log(`📋 [GITHUB MODELS] Loading ${FALLBACK_MODELS.length} available models from catalog`);
+  // Try to discover models from GitHub API first
+  let discoveredModelIds = null;
+  if (pat) {
+    discoveredModelIds = await discoverModels(pat);
+  }
   
-  const models = FALLBACK_MODELS.map(modelId => {
+  // Use discovered models if available, otherwise use fallback
+  const modelIds = discoveredModelIds || FALLBACK_MODELS;
+  
+  if (discoveredModelIds) {
+    console.log(`📋 [GITHUB MODELS] Using ${modelIds.length} discovered models from GitHub API`);
+  } else {
+    console.log(`📋 [GITHUB MODELS] Loading ${modelIds.length} available models from catalog`);
+  }
+  
+  const models = modelIds.map(modelId => {
     const provider = inferProvider(modelId);
     const filePolicy = getFilePolicy(modelId);
     
