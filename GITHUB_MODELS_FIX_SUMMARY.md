@@ -27,11 +27,11 @@ The application was returning "Unknown model: gpt-4" error when trying to use Gi
 
 ### 2. Cleaned Up Fallback Models (registry.js)
 Removed invalid models:
-- ❌ `gpt-5` (doesn't exist)
+- ❌ `gpt-5` (not available in GitHub Models)
 - ❌ `gpt-4` (not available in GitHub Models)
-- ❌ `gpt-4-turbo` (not available)
-- ❌ `gpt-3.5-turbo` (not available)
-- ❌ `claude-3-5-sonnet-4.5` (incorrect version)
+- ❌ `gpt-4-turbo` (not available in GitHub Models)
+- ❌ `gpt-3.5-turbo` (not available in GitHub Models)
+- ❌ `claude-3-5-sonnet-4.5` (incorrect version number)
 
 Added valid models:
 - ✅ `gpt-4o` (latest GPT-4 with vision)
@@ -39,7 +39,15 @@ Added valid models:
 - ✅ `o1-preview` (OpenAI o1 preview)
 - ✅ `o1-mini` (OpenAI o1 mini)
 
-Kept 35 verified models across 8 providers.
+Kept 35 verified models across 8 providers:
+- OpenAI
+- Anthropic
+- Google
+- Meta
+- Mistral
+- Cohere
+- AI21 Labs
+- Microsoft
 
 ### 3. Updated Registry Logic
 - **With PAT**: First tries to discover models from GitHub API
@@ -99,6 +107,8 @@ Kept 35 verified models across 8 providers.
 
 ### For Users
 1. **Don't use `gpt-4`** - Use `gpt-4o` or `gpt-4o-mini` instead
+   - Note: `gpt-4o` is GitHub Models' designation for the latest GPT-4 variant with vision capabilities
+   - The "o" stands for "omni" (multimodal capabilities)
 2. **Check model availability** - The dropdown now only shows models that actually exist
 3. **Switch models on error** - If one model hits quota, try another
 
@@ -122,7 +132,11 @@ Kept 35 verified models across 8 providers.
 
 ## Related Files
 
-- `GITHUB_MODELS_IMPLEMENTATION.md` - May need update to reflect new model list
+- `GITHUB_MODELS_IMPLEMENTATION.md` - Should be updated to:
+  - Change model count from 36/38 to 35 verified models
+  - Remove references to gpt-4, gpt-5, gpt-4-turbo, gpt-3.5-turbo
+  - Add o1-preview and o1-mini to OpenAI models list
+  - Update the note about discovery being enabled (not deprecated)
 - `FLOW_DIAGRAM.md` - Already documents the correct discovery flow
 - `.env.example` - Already includes githubModelsPAT setup
 
