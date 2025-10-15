@@ -41,6 +41,7 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
 
 - [🚀 Features](#-features)
 - [⚡ Tech Stack](#-tech-stack)
+- [📦 Dependencies & Packages](#-dependencies--packages)
 - [📋 Prerequisites](#-prerequisites)
 - [🛠️ Installation](#-installation)
 - [💻 Usage](#-usage)
@@ -150,6 +151,110 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
 ![GitHub](https://img.shields.io/badge/GitHub-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 ![npm](https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white)
 ![Dotenv](https://img.shields.io/badge/Dotenv-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black)
+
+## 📦 Dependencies & Packages
+
+This project uses carefully selected packages across frontend and backend to deliver powerful features. Below is the complete list of dependencies organized by category.
+
+<details open>
+<summary><h3>🎨 Frontend Runtime Dependencies</h3></summary>
+
+#### Core Libraries
+[![axios](https://img.shields.io/npm/v/axios?style=for-the-badge&label=axios&color=5A29E4)](https://www.npmjs.com/package/axios)
+[![react](https://img.shields.io/npm/v/react?style=for-the-badge&label=react&color=61DAFB)](https://www.npmjs.com/package/react)
+[![react-dom](https://img.shields.io/npm/v/react-dom?style=for-the-badge&label=react-dom&color=61DAFB)](https://www.npmjs.com/package/react-dom)
+[![react-router-dom](https://img.shields.io/npm/v/react-router-dom?style=for-the-badge&label=react-router-dom&color=CA4245)](https://www.npmjs.com/package/react-router-dom)
+
+#### Document Processing & Export
+[![docx](https://img.shields.io/npm/v/docx?style=for-the-badge&label=docx&color=2B579A)](https://www.npmjs.com/package/docx)
+[![html2pdf.js](https://img.shields.io/npm/v/html2pdf.js?style=for-the-badge&label=html2pdf.js&color=FF6B6B)](https://www.npmjs.com/package/html2pdf.js)
+[![jspdf](https://img.shields.io/npm/v/jspdf?style=for-the-badge&label=jspdf&color=F16529)](https://www.npmjs.com/package/jspdf)
+[![xlsx](https://img.shields.io/npm/v/xlsx?style=for-the-badge&label=xlsx&color=217346)](https://www.npmjs.com/package/xlsx)
+[![papaparse](https://img.shields.io/npm/v/papaparse?style=for-the-badge&label=papaparse&color=FF9900)](https://www.npmjs.com/package/papaparse)
+
+#### Markdown & Math Rendering
+[![marked](https://img.shields.io/npm/v/marked?style=for-the-badge&label=marked&color=000000)](https://www.npmjs.com/package/marked)
+[![markdown-it](https://img.shields.io/npm/v/markdown-it?style=for-the-badge&label=markdown-it&color=000000)](https://www.npmjs.com/package/markdown-it)
+[![katex](https://img.shields.io/npm/v/katex?style=for-the-badge&label=katex&color=008080)](https://www.npmjs.com/package/katex)
+[![marked-katex-extension](https://img.shields.io/npm/v/marked-katex-extension?style=for-the-badge&label=marked-katex-extension&color=008080)](https://www.npmjs.com/package/marked-katex-extension)
+
+#### Canvas & Graphics
+[![fabric](https://img.shields.io/npm/v/fabric?style=for-the-badge&label=fabric&color=FF6B6B)](https://www.npmjs.com/package/fabric)
+
+#### Configuration & Environment
+[![dotenv](https://img.shields.io/npm/v/dotenv?style=for-the-badge&label=dotenv&color=ECD53F)](https://www.npmjs.com/package/dotenv)
+
+</details>
+
+<details>
+<summary><h3>🛠️ Frontend Dev/Build Dependencies</h3></summary>
+
+#### Build Tools
+[![vite](https://img.shields.io/npm/v/vite?style=for-the-badge&label=vite&color=646CFF)](https://www.npmjs.com/package/vite)
+[![@vitejs/plugin-react](https://img.shields.io/npm/v/@vitejs/plugin-react?style=for-the-badge&label=@vitejs/plugin-react&color=646CFF)](https://www.npmjs.com/package/@vitejs/plugin-react)
+
+#### Code Quality & Linting
+[![eslint](https://img.shields.io/npm/v/eslint?style=for-the-badge&label=eslint&color=4B3263)](https://www.npmjs.com/package/eslint)
+[![@eslint/js](https://img.shields.io/npm/v/@eslint/js?style=for-the-badge&label=@eslint/js&color=4B3263)](https://www.npmjs.com/package/@eslint/js)
+[![eslint-plugin-react-hooks](https://img.shields.io/npm/v/eslint-plugin-react-hooks?style=for-the-badge&label=eslint-plugin-react-hooks&color=4B3263)](https://www.npmjs.com/package/eslint-plugin-react-hooks)
+[![eslint-plugin-react-refresh](https://img.shields.io/npm/v/eslint-plugin-react-refresh?style=for-the-badge&label=eslint-plugin-react-refresh&color=4B3263)](https://www.npmjs.com/package/eslint-plugin-react-refresh)
+
+#### Type Definitions
+[![@types/react](https://img.shields.io/npm/v/@types/react?style=for-the-badge&label=@types/react&color=3178C6)](https://www.npmjs.com/package/@types/react)
+[![@types/react-dom](https://img.shields.io/npm/v/@types/react-dom?style=for-the-badge&label=@types/react-dom&color=3178C6)](https://www.npmjs.com/package/@types/react-dom)
+
+#### Utilities
+[![globals](https://img.shields.io/npm/v/globals?style=for-the-badge&label=globals&color=777777)](https://www.npmjs.com/package/globals)
+
+</details>
+
+<details open>
+<summary><h3>⚙️ Backend Runtime Dependencies</h3></summary>
+
+#### Server Framework
+[![express](https://img.shields.io/npm/v/express?style=for-the-badge&label=express&color=000000)](https://www.npmjs.com/package/express)
+[![cors](https://img.shields.io/npm/v/cors?style=for-the-badge&label=cors&color=000000)](https://www.npmjs.com/package/cors)
+[![express-fileupload](https://img.shields.io/npm/v/express-fileupload?style=for-the-badge&label=express-fileupload&color=000000)](https://www.npmjs.com/package/express-fileupload)
+
+#### Database
+[![mongoose](https://img.shields.io/npm/v/mongoose?style=for-the-badge&label=mongoose&color=880000)](https://www.npmjs.com/package/mongoose)
+
+#### AI Integration
+[![@google/genai](https://img.shields.io/npm/v/@google/genai?style=for-the-badge&label=@google/genai&color=4285F4)](https://www.npmjs.com/package/@google/genai)
+
+#### Configuration
+[![dotenv](https://img.shields.io/npm/v/dotenv?style=for-the-badge&label=dotenv&color=ECD53F)](https://www.npmjs.com/package/dotenv)
+
+</details>
+
+<details>
+<summary><h3>🧪 Backend Dev/Test Dependencies</h3></summary>
+
+#### Testing Tools
+[![mongodb-memory-server](https://img.shields.io/npm/v/mongodb-memory-server?style=for-the-badge&label=mongodb-memory-server&color=4ea94b)](https://www.npmjs.com/package/mongodb-memory-server)
+
+</details>
+
+### 📌 Key Dependencies Overview
+
+| Package | Purpose | Category |
+|---------|---------|----------|
+| **axios** | HTTP client for API requests | Frontend - Network |
+| **react** | UI framework for building interactive interfaces | Frontend - Core |
+| **docx** | Create and export .docx documents | Frontend - Document Processing |
+| **html2pdf.js** | Generate PDFs from HTML content | Frontend - PDF Generation |
+| **marked** | Markdown parsing and rendering | Frontend - Markdown |
+| **katex** | LaTeX math equation rendering | Frontend - Math Rendering |
+| **fabric** | Canvas manipulation for whiteboard | Frontend - Graphics |
+| **xlsx** | Excel file parsing and generation | Frontend - Data Import/Export |
+| **papaparse** | CSV parsing and processing | Frontend - CSV Processing |
+| **express** | Backend web framework | Backend - Server |
+| **mongoose** | MongoDB object modeling | Backend - Database |
+| **@google/genai** | Google Gemini AI integration | Backend - AI Services |
+| **vite** | Fast build tool and dev server | Dev - Build Tool |
+| **eslint** | Code linting and quality checks | Dev - Code Quality |
+
+> **Note**: All dependencies are managed through npm. Badges display the latest available versions from the npm registry. The project uses semantic versioning (^) for flexible updates within major versions. See `package.json` files for exact version constraints used in this project.
 
 ## 📋 Prerequisites
 
