@@ -240,6 +240,11 @@ function AIAssistant() {
         formData.append('model', selectedModel);
         formData.append('messages', JSON.stringify(chatMessages));
         
+        // Add context notes (same as legacy models)
+        if (selectedNotes && selectedNotes.length > 0) {
+          formData.append('contextNotes', JSON.stringify(selectedNotes));
+        }
+        
         // Add file if present
         if (currentFiles.length > 0 && currentModel?.supportsFiles) {
           // For GitHub Models, we'll send the first file as a form upload

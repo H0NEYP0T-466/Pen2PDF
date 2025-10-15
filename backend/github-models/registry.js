@@ -1,67 +1,31 @@
 /**
- * Model registry - comprehensive catalog of GitHub Models
+ * Model registry - curated list of verified working GitHub Models
  */
 
 const { getFilePolicy, isVisionCapable } = require('./filePolicy');
-const { discoverModels } = require('./discovery');
 
 /**
- * Comprehensive model catalog for GitHub Models
- * Based on models available via GitHub Models marketplace
- * https://github.com/marketplace/models
- * Note: Only includes models verified to work with GitHub Models API
+ * Verified working models for GitHub Models
+ * Only includes models that have been tested and confirmed to work
  */
 const FALLBACK_MODELS = [
-  // OpenAI GPT series (verified models only)
+  // OpenAI GPT series
   'gpt-4o',
   'gpt-4o-mini',
-  'o1-preview',
+  'gpt-5',
   'o1-mini',
   
-  // Anthropic Claude series
-  'claude-3-5-sonnet-20241022',
-  'claude-3-5-sonnet',
-  'claude-3-opus-20240229',
-  'claude-3-opus',
-  'claude-3-sonnet-20240229',
-  'claude-3-sonnet',
-  'claude-3-haiku-20240307',
-  'claude-3-haiku',
-  
   // Meta Llama series
-  'llama-3.3-70b-instruct',
   'llama-3.2-90b-vision-instruct',
   'llama-3.2-11b-vision-instruct',
-  'llama-3.1-405b-instruct',
-  'llama-3.1-70b-instruct',
-  'llama-3.1-8b-instruct',
-  
-  // Google Gemini series
-  'gemini-1.5-pro',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
   
   // Mistral AI series
   'mistral-large-2411',
-  'mistral-large',
   'mistral-small',
   'mistral-nemo',
   
-  // Cohere series
-  'cohere-command-r-plus',
-  'cohere-command-r',
-  
-  // AI21 Labs series
-  'ai21-jamba-1.5-large',
-  'ai21-jamba-1.5-mini',
-  
   // Microsoft Phi series
-  'phi-4',
-  'phi-3.5-moe-instruct',
-  'phi-3.5-mini-instruct',
-  'phi-3-medium-instruct',
-  'phi-3-small-instruct',
-  'phi-3-mini-instruct'
+  'phi-4'
 ];
 
 /**
@@ -98,28 +62,17 @@ function inferProvider(modelId) {
 
 /**
  * Get models list
- * First tries to discover models from GitHub API
- * Falls back to comprehensive catalog if discovery fails
+ * Returns the curated list of working models
  */
 async function getModels(pat) {
   if (!pat) {
     console.warn('⚠️ [GITHUB MODELS] No PAT configured');
   }
   
-  // Try to discover models from GitHub API first
-  let discoveredModelIds = null;
-  if (pat) {
-    discoveredModelIds = await discoverModels(pat);
-  }
+  // Use the hardcoded list of verified working models
+  const modelIds = FALLBACK_MODELS;
   
-  // Use discovered models if available, otherwise use fallback
-  const modelIds = discoveredModelIds || FALLBACK_MODELS;
-  
-  if (discoveredModelIds) {
-    console.log(`📋 [GITHUB MODELS] Using ${modelIds.length} discovered models from GitHub API`);
-  } else {
-    console.log(`📋 [GITHUB MODELS] Loading ${modelIds.length} available models from catalog`);
-  }
+  console.log(`📋 [GITHUB MODELS] Loading ${modelIds.length} verified working models`);
   
   const models = modelIds.map(modelId => {
     const provider = inferProvider(modelId);

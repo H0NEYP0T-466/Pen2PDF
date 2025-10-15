@@ -56,7 +56,7 @@ function logChatEvent(level, event, data) {
  */
 async function chat(req, res) {
   try {
-    let { model, messages, temperature, max_tokens } = req.body;
+    let { model, messages, temperature, max_tokens, contextNotes } = req.body;
     
     if (!model || !messages) {
       const error = {
@@ -93,6 +93,15 @@ async function chat(req, res) {
       }
     }
 
+    // Parse contextNotes if it's a JSON string
+    if (typeof contextNotes === 'string') {
+      try {
+        contextNotes = JSON.parse(contextNotes);
+      } catch {
+        contextNotes = [];
+      }
+    }
+
     // Validate messages is an array
     if (!Array.isArray(messages)) {
       const error = {
@@ -110,7 +119,7 @@ async function chat(req, res) {
     }
 
     // Handle file upload if present - validate BEFORE checking PAT
-    let processedMessages = messages;
+    let processedMessages = [...messages];
     if (req.files && req.files.file) {
       const file = req.files.file;
       
@@ -136,7 +145,6 @@ async function chat(req, res) {
       const imageUrl = `data:${file.mimetype};base64,${base64}`;
       
       // Add image to the last user message
-      processedMessages = [...messages];
       const lastUserMsgIndex = processedMessages.map(m => m.role).lastIndexOf('user');
       
       if (lastUserMsgIndex >= 0) {
@@ -186,10 +194,57 @@ async function chat(req, res) {
       user_message: userMessagePreview
     });
 
+    // Add system instruction (same as LongCat/Gemini)
+    const systemInstruction = `You are Isabella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
+
+    // Process context notes (same as LongCat/Gemini)
+    // Add context notes to the user's message if present
+    if (contextNotes && contextNotes.length > 0) {
+      console.log('📄 [GITHUB MODELS] Context notes included:', contextNotes.length, 'notes');
+      
+      let contextText = '\n\nContext from notes:\n';
+      contextNotes.forEach(note => {
+        contextText += `\n--- ${note.title} ---\n${note.content}\n`;
+        console.log(`   📌 Note: ${note.title} (${note.content.length} chars)`);
+      });
+
+      // Find the last user message and prepend context
+      const lastUserMsgIndex = processedMessages.map(m => m.role).lastIndexOf('user');
+      if (lastUserMsgIndex >= 0) {
+        const originalContent = processedMessages[lastUserMsgIndex].content;
+        
+        // Handle both string and multipart content
+        if (typeof originalContent === 'string') {
+          processedMessages[lastUserMsgIndex] = {
+            ...processedMessages[lastUserMsgIndex],
+            content: contextText + '\n\n' + originalContent
+          };
+        } else if (Array.isArray(originalContent)) {
+          // If content is already multipart (has images), prepend context to text part
+          const textPart = originalContent.find(part => part.type === 'text');
+          if (textPart) {
+            textPart.text = contextText + '\n\n' + textPart.text;
+          } else {
+            // Add text part if none exists
+            originalContent.unshift({
+              type: 'text',
+              text: contextText
+            });
+          }
+        }
+      }
+    }
+
+    // Add system message at the beginning - create new array instead of reassigning
+    const finalMessages = [
+      { role: 'system', content: systemInstruction },
+      ...processedMessages
+    ];
+
     // Call GitHub Models API
     const requestBody = {
       model,
-      messages: processedMessages,
+      messages: finalMessages,
       ...(temperature !== undefined && { temperature }),
       ...(max_tokens !== undefined && { max_tokens })
     };
