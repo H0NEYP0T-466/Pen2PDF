@@ -90,19 +90,27 @@ Pen2PDF Suite is a modern web application that offers six powerful productivity 
 - **🎯 Blank Note Creation**: Start with empty documents for manual note-taking
 
 ### 🤖 AI Assistant (Bella) - Intelligent Help
-- **💬 Multi-Model Support**: Switch between LongCat and Gemini models
+- **💬 Multi-Model Support**: Switch between LongCat, Gemini, and GitHub Models
   - LongCat-Flash-Chat
   - LongCat-Flash-Thinking
   - Gemini 2.5 Pro
   - Gemini 2.5 Flash
+  - **GitHub Models (new)**: Access GPT-4o, GPT-4, Claude, and more via GitHub Models API
+    - Runtime model discovery with your GitHub PAT
+    - Fallback to catalog when discovery unavailable
+    - Supports gpt-4o, gpt-4o-mini, claude-3-5-sonnet, claude-4, and more
 - **🧠 Smart Context Window**: AI remembers last 20 messages for coherent conversations
 - **📝 Markdown & LaTeX Rendering**: Beautiful formatting for code, math equations, and text
-- **📎 File Upload**: Upload files for context (Gemini models only)
+- **📎 File Upload**: Upload files for context (vision-capable models only)
+  - Supports images: PNG, JPEG, WebP, GIF
+  - Blocked types: .docx, .pdf, .ppt, .pptx, .rtf (no server-side conversion yet)
+  - Client-side and server-side validation
 - **📚 Notes Context**: Load and select notes from your library as context
 - **🔍 Smart Search**: Search through notes to find relevant context
 - **💾 Chat Persistence**: Conversation history is saved and loaded automatically
 - **🎯 CLI-Style Interface**: Clean, terminal-inspired chat interface with syntax highlighting
 - **🔄 Dynamic Model Switching**: Seamlessly switch between AI models mid-conversation
+- **⚠️ Rate Limit Handling**: Graceful error handling with model switch suggestions
 
 ### 🌐 Universal Features
 - **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
@@ -265,6 +273,7 @@ Before you begin, ensure you have the following installed:
 - **MongoDB** (v4.4 or higher) - For data persistence across all features
 - **Google Gemini AI API Key** (for AI-powered text extraction and notes generation)
 - **LongCat API Key** (optional - for AI Assistant alternative models)
+- **GitHub Personal Access Token** (optional - for GitHub Models: GPT-4o, Claude, etc.)
 
 ## 🛠️ Installation
 
@@ -314,12 +323,29 @@ cd backend
 touch .env
 ```
 
-Add your Google Gemini AI API key to the `.env` file:
+Add your API keys to the `.env` file:
 
 ```env
+# Required: Google Gemini API for text extraction and notes generation
 GEMINI_API_KEY=your_google_gemini_api_key_here
-LONGCAT_API_KEY=your_longcat_api_key_here  # Optional: for AI Assistant LongCat models
+
+# Optional: LongCat API for AI Assistant alternative models
+LONGCAT_API_KEY=your_longcat_api_key_here
+
+# Optional: GitHub Personal Access Token for GitHub Models (GPT-4o, Claude, etc.)
+# Get your PAT from https://github.com/settings/tokens with model access scope
+githubModelsPAT=your_github_pat_here
 ```
+
+**GitHub Models Setup** (Optional):
+To use GitHub Models (GPT-4o, GPT-4, Claude, etc.) in the AI Assistant:
+1. Visit https://github.com/settings/tokens
+2. Create a new Personal Access Token (classic)
+3. Ensure you have access to GitHub Models (included with GitHub Copilot or Student Developer Pack)
+4. Copy the token and add it as `githubModelsPAT` in your `.env` file
+5. The AI Assistant will automatically discover available models at runtime
+
+> **Note**: Without a GitHub PAT, the AI Assistant will still work with LongCat and Gemini models. GitHub Models will be shown as "unavailable" in the model selector.
 
 ### 6. Start the Development Servers
 

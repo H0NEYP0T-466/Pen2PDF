@@ -37,6 +37,11 @@ const {
   clearChatHistory
 } = require('./controller/chatController');
 
+const {
+  getModelsList,
+  chat
+} = require('./github-models/controller');
+
 const { 
   todoConnection, 
   timetableConnection, 
@@ -102,6 +107,10 @@ app.delete('/api/notes/:id', deleteNotes);
 app.get('/api/chat', getChatHistory);
 app.post('/api/chat/message', sendMessage);
 app.delete('/api/chat', clearChatHistory);
+
+// GitHub Models routes
+app.get('/api/github-models/models', getModelsList);
+app.post('/api/github-models/chat', chat);
 
 Promise.all([
   todoConnection.asPromise(),
