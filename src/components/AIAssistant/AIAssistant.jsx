@@ -41,15 +41,23 @@ function AIAssistant() {
   const [saveNoteDialogOpen, setSaveNoteDialogOpen] = useState(false);
   const [noteContentToSave, setNoteContentToSave] = useState('');
   const [saveError, setSaveError] = useState('');
+  
+  // GitHub Models integration
+  const [githubModels, setGithubModels] = useState([]);
+  const [loadingModels, setLoadingModels] = useState(true);
+  const [rateLimitError, setRateLimitError] = useState(null);
 
-  const models = [
-    { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false },
-    { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: false },
-    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', supportsFiles: true },
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', supportsFiles: true },
+  // Legacy models (kept for backward compatibility)
+  const legacyModels = [
+    { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false, available: true, legacy: true },
+    { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: false, available: true, legacy: true },
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', supportsFiles: true, available: true, legacy: true },
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', supportsFiles: true, available: true, legacy: true },
   ];
 
-  const currentModel = models.find(m => m.value === selectedModel);
+  // Combine legacy and GitHub models
+  const allModels = [...legacyModels, ...githubModels];
+  const currentModel = allModels.find(m => m.value === selectedModel || m.id === selectedModel);
 
   
   useEffect(() => {
@@ -63,6 +71,7 @@ function AIAssistant() {
   useEffect(() => {
     loadChatHistory();
     loadNotes();
+    loadGithubModels();
   }, []);
 
   
@@ -109,6 +118,31 @@ function AIAssistant() {
         setFilteredNotes(response.data.data || []);
       }
     } catch {  }
+  };
+
+  const loadGithubModels = async () => {
+    try {
+      setLoadingModels(true);
+      const response = await axios.get('http://localhost:8000/api/github-models/models');
+      if (response.data.success && response.data.models) {
+        // Map GitHub models to our format
+        const models = response.data.models.map(m => ({
+          id: m.id,
+          value: m.id,
+          label: m.displayName,
+          provider: m.provider,
+          supportsFiles: m.filePolicy?.allowsFiles || false,
+          allowedMimeTypes: m.filePolicy?.allowedMimeTypes || [],
+          available: m.available,
+          legacy: false
+        }));
+        setGithubModels(models);
+      }
+    } catch (error) {
+      console.error('Failed to load GitHub models:', error);
+    } finally {
+      setLoadingModels(false);
+    }
   };
 
   
@@ -165,6 +199,9 @@ function AIAssistant() {
   const sendMessage = async () => {
     if (!inputMessage.trim() && uploadedFiles.length === 0) return;
 
+    // Clear rate limit error when sending new message
+    setRateLimitError(null);
+
     const userMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -176,35 +213,104 @@ function AIAssistant() {
 
     setMessages([...messages, userMessage]);
     setInputMessage('');
+    const currentFiles = uploadedFiles;
     setUploadedFiles([]);
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/chat/message', {
-        message: inputMessage,
-        model: selectedModel,
-        attachments: uploadedFiles,
-        contextNotes: selectedNotes
-      });
-
-      if (response.data.success) {
+      // Check if this is a GitHub model
+      const isGithubModel = currentModel && !currentModel.legacy;
+      
+      if (isGithubModel) {
+        // Use GitHub Models API
+        const formData = new FormData();
         
-        const chatResponse = await axios.get('http://localhost:8000/api/chat');
-        if (chatResponse.data.success) {
-          let updatedMessages = chatResponse.data.data.messages || [];
-          if (updatedMessages.length > 50) {
-            updatedMessages = updatedMessages.slice(-50);
+        // Build messages array
+        const chatMessages = [
+          ...messages.slice(-10).map(m => ({
+            role: m.role,
+            content: m.content
+          })),
+          {
+            role: 'user',
+            content: inputMessage
           }
-          setMessages(updatedMessages);
+        ];
+        
+        formData.append('model', selectedModel);
+        formData.append('messages', JSON.stringify(chatMessages));
+        
+        // Add file if present
+        if (currentFiles.length > 0 && currentModel?.supportsFiles) {
+          // For GitHub Models, we'll send the first file as a form upload
+          const file = currentFiles[0];
+          // We need to convert base64 back to file for the API
+          const byteString = atob(file.fileData);
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          }
+          const blob = new Blob([ab], { type: file.fileType });
+          formData.append('file', blob, file.fileName);
+        }
+        
+        const response = await axios.post('http://localhost:8000/api/github-models/chat', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        if (response.data.success) {
+          const assistantMessage = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: response.data.message,
+            timestamp: new Date(),
+            model: selectedModel
+          };
+          setMessages([...messages, userMessage, assistantMessage]);
+        }
+      } else {
+        // Use legacy API
+        const response = await axios.post('http://localhost:8000/api/chat/message', {
+          message: inputMessage,
+          model: selectedModel,
+          attachments: currentFiles,
+          contextNotes: selectedNotes
+        });
+
+        if (response.data.success) {
+          const chatResponse = await axios.get('http://localhost:8000/api/chat');
+          if (chatResponse.data.success) {
+            let updatedMessages = chatResponse.data.data.messages || [];
+            if (updatedMessages.length > 50) {
+              updatedMessages = updatedMessages.slice(-50);
+            }
+            setMessages(updatedMessages);
+          }
         }
       }
-    } catch {      setMessages([...messages, userMessage, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'Sorry, I encountered an error processing your request. Please try again.',
-        timestamp: new Date(),
-        model: selectedModel
-      }]);
+    } catch (error) {
+      // Check for rate limit error
+      if (error.response?.data?.error?.type === 'rate_limit') {
+        setRateLimitError(error.response.data.error.message);
+        setMessages([...messages, userMessage, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `⚠️ ${error.response.data.error.message}`,
+          timestamp: new Date(),
+          model: selectedModel
+        }]);
+      } else {
+        setMessages([...messages, userMessage, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: 'Sorry, I encountered an error processing your request. Please try again.',
+          timestamp: new Date(),
+          model: selectedModel
+        }]);
+      }
     } finally {
       setLoading(false);
     }
@@ -511,17 +617,39 @@ function AIAssistant() {
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
                 className="model-select"
+                disabled={loadingModels}
               >
-                {models.map(model => (
-                  <option key={model.value} value={model.value}>{model.label}</option>
-                ))}
+                {loadingModels ? (
+                  <option>Loading models...</option>
+                ) : (
+                  <>
+                    <optgroup label="Legacy Models">
+                      {legacyModels.map(model => (
+                        <option key={model.value} value={model.value}>{model.label}</option>
+                      ))}
+                    </optgroup>
+                    {githubModels.length > 0 && (
+                      <optgroup label="GitHub Models">
+                        {githubModels.map(model => (
+                          <option 
+                            key={model.id} 
+                            value={model.id}
+                            disabled={!model.available}
+                          >
+                            {model.label} {!model.available ? '(unavailable)' : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </>
+                )}
               </select>
 
               <button
                 className="file-upload-btn"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={!currentModel?.supportsFiles}
-                title={!currentModel?.supportsFiles ? 'File upload only available for Gemini models' : 'Upload file'}
+                title={!currentModel?.supportsFiles ? 'This model does not support file uploads' : 'Upload image files (PNG, JPEG, WebP, GIF)'}
               >
                 📎 {uploadedFiles.length > 0 ? `${uploadedFiles.length} file(s)` : 'Upload'}
               </button>
@@ -530,6 +658,7 @@ function AIAssistant() {
                 type="file"
                 multiple
                 onChange={handleFileUpload}
+                accept={currentModel?.allowedMimeTypes?.join(',') || 'image/*'}
                 style={{ display: 'none' }}
               />
             </div>
@@ -556,12 +685,41 @@ function AIAssistant() {
               />
               <button
                 onClick={sendMessage}
-                disabled={loading || (!inputMessage.trim() && uploadedFiles.length === 0)}
+                disabled={loading || (!inputMessage.trim() && uploadedFiles.length === 0) || (currentModel && !currentModel.available)}
                 className="send-btn"
+                title={currentModel && !currentModel.available ? 'This model is currently unavailable' : ''}
               >
                 Send
               </button>
             </div>
+
+            {rateLimitError && (
+              <div className="rate-limit-banner" style={{
+                padding: '12px',
+                background: '#fef3c7',
+                border: '1px solid #f59e0b',
+                borderRadius: '6px',
+                marginTop: '8px',
+                color: '#92400e',
+                fontSize: '14px'
+              }}>
+                ⚠️ {rateLimitError}
+              </div>
+            )}
+
+            {currentModel && !currentModel.supportsFiles && (
+              <div className="file-restriction-note" style={{
+                padding: '8px',
+                background: '#e0f2fe',
+                border: '1px solid #0284c7',
+                borderRadius: '6px',
+                marginTop: '8px',
+                color: '#075985',
+                fontSize: '12px'
+              }}>
+                ℹ️ Note: .docx, .pdf, and other document types are not supported. Only images (PNG, JPEG, WebP, GIF) can be uploaded to vision-capable models.
+              </div>
+            )}
           </div>
         </div>
       </div>
