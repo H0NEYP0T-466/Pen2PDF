@@ -2,7 +2,7 @@
  * Model registry - comprehensive catalog of GitHub Models
  */
 
-const { getFilePolicy } = require('./filePolicy');
+const { getFilePolicy, isVisionCapable } = require('./filePolicy');
 
 /**
  * Comprehensive model catalog for GitHub Models
@@ -96,26 +96,6 @@ function inferProvider(modelId) {
 }
 
 /**
- * Check if model supports images
- */
-function supportsImages(modelId) {
-  const id = modelId.toLowerCase();
-  
-  // Vision-capable models from GitHub Models marketplace
-  const imagePatterns = [
-    'gpt-4o',          // GPT-4o and GPT-4o-mini
-    'gpt-4-turbo',     // GPT-4 Turbo
-    'claude-3',        // All Claude 3 variants
-    'llama-3.2',       // Llama 3.2 vision models
-    'gemini',          // All Gemini models support vision
-    'phi-3.5-moe',     // Phi-3.5 MoE
-    'phi-4'            // Phi-4
-  ];
-  
-  return imagePatterns.some(pattern => id.includes(pattern));
-}
-
-/**
  * Get models list
  * Note: GitHub Models doesn't have a public API for model discovery
  * Using comprehensive catalog based on GitHub Models marketplace
@@ -137,7 +117,7 @@ async function getModels(pat) {
       provider,
       capabilities: {
         text: true,
-        images: supportsImages(modelId)
+        images: isVisionCapable(modelId)  // Use shared function from filePolicy
       },
       filePolicy,
       available: !!pat // Models are available if PAT is configured

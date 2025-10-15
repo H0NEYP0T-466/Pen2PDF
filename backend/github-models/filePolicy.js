@@ -75,6 +75,7 @@ function isFileAllowed(modelId, mimeType) {
 module.exports = {
   getFilePolicy,
   isFileAllowed,
+  isVisionCapable,
   ALLOWED_IMAGE_MIMES,
   BLOCKED_MIMES
 };
