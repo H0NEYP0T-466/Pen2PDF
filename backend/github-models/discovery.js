@@ -5,6 +5,7 @@
 const { getFilePolicy } = require('./filePolicy');
 
 const GITHUB_MODELS_BASE = 'https://models.inference.ai.azure.com';
+const GITHUB_MODELS_API = 'https://api.github.com';
 
 /**
  * Infer provider from model ID
@@ -66,11 +67,12 @@ async function discoverModels(pat) {
   try {
     console.log('🔍 [GITHUB MODELS] Discovering models from GitHub Models API...');
     
-    const response = await fetch(`${GITHUB_MODELS_BASE}/models`, {
+    const response = await fetch(`${GITHUB_MODELS_API}/models`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${pat}`,
-        'Content-Type': 'application/json'
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
       }
     });
 
@@ -82,11 +84,20 @@ async function discoverModels(pat) {
     }
 
     const data = await response.json();
-    console.log(`✅ [GITHUB MODELS] Discovery successful, found ${data.data?.length || 0} models`);
+    
+    // Debug: Log raw response structure
+    if (process.env.DEBUG_GITHUB_MODELS) {
+      console.log('🔍 [DEBUG] Raw API response:', JSON.stringify(data, null, 2));
+    }
+    
+    // GitHub API returns array directly, not wrapped in data.data
+    const modelsArray = Array.isArray(data) ? data : (data.data || []);
+    console.log(`✅ [GITHUB MODELS] Discovery successful, found ${modelsArray.length} models`);
     
     // Map models to our format
-    const models = (data.data || []).map(model => {
-      const modelId = model.id;
+    const models = modelsArray.map(model => {
+      // GitHub API returns models with 'name' field, Azure might use 'id'
+      const modelId = model.name || model.id;
       const provider = inferProvider(modelId);
       const filePolicy = getFilePolicy(modelId);
       
@@ -112,5 +123,6 @@ async function discoverModels(pat) {
 
 module.exports = {
   discoverModels,
-  GITHUB_MODELS_BASE
+  GITHUB_MODELS_BASE,
+  GITHUB_MODELS_API
 };
