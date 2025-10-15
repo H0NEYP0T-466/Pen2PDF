@@ -390,15 +390,12 @@ async function chat(req, res) {
       }
 
       chat.currentModel = model;
-
-      // Extract original user message content (before context was added)
-      const originalUserMessage = messages.find(m => m.role === 'user')?.content || '';
       
-      // Add user message
+      // Add user message (use the original userMessage extracted at line 195)
       const userMsg = {
         id: Date.now().toString(),
         role: 'user',
-        content: typeof originalUserMessage === 'string' ? originalUserMessage : '[multipart message]',
+        content: typeof userMessage === 'string' ? userMessage : '[multipart message]',
         timestamp: new Date(),
         attachments: req.files && req.files.file ? [{
           fileName: req.files.file.name,
