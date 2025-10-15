@@ -341,7 +341,7 @@ githubModelsPAT=your_github_pat_here
 To use GitHub Models (GPT-4o, GPT-4, Claude, etc.) in the AI Assistant:
 1. Visit https://github.com/settings/tokens
 2. Create a new Personal Access Token (classic)
-3. Select the "GitHub Models" scope (if available with GitHub Student Developer Pack or Copilot plan)
+3. Ensure you have access to GitHub Models (included with GitHub Copilot or Student Developer Pack)
 4. Copy the token and add it as `githubModelsPAT` in your `.env` file
 5. The AI Assistant will automatically discover available models at runtime
 

@@ -132,7 +132,7 @@ async function chat(req, res) {
         status: 500
       };
       
-      logChatEvent('error', 'validation_error', {
+      logChatEvent('error', 'configuration_error', {
         error: error.message
       });
       
