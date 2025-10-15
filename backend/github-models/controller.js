@@ -77,7 +77,7 @@ async function chat(req, res) {
     if (typeof messages === 'string') {
       try {
         messages = JSON.parse(messages);
-      } catch (parseError) {
+      } catch {
         const error = {
           type: 'validation_error',
           message: 'Invalid messages format: must be a valid JSON array',
