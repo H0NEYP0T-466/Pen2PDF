@@ -224,13 +224,19 @@ async function chat(req, res) {
           const textPart = originalContent.find(part => part.type === 'text');
           if (textPart) {
             textPart.text = contextText + '\n\n' + textPart.text;
+          } else {
+            // Add text part if none exists
+            originalContent.unshift({
+              type: 'text',
+              text: contextText
+            });
           }
         }
       }
     }
 
-    // Add system message at the beginning
-    processedMessages = [
+    // Add system message at the beginning - create new array instead of reassigning
+    const finalMessages = [
       { role: 'system', content: systemInstruction },
       ...processedMessages
     ];
@@ -238,7 +244,7 @@ async function chat(req, res) {
     // Call GitHub Models API
     const requestBody = {
       model,
-      messages: processedMessages,
+      messages: finalMessages,
       ...(temperature !== undefined && { temperature }),
       ...(max_tokens !== undefined && { max_tokens })
     };
