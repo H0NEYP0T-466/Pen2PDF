@@ -32,7 +32,10 @@ The GitHub Models discovery feature was not working because it was using the wro
 1. Go to https://github.com/settings/tokens
 2. Click "Generate new token" → "Generate new token (classic)"
 3. Give it a name (e.g., "Pen2PDF GitHub Models")
-4. Select the `read:packages` scope
+4. Select appropriate scopes:
+   - For GitHub Models access, you typically need the token to be associated with an account that has GitHub Copilot or GitHub Models access
+   - The standard scopes like `repo` or `user` may be sufficient depending on your GitHub subscription
+   - Note: The exact scope requirements may vary - start with basic scopes and the system will guide you if additional permissions are needed
 5. Click "Generate token"
 6. Copy the token (you won't be able to see it again!)
 
@@ -110,8 +113,8 @@ curl -H "Authorization: Bearer YOUR_PAT" \
 ### 4. Common Issues
 
 **Issue**: 403 Forbidden
-- **Cause**: PAT doesn't have correct scope or you don't have access to GitHub Models
-- **Fix**: Check your PAT scopes and GitHub Models access
+- **Cause**: PAT doesn't have sufficient permissions or you don't have access to GitHub Models
+- **Fix**: Verify your GitHub Copilot or GitHub Models access status and ensure your PAT is valid
 
 **Issue**: 404 Not Found
 - **Cause**: GitHub Models API endpoint might have changed
