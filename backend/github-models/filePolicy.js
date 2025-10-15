@@ -25,14 +25,15 @@ const BLOCKED_MIMES = [
 function isVisionCapable(modelId) {
   const id = modelId.toLowerCase();
   
-  // Vision-capable model patterns
+  // Vision-capable model patterns from GitHub Models marketplace
   const visionPatterns = [
-    '4o',
-    '4.0',
-    'mini',
-    'vision',
-    'claude-3',
-    'claude-4'
+    'gpt-4o',          // GPT-4o and GPT-4o-mini
+    'gpt-4-turbo',     // GPT-4 Turbo
+    'claude-3',        // All Claude 3 variants
+    'llama-3.2',       // Llama 3.2 vision models
+    'gemini',          // All Gemini models support vision
+    'phi-3.5-moe',     // Phi-3.5 MoE
+    'phi-4'            // Phi-4
   ];
   
   return visionPatterns.some(pattern => id.includes(pattern));
@@ -74,6 +75,7 @@ function isFileAllowed(modelId, mimeType) {
 module.exports = {
   getFilePolicy,
   isFileAllowed,
+  isVisionCapable,
   ALLOWED_IMAGE_MIMES,
   BLOCKED_MIMES
 };
