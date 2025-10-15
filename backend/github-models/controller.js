@@ -56,7 +56,7 @@ function logChatEvent(level, event, data) {
  */
 async function chat(req, res) {
   try {
-    let { model, messages, temperature, max_tokens } = req.body;
+    let { model, messages, temperature, max_tokens, contextNotes } = req.body;
     
     if (!model || !messages) {
       const error = {
@@ -90,6 +90,15 @@ async function chat(req, res) {
         });
         
         return res.status(400).json({ error });
+      }
+    }
+
+    // Parse contextNotes if it's a JSON string
+    if (typeof contextNotes === 'string') {
+      try {
+        contextNotes = JSON.parse(contextNotes);
+      } catch {
+        contextNotes = [];
       }
     }
 
@@ -185,6 +194,39 @@ async function chat(req, res) {
       model,
       user_message: userMessagePreview
     });
+
+    // Add system instruction (same as LongCat/Gemini)
+    const systemInstruction = `You are Isabella, a helpful AI assistant integrated into the Pen2PDF productivity suite. You help users with their questions, provide insights from their notes, and assist with various tasks. Be concise, helpful, and friendly.`;
+
+    // Process context notes (same as LongCat/Gemini)
+    let processedMessages = [...messages];
+    
+    // Add context notes to the user's message if present
+    if (contextNotes && contextNotes.length > 0) {
+      console.log('📄 [GITHUB MODELS] Context notes included:', contextNotes.length, 'notes');
+      
+      let contextText = '\n\nContext from notes:\n';
+      contextNotes.forEach(note => {
+        contextText += `\n--- ${note.title} ---\n${note.content}\n`;
+        console.log(`   📌 Note: ${note.title} (${note.content.length} chars)`);
+      });
+
+      // Find the last user message and prepend context
+      const lastUserMsgIndex = processedMessages.map(m => m.role).lastIndexOf('user');
+      if (lastUserMsgIndex >= 0) {
+        const originalContent = processedMessages[lastUserMsgIndex].content;
+        processedMessages[lastUserMsgIndex] = {
+          ...processedMessages[lastUserMsgIndex],
+          content: contextText + '\n\n' + originalContent
+        };
+      }
+    }
+
+    // Add system message at the beginning
+    processedMessages = [
+      { role: 'system', content: systemInstruction },
+      ...processedMessages
+    ];
 
     // Call GitHub Models API
     const requestBody = {
