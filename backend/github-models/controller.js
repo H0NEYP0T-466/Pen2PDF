@@ -4,6 +4,7 @@
 
 const { getModels } = require('./registry');
 const { isFileAllowed } = require('./filePolicy');
+const Chat = require('../model/chatData');
 require('dotenv').config();
 
 const GITHUB_MODELS_BASE = 'https://models.inference.ai.azure.com';
@@ -57,6 +58,13 @@ function logChatEvent(level, event, data) {
 async function chat(req, res) {
   try {
     let { model, messages, temperature, max_tokens, contextNotes } = req.body;
+    
+    // Set default max_tokens to avoid exceeding model limits
+    // If not provided, use 2048 instead of letting API use its default (often 4096)
+    if (max_tokens === undefined) {
+      max_tokens = 2048;
+      console.log('⚙️ [GITHUB MODELS] No max_tokens provided, using default:', max_tokens);
+    }
     
     if (!model || !messages) {
       const error = {
@@ -249,8 +257,27 @@ async function chat(req, res) {
       ...(max_tokens !== undefined && { max_tokens })
     };
 
+    console.log('\n' + '='.repeat(80));
     console.log('🚀 [GITHUB MODELS] Sending request to GitHub Models API');
     console.log(`   Model: ${model}`);
+    console.log('─'.repeat(80));
+    console.log('📋 [GITHUB MODELS] System Instruction:');
+    console.log(systemInstruction);
+    console.log('─'.repeat(80));
+    console.log('📨 [GITHUB MODELS] User Message:');
+    console.log(userMessage);
+    console.log('─'.repeat(80));
+    if (contextNotes && contextNotes.length > 0) {
+      console.log('📄 [GITHUB MODELS] Context Notes:');
+      contextNotes.forEach((note, idx) => {
+        console.log(`   Note ${idx + 1}: ${note.title}`);
+        console.log(`   ${note.content.substring(0, 200)}${note.content.length > 200 ? '...' : ''}`);
+      });
+      console.log('─'.repeat(80));
+    }
+    console.log('🔵 [GITHUB MODELS] Full Request Body:');
+    console.log(JSON.stringify(requestBody, null, 2));
+    console.log('─'.repeat(80));
     
     const response = await fetch(`${GITHUB_MODELS_BASE}/chat/completions`, {
       method: 'POST',
@@ -322,9 +349,20 @@ async function chat(req, res) {
 
     const data = await response.json();
     
+    // Log the full API response
+    console.log('📦 [GITHUB MODELS] Full API Response:');
+    console.log('─'.repeat(80));
+    console.log(JSON.stringify(data, null, 2));
+    console.log('─'.repeat(80));
+    
     // Extract response content
     const assistantMessage = data.choices?.[0]?.message?.content || 'No response';
-    const responsePreview = assistantMessage.substring(0, 200);
+    
+    console.log('📨 [GITHUB MODELS] Complete Response from Model:');
+    console.log('─'.repeat(80));
+    console.log(assistantMessage);
+    console.log('─'.repeat(80));
+    console.log('='.repeat(80) + '\n');
     
     // Extract usage info (handle both OpenAI and Anthropic formats)
     const usage = data.usage || {};
@@ -337,11 +375,55 @@ async function chat(req, res) {
     logChatEvent('info', 'chat_response', {
       model,
       user_message: userMessagePreview,
-      response_preview: responsePreview,
+      response_preview: assistantMessage.substring(0, 200),
       usage: usageInfo,
       status: 200,
       provider_headers: providerHeaders
     });
+
+    // Save to database (same as legacy models)
+    try {
+      let chat = await Chat.findOne();
+      if (!chat) {
+        console.log('📝 [GITHUB MODELS] Creating new chat session');
+        chat = new Chat({ messages: [], currentModel: model });
+      }
+
+      chat.currentModel = model;
+      
+      // Add user message (use the original userMessage extracted at line 195)
+      const userMsg = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: typeof userMessage === 'string' ? userMessage : '[multipart message]',
+        timestamp: new Date(),
+        attachments: req.files && req.files.file ? [{
+          fileName: req.files.file.name,
+          fileType: req.files.file.mimetype,
+          fileData: Buffer.from(req.files.file.data).toString('base64')
+        }] : [],
+        contextNotes: contextNotes || []
+      };
+      chat.messages.push(userMsg);
+
+      // Add assistant message
+      const assistantMsg = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: assistantMessage,
+        model: model,
+        timestamp: new Date()
+      };
+      chat.messages.push(assistantMsg);
+
+      chat.updatedAt = new Date();
+      await chat.save();
+
+      console.log('💾 [GITHUB MODELS] Messages saved to database');
+    } catch (dbError) {
+      console.error('❌ [GITHUB MODELS] Error saving to database:', dbError);
+      // Continue anyway - don't fail the request due to DB issues
+    }
 
     res.json({
       success: true,
