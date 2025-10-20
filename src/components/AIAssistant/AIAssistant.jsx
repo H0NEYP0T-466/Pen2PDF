@@ -720,10 +720,20 @@ function AIAssistant() {
                 borderRadius: '6px',
                 marginTop: '8px',
                 color: '#075985',
-                fontSize: '12px'
+                fontSize: '12px',
               }}>
                 ℹ️ Note: .docx, .pdf, and other document types are not supported. Only images (PNG, JPEG, WebP, GIF) can be uploaded to vision-capable models.
+                <button id="close" style={{
+                  float: 'right',
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '15px',
+                  color: '#075985',
+                  cursor: 'pointer'
+                }} onClick={(e) => {e.target.parentElement.style.display = 'none';
+                }}>x</button>
               </div>
+              
             )}
           </div>
         </div>
