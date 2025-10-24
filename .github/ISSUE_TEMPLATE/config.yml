@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/H0NEYP0T-466/Pen2PDF/discussions
+    about: Ask questions, share ideas, and discuss with the community
+  
+  - name: 🛡️ Security Vulnerability
+    url: https://github.com/H0NEYP0T-466/Pen2PDF/security/advisories/new
+    about: Report security vulnerabilities privately (see SECURITY.md)
+  
+  - name: 📚 Documentation
+    url: https://github.com/H0NEYP0T-466/Pen2PDF#readme
+    about: Read the project documentation and guides
+  
+  - name: ❓ Questions & Support
+    url: https://github.com/H0NEYP0T-466/Pen2PDF/discussions/categories/q-a
+    about: Get help and ask questions in our Q&A discussions
