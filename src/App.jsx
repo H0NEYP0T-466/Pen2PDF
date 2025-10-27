@@ -353,7 +353,7 @@ function App() {
         }
       };
 
-      // Build PDF, then stamp watermark on every page, then save.
+
       const worker = html2pdf().set(opt).from(el).toPdf();
       const pdf = await worker.get('pdf');
       const [top, right, bottom, left] = Array.isArray(opt.margin)
@@ -372,8 +372,8 @@ function App() {
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const textWidth = pdf.getTextWidth(watermarkText);
-        const x = pageWidth - right - textWidth;
-        const y = pageHeight - bottom - 6; // 6pt above bottom margin
+        const x = pageWidth - textWidth - 6;
+        const y = pageHeight - 8; 
         pdf.text(watermarkText, x, y);
       }
 
