@@ -245,7 +245,6 @@ function App() {
       const el = document.createElement("div");
       el.className = "printable-light pdf-page";
       
-      
       const katexCSS = Array.from(document.styleSheets)
         .filter(sheet => {
           try {
@@ -265,20 +264,9 @@ function App() {
       
       el.innerHTML = `
         <style>
-          /* KaTeX styles for math rendering */
           ${katexCSS}
-          
-          /* Print-safe CSS for PDF generation */
-          @page {
-            margin: 12mm;
-          }
-          
-          .pdf-page {
-            padding: 8mm;
-            position: relative;
-          }
-          
-          /* Prevent word breaking and control text flow */
+          @page { margin: 12mm; }
+          .pdf-page { padding: 8mm; position: relative; }
           body, p, li, h1, h2, h3, h4, h5, h6 {
             word-break: normal;
             overflow-wrap: normal;
@@ -290,8 +278,6 @@ function App() {
             text-align: justify;
             text-justify: inter-word;
           }
-          
-          /* Stronger word protection for all text elements */
           * {
             word-break: normal !important;
             overflow-wrap: normal !important;
@@ -301,47 +287,28 @@ function App() {
             -moz-hyphens: none !important;
             -ms-hyphens: none !important;
           }
-          
-          /* Prevent orphaned elements and bad page breaks */
           h1, h2, h3, h4, h5, h6, img, table, pre, blockquote {
             break-inside: avoid;
             page-break-inside: avoid;
             -webkit-column-break-inside: avoid;
           }
-          
-          /* Keep headings with following content */
           h1, h2, h3, h4, h5, h6 {
             break-after: avoid;
             page-break-after: avoid;
             -webkit-column-break-after: avoid;
           }
-          
-          /* Math equation page break protection */
           .katex, .katex-display {
             break-inside: avoid;
             page-break-inside: avoid;
             -webkit-column-break-inside: avoid;
           }
-          
-          /* Block math equations get extra spacing and centering */
-          .katex-display {
-            margin: 1em 0;
-            text-align: center;
-          }
-          
-          /* Inline math stays with surrounding text */
+          .katex-display { margin: 1em 0; text-align: center; }
           p:has(.katex) {
             break-inside: avoid;
             page-break-inside: avoid;
             -webkit-column-break-inside: avoid;
           }
-          
-          /* Orphan and widow control */
-          p {
-            orphans: 2;
-            widows: 2;
-          }
-          
+          p { orphans: 2; widows: 2; }
           .printable-light {
             max-width: none;
             padding: 0;
@@ -369,26 +336,13 @@ function App() {
           .printable-light hr { border: none; border-top: 1px solid #e5e7eb; margin: 18px 0; }
           .printable-light code { background:#f3f4f6; padding:2px 4px; border-radius:4px; font-size:90%; }
           .printable-light pre code { display:block; padding:14px; }
-          
-          /* Watermark styles */
-          .watermark {
-            position: fixed;
-            bottom: 16pt;
-            right: 16pt;
-            opacity: 0.2;
-            font-size: 14pt;
-            color: #000;
-            pointer-events: none;
-            z-index: 1000;
-            font-family: 'Inter', system-ui, sans-serif;
-          }
         </style>
-        <div class="watermark">~honeypot</div>
         ${html}
       `;
       document.body.appendChild(el);
+
       const opt = {
-        margin: [34, 34, 34, 34], 
+        margin: [34, 34, 34, 34],
         filename: "Pen2PDF.pdf",
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
@@ -398,7 +352,32 @@ function App() {
           avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote", ".katex", ".katex-display"]
         }
       };
-      await html2pdf().set(opt).from(el).save();
+
+      // Build PDF, then stamp watermark on every page, then save.
+      const worker = html2pdf().set(opt).from(el).toPdf();
+      const pdf = await worker.get('pdf');
+      const [top, right, bottom, left] = Array.isArray(opt.margin)
+        ? opt.margin
+        : [opt.margin, opt.margin, opt.margin, opt.margin];
+
+      const watermarkText = "~honeypot";
+      const pageCount = pdf.internal.getNumberOfPages();
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(120, 120, 120); // soft gray
+
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const textWidth = pdf.getTextWidth(watermarkText);
+        const x = pageWidth - right - textWidth;
+        const y = pageHeight - bottom - 6; // 6pt above bottom margin
+        pdf.text(watermarkText, x, y);
+      }
+
+      await worker.save();
       document.body.removeChild(el);
     } catch {
       setError("Failed to generate PDF.");
