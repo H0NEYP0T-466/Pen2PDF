@@ -59,10 +59,9 @@ async function chat(req, res) {
   try {
     let { model, messages, temperature, max_tokens, contextNotes } = req.body;
     
-    // Set default max_tokens to avoid exceeding model limits
-    // If not provided, use 2048 instead of letting API use its default (often 4096)
+
     if (max_tokens === undefined) {
-      max_tokens = 2048;
+      max_tokens = 4096;
       console.log('⚙️ [GITHUB MODELS] No max_tokens provided, using default:', max_tokens);
     }
     
@@ -254,7 +253,7 @@ async function chat(req, res) {
       model,
       messages: finalMessages,
       ...(temperature !== undefined && { temperature }),
-      ...(max_tokens !== undefined && { max_tokens })
+      ...(max_tokens !== undefined && { max_completion_tokens: max_tokens })
     };
 
     console.log('\n' + '='.repeat(80));

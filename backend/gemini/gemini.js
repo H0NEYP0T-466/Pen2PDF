@@ -5,7 +5,7 @@ const ai = new GoogleGenAI({
   apiKey: process.env.geminiApiKey || process.env.GEMINI_API_KEY,
 });
 
-// Text extraction: primary = gemini-2.5-flash, fallback = gemini-2.5-pro
+
 const PRIMARY_MODEL = "gemini-2.5-flash";
 const FALLBACK_MODEL = "gemini-2.5-pro";
 
