@@ -271,7 +271,8 @@ function AIAssistant() {
           message: inputMessage,
           model: selectedModel,
           attachments: currentFiles,
-          contextNotes: selectedNotes
+          contextNotes: selectedNotes,
+          sendWithoutHistory: sendWithoutHistory
         });
 
         if (response.data.success) {

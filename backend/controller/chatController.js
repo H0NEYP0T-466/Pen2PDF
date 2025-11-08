@@ -49,13 +49,14 @@ const sendMessage = async (req, res) => {
   let model = null;
   
   try {
-    const { message, model: requestModel, attachments, contextNotes } = req.body;
+    const { message, model: requestModel, attachments, contextNotes, sendWithoutHistory } = req.body;
     model = requestModel;
 
     console.log('\n' + '='.repeat(80));
     console.log('🤖 [CHATBOT] User accessed chatbot');
     console.log('📊 [CHATBOT] Model requested:', model);
     console.log('💬 [CHATBOT] User query:', message);
+    console.log('🔄 [CHATBOT] Send without history:', sendWithoutHistory ? 'YES' : 'NO');
     
     let chat = await Chat.findOne();
     if (!chat) {
@@ -75,7 +76,8 @@ const sendMessage = async (req, res) => {
     };
     chat.messages.push(userMessage);
 
-    const contextWindow = chat.messages.slice(-11, -1).map(msg => ({
+    // Only include context window if sendWithoutHistory is false
+    const contextWindow = sendWithoutHistory ? [] : chat.messages.slice(-11, -1).map(msg => ({
       role: msg.role,
       content: msg.content
     }));
