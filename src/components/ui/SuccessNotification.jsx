@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import './SuccessNotification.css';
 
-function SuccessNotification({ open, message, duration = 3000, onClose }) {
+function SuccessNotification({ open, message, duration = 1000, onClose }) {
   useEffect(() => {
     if (open && onClose) {
       const timer = setTimeout(() => {

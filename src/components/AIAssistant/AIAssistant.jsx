@@ -125,13 +125,13 @@ function AIAssistant() {
       setLoadingModels(true);
       const response = await axios.get('http://localhost:8000/api/github-models/models');
       if (response.data.success && response.data.models) {
-        // Map GitHub models to our format - disable file uploads for all GitHub models
+
         const models = response.data.models.map(m => ({
           id: m.id,
           value: m.id,
           label: m.displayName,
           provider: m.provider,
-          supportsFiles: false, // Disable file uploads for GitHub models
+          supportsFiles: false, 
           available: m.available,
           legacy: false
         }));
