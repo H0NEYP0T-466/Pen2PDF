@@ -40,6 +40,7 @@ function AIAssistant() {
   const [saveNoteDialogOpen, setSaveNoteDialogOpen] = useState(false);
   const [noteContentToSave, setNoteContentToSave] = useState('');
   const [saveError, setSaveError] = useState('');
+  const [sendWithoutHistory, setSendWithoutHistory] = useState(false);
   
 
   const [githubModels, setGithubModels] = useState([]);
@@ -48,10 +49,10 @@ function AIAssistant() {
 
 
   const legacyModels = [
-    { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
-    { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: false, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
-    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', supportsFiles: true, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', supportsFiles: true, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
+    { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false, available: true, legacy: true },
+    { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: false, available: true, legacy: true },
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', supportsFiles: true, available: true, legacy: true },
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', supportsFiles: true, available: true, legacy: true },
   ];
 
   // Combine legacy and GitHub models
@@ -124,14 +125,13 @@ function AIAssistant() {
       setLoadingModels(true);
       const response = await axios.get('http://localhost:8000/api/github-models/models');
       if (response.data.success && response.data.models) {
-        // Map GitHub models to our format
+        // Map GitHub models to our format - disable file uploads for all GitHub models
         const models = response.data.models.map(m => ({
           id: m.id,
           value: m.id,
           label: m.displayName,
           provider: m.provider,
-          supportsFiles: m.filePolicy?.allowsFiles || false,
-          allowedMimeTypes: m.filePolicy?.allowedMimeTypes || [],
+          supportsFiles: false, // Disable file uploads for GitHub models
           available: m.available,
           legacy: false
         }));
@@ -224,17 +224,22 @@ function AIAssistant() {
         // Use GitHub Models API
         const formData = new FormData();
         
-        // Build messages array
-        const chatMessages = [
-          ...messages.slice(-10).map(m => ({
-            role: m.role,
-            content: m.content
-          })),
-          {
-            role: 'user',
-            content: inputMessage
-          }
-        ];
+        // Build messages array - include history only if sendWithoutHistory is false
+        const chatMessages = sendWithoutHistory 
+          ? [{
+              role: 'user',
+              content: inputMessage
+            }]
+          : [
+              ...messages.slice(-10).map(m => ({
+                role: m.role,
+                content: m.content
+              })),
+              {
+                role: 'user',
+                content: inputMessage
+              }
+            ];
         
         formData.append('model', selectedModel);
         formData.append('messages', JSON.stringify(chatMessages));
@@ -242,21 +247,6 @@ function AIAssistant() {
         // Add context notes (same as legacy models)
         if (selectedNotes && selectedNotes.length > 0) {
           formData.append('contextNotes', JSON.stringify(selectedNotes));
-        }
-        
-        // Add file if present
-        if (currentFiles.length > 0 && currentModel?.supportsFiles) {
-          // For GitHub Models, we'll send the first file as a form upload
-          const file = currentFiles[0];
-          // We need to convert base64 back to file for the API
-          const byteString = atob(file.fileData);
-          const ab = new ArrayBuffer(byteString.length);
-          const ia = new Uint8Array(ab);
-          for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-          }
-          const blob = new Blob([ab], { type: file.fileType });
-          formData.append('file', blob, file.fileName);
         }
         
         const response = await axios.post('http://localhost:8000/api/github-models/chat', formData, {
@@ -668,11 +658,28 @@ function AIAssistant() {
                 )}
               </select>
 
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                fontSize: '14px',
+                cursor: 'pointer',
+                userSelect: 'none'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={sendWithoutHistory}
+                  onChange={(e) => setSendWithoutHistory(e.target.checked)}
+                  style={{ cursor: 'pointer' }}
+                />
+                Send without history
+              </label>
+
               <button
                 className="file-upload-btn"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={!currentModel?.supportsFiles}
-                title={!currentModel?.supportsFiles ? 'This model does not support file uploads' : 'Upload image files (PNG, JPEG, WebP, GIF)'}
+                title={!currentModel?.supportsFiles ? 'File uploads are only supported for Gemini 2.5 Pro and Gemini 2.5 Flash models' : 'Upload files (images and PDFs)'}
               >
                 📎 {uploadedFiles.length > 0 ? `${uploadedFiles.length} file(s)` : 'Upload'}
               </button>
@@ -681,7 +688,7 @@ function AIAssistant() {
                 type="file"
                 multiple
                 onChange={handleFileUpload}
-                accept={currentModel?.allowedMimeTypes?.join(',') || 'image/*'}
+                accept="application/pdf,image/*"
                 style={{ display: 'none' }}
               />
             </div>
