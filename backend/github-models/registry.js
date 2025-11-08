@@ -2,8 +2,6 @@
  * Model registry - curated list of verified working GitHub Models
  */
 
-const { getFilePolicy, isVisionCapable } = require('./filePolicy');
-
 /**
  * Verified working models for GitHub Models
  * Only includes models that have been tested and confirmed to work
@@ -76,7 +74,6 @@ async function getModels(pat) {
   
   const models = modelIds.map(modelId => {
     const provider = inferProvider(modelId);
-    const filePolicy = getFilePolicy(modelId);
     
     return {
       id: modelId,
@@ -84,9 +81,8 @@ async function getModels(pat) {
       provider,
       capabilities: {
         text: true,
-        images: isVisionCapable(modelId)  // Use shared function from filePolicy
+        images: false  // GitHub models don't support file uploads
       },
-      filePolicy,
       available: !!pat // Models are available if PAT is configured
     };
   });
