@@ -397,9 +397,7 @@ function AIAssistant() {
           .printable-light { max-width: none; padding: 0; color: #333; background: #fff; font-family: 'Arial', sans-serif; line-height: 1.6; }
           .printable-light h1, .printable-light h2, .printable-light h3 { color: #333; margin: 0 0 12px 0; line-height: 1.25; font-weight: 700; }
           .printable-light p, .printable-light li { font-size: 12.5pt; line-height: 1.6; color: #333; }
-          .watermark { position: fixed; bottom: 16pt; right: 16pt; opacity: 0.2; font-size: 14pt; color: #000; pointer-events: none; z-index: 1000; font-family: 'Arial', sans-serif; }
         </style>
-        <div class="watermark">~honeypot</div>
         ${html}
       `;
 
@@ -412,7 +410,28 @@ function AIAssistant() {
         pagebreak: { mode: ["css", "legacy"], avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote", ".katex", ".katex-display"] }
       };
 
-      await html2pdf().set(opt).from(element).save();
+      // Generate PDF and add watermark using jsPDF text (same as Notes component)
+      const worker = html2pdf().set(opt).from(element).toPdf();
+      const pdf = await worker.get('pdf');
+
+      const watermarkText = "~honeypot";
+      const pageCount = pdf.internal.getNumberOfPages();
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(120, 120, 120);
+
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const textWidth = pdf.getTextWidth(watermarkText);
+        const x = pageWidth - textWidth - 6;
+        const y = pageHeight - 8;
+        pdf.text(watermarkText, x, y);
+      }
+
+      await worker.save();
     } catch {  }
   };
 
