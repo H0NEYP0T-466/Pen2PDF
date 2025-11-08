@@ -92,8 +92,13 @@ const generateNotes = async (req, res) => {
     console.log('📚 [NOTES GENERATION] Notes generation request received');
     
     const retryInstruction = req.body?.retryInstruction || null;
+    const preferredModel = req.body?.preferredModel || null;
     const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
     const parts = [];
+
+    if (preferredModel) {
+      console.log(`🎯 [NOTES GENERATION] User selected model: ${preferredModel}`);
+    }
 
     console.log(`📁 [NOTES GENERATION] Processing ${files.length} file(s):`);
 
@@ -135,7 +140,7 @@ const generateNotes = async (req, res) => {
 
     console.log('🚀 [NOTES GENERATION] Sending to Gemini API for processing...');
     
-    const result = await generateNotesResponse(parts, retryInstruction);
+    const result = await generateNotesResponse(parts, retryInstruction, preferredModel);
     
     console.log('✅ [NOTES GENERATION] Notes generated successfully');
     console.log('📊 [NOTES GENERATION] Model used:', typeof result === 'object' ? result.modelUsed : 'Gemini');

@@ -6,6 +6,7 @@ import markedKatex from 'marked-katex-extension';
 import html2pdf from 'html2pdf.js';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import 'katex/dist/katex.min.css';
+import SuccessNotification from '../ui/SuccessNotification';
 import './Notes.css';
 
 marked.use(markedKatex({
@@ -26,8 +27,16 @@ function Notes() {
   const [replaceWith, setReplaceWith] = useState('');
   const [fileName, setFileName] = useState('study-notes');
   const [modelUsed, setModelUsed] = useState('');
+  const [selectedModelForGeneration, setSelectedModelForGeneration] = useState('gemini-2.5-pro');
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
   const textareaRef = useRef(null);
+
+  // Available models for notes generation
+  const availableModels = [
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+  ];
 
   const acceptMime = "image/*,.pdf,.ppt,.pptx,.txt,.md,.markdown";
 
@@ -142,6 +151,9 @@ function Notes() {
     files.forEach(({ file }) => {
       formData.append(`files`, file);
     });
+    
+    // Add selected model to the request
+    formData.append('preferredModel', selectedModelForGeneration);
 
     try {
       const response = await axios.post('http://localhost:8000/notesGenerate', formData, {
@@ -156,8 +168,14 @@ function Notes() {
       } else {
         setError(response.data.error || 'Failed to generate notes');
       }
-    } catch {
-      setError('Failed to generate notes. Please try again.');
+    } catch (err) {
+      // Check if error suggests trying a different model
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to generate notes. Please try again.';
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || errorMessage.includes('unavailable')) {
+        setError(errorMessage + ' Please select a different model and try again.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -172,8 +190,9 @@ function Notes() {
       formData.append(`files`, file);
     });
     
-    
+    // Add retry instruction and preferred model
     formData.append('retryInstruction', 'The user didn\'t like the previous result. Please make this better with more detailed and comprehensive notes.');
+    formData.append('preferredModel', selectedModelForGeneration);
 
     try {
       const response = await axios.post('http://localhost:8000/notesGenerate', formData, {
@@ -187,8 +206,13 @@ function Notes() {
       } else {
         setError(response.data.error || 'Failed to regenerate notes');
       }
-    } catch {
-      setError('Failed to regenerate notes. Please try again.');
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to regenerate notes. Please try again.';
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || errorMessage.includes('unavailable')) {
+        setError(errorMessage + ' Please select a different model and try again.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -493,6 +517,7 @@ function Notes() {
 
       if (response.data.success) {
         setError('');
+        setShowSuccessNotification(true);
       } else {
         setError('Failed to save notes');
       }
@@ -571,6 +596,29 @@ function Notes() {
               </div>
             </div>
           )}
+
+          {/* Model Selector */}
+          <div className="model-selector-section">
+            <label htmlFor="model-select" className="model-selector-label">
+              Select AI Model for Notes Generation:
+            </label>
+            <select
+              id="model-select"
+              value={selectedModelForGeneration}
+              onChange={(e) => setSelectedModelForGeneration(e.target.value)}
+              className="model-selector"
+              disabled={loading}
+            >
+              {availableModels.map(model => (
+                <option key={model.value} value={model.value}>
+                  {model.label}
+                </option>
+              ))}
+            </select>
+            <p className="model-selector-hint">
+              If the selected model encounters an error, please try a different model.
+            </p>
+          </div>
 
           <div className="action-buttons">
             <button
@@ -700,6 +748,12 @@ function Notes() {
           </div>
         </div>
       )}
+      
+      <SuccessNotification
+        open={showSuccessNotification}
+        message="Notes saved to library successfully."
+        onClose={() => setShowSuccessNotification(false)}
+      />
     </div>
   );
 }
