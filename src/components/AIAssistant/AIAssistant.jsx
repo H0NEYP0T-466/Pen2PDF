@@ -673,7 +673,7 @@ function AIAssistant() {
                   onChange={(e) => setSendWithoutHistory(e.target.checked)}
                   style={{ cursor: 'pointer' }}
                 />
-                Send without history
+                Isolate Message
               </label>
 
               <button
