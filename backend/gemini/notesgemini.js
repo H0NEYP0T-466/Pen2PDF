@@ -99,7 +99,21 @@ async function callGeminiAPI(primaryModel, fallbackModel, parts, systemInstructi
   throw lastErr || new Error("Gemini API call failed");
 }
 
-async function generateNotesResponse(parts, retryInstruction = null) {
+async function generateNotesResponse(parts, retryInstruction = null, preferredModel = null) {
+  // Determine primary and fallback models
+  let primaryModel = preferredModel || PRIMARY_MODEL;
+  let fallbackModel = null;
+  
+  if (primaryModel === 'gemini-2.5-pro') {
+    fallbackModel = FALLBACK_MODEL;
+  } else if (primaryModel === 'gemini-2.5-flash') {
+    fallbackModel = PRIMARY_MODEL;
+  } else {
+    // If unknown model, use default strategy
+    primaryModel = PRIMARY_MODEL;
+    fallbackModel = FALLBACK_MODEL;
+  }
+
 const systemInstruction = `
 # 📘 Study Notes Generator
 
@@ -153,9 +167,9 @@ ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
 
   console.log('🔄 [GEMINI NOTES] Starting notes generation with model fallback strategy');
   console.log('📋 [GEMINI NOTES] System instruction:', systemInstruction.substring(0, 200) + '...');
-  console.log(`📊 [GEMINI NOTES] Primary model: ${PRIMARY_MODEL}, Fallback: ${FALLBACK_MODEL}`);
+  console.log(`📊 [GEMINI NOTES] Primary model: ${primaryModel}, Fallback: ${fallbackModel}`);
 
-  return await callGeminiAPI(PRIMARY_MODEL, FALLBACK_MODEL, parts, systemInstruction, '[GEMINI NOTES]');
+  return await callGeminiAPI(primaryModel, fallbackModel, parts, systemInstruction, '[GEMINI NOTES]');
 }
 
 module.exports = { generateNotesResponse };
