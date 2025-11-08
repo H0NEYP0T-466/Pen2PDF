@@ -423,7 +423,13 @@ function TodoList() {
                           }
                         }
                       }}
-                      onBlur={() => {
+                      onBlur={(e) => {
+                        // Prevent duplicate save when clicking the tick button
+                        // Check if the blur is caused by clicking an action button
+                        const clickedElement = e.relatedTarget;
+                        if (clickedElement && clickedElement.closest('.edit-actions')) {
+                          return; // Let the button click handler do the save
+                        }
                         
                         setTimeout(() => {
                           if (card._id.startsWith('temp-') && !newCardTitle.trim()) {
@@ -511,7 +517,13 @@ function TodoList() {
                                     : saveSubTodoEdit(card._id, subTodo._id);
                                 }
                               }}
-                              onBlur={() => {
+                              onBlur={(e) => {
+                                // Prevent duplicate save when clicking the tick button
+                                // Check if the blur is caused by clicking an action button
+                                const clickedElement = e.relatedTarget;
+                                if (clickedElement && clickedElement.closest('.edit-actions')) {
+                                  return; // Let the button click handler do the save
+                                }
                                 
                                 setTimeout(() => {
                                   if (subTodo._id.startsWith('temp-') && !newSubTodoText.trim()) {
