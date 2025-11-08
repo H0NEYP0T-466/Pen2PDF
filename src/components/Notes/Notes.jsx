@@ -6,6 +6,7 @@ import markedKatex from 'marked-katex-extension';
 import html2pdf from 'html2pdf.js';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import 'katex/dist/katex.min.css';
+import SuccessNotification from '../ui/SuccessNotification';
 import './Notes.css';
 
 marked.use(markedKatex({
@@ -27,6 +28,7 @@ function Notes() {
   const [fileName, setFileName] = useState('study-notes');
   const [modelUsed, setModelUsed] = useState('');
   const [selectedModelForGeneration, setSelectedModelForGeneration] = useState('gemini-2.5-pro');
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
   const textareaRef = useRef(null);
 
@@ -515,6 +517,7 @@ function Notes() {
 
       if (response.data.success) {
         setError('');
+        setShowSuccessNotification(true);
       } else {
         setError('Failed to save notes');
       }
@@ -745,6 +748,12 @@ function Notes() {
           </div>
         </div>
       )}
+      
+      <SuccessNotification
+        open={showSuccessNotification}
+        message="Notes saved to library successfully."
+        onClose={() => setShowSuccessNotification(false)}
+      />
     </div>
   );
 }
