@@ -1,7 +1,4 @@
-/**
- * File policy for GitHub Models
- * Defines which models support file uploads and which MIME types are allowed
- */
+
 
 const ALLOWED_IMAGE_MIMES = [
   'image/png',
@@ -21,17 +18,13 @@ const BLOCKED_MIMES = [
   'text/rtf'
 ];
 
-/**
- * Determine if a model supports vision/images based on its ID
- */
+
 function isVisionCapable(modelId) {
   const id = modelId.toLowerCase();
-  
-  // Vision-capable model patterns from GitHub Models marketplace
+
   const visionPatterns = [
     'gpt-4o',          // GPT-4o and GPT-4o-mini
     'gpt-4-turbo',     // GPT-4 Turbo
-    'claude-3',        // All Claude 3 variants
     'llama-3.2',       // Llama 3.2 vision models
     'gemini',          // All Gemini models support vision
     'phi-3.5-moe',     // Phi-3.5 MoE
@@ -41,13 +34,11 @@ function isVisionCapable(modelId) {
   return visionPatterns.some(pattern => id.includes(pattern));
 }
 
-/**
- * Determine if a model supports PDF files based on its ID
- */
+
 function isPDFCapable(modelId) {
   const id = modelId.toLowerCase();
   
-  // Models that support PDF file uploads
+
   const pdfPatterns = [
     'gemini',          // Gemini 2.5 Pro and Flash support PDFs
     'gpt-4o',          // GPT-4o and GPT-4o-mini support PDFs

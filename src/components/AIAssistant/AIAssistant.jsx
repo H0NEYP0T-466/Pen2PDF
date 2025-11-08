@@ -10,7 +10,6 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import PromptDialog from '../ui/PromptDialog';
 import './AIAssistant.css';
 
-/* eslint-disable no-empty */
 
 
 
@@ -42,15 +41,15 @@ function AIAssistant() {
   const [noteContentToSave, setNoteContentToSave] = useState('');
   const [saveError, setSaveError] = useState('');
   
-  // GitHub Models integration
+
   const [githubModels, setGithubModels] = useState([]);
   const [loadingModels, setLoadingModels] = useState(true);
   const [rateLimitError, setRateLimitError] = useState(null);
 
-  // Legacy models (kept for backward compatibility)
+
   const legacyModels = [
-    { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: true, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
-    { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: true, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
+    { value: 'longcat-flash-chat', label: 'LongCat-Flash-Chat', supportsFiles: false, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
+    { value: 'longcat-flash-thinking', label: 'LongCat-Flash-Thinking', supportsFiles: false, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
     { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', supportsFiles: true, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
     { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', supportsFiles: true, available: true, legacy: true, allowedMimeTypes: ['application/pdf', 'image/*'] },
   ];

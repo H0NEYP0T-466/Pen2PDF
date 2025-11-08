@@ -9,10 +9,7 @@ require('dotenv').config();
 
 const GITHUB_MODELS_BASE = 'https://models.inference.ai.azure.com';
 
-/**
- * GET /api/github-models/models
- * Get available models
- */
+
 async function getModelsList(req, res) {
   try {
     const pat = process.env.githubModelsPAT;
@@ -253,7 +250,7 @@ async function chat(req, res) {
       model,
       messages: finalMessages,
       ...(temperature !== undefined && { temperature }),
-      ...(max_tokens !== undefined && { max_completion_tokens: max_tokens })
+      ...(max_tokens !== undefined && { max_tokens })
     };
 
     console.log('\n' + '='.repeat(80));
