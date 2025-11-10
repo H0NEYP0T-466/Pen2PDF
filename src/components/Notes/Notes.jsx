@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { marked } from 'marked';
 import markedKatex from 'marked-katex-extension';
-import html2pdf from 'html2pdf.js';
+import { jsPDF } from 'jspdf';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import 'katex/dist/katex.min.css';
 import SuccessNotification from '../ui/SuccessNotification';
@@ -14,6 +14,43 @@ marked.use(markedKatex({
   output: 'html',
   nonStandard: true
 }));
+
+/**
+ * Sanitizes text for PDF generation by removing mojibake and control characters
+ * while preserving emojis, watermark, and legitimate content.
+ * @param {string} text - The text to sanitize
+ * @returns {string} - The sanitized text
+ */
+function sanitizeForPdf(text) {
+  if (!text) return '';
+  
+  // Normalize using NFKC to handle Unicode inconsistencies
+  let sanitized = text.normalize('NFKC');
+  
+  // Remove known mojibake sequences
+  const mojibakePatterns = [
+    /Ø=ÜÑ/g,
+    /Ø<ß/g,
+    /%æ/g,
+    /Ã¢â‚¬â„¢/g,  // common UTF-8 mojibake
+    /â€™/g,        // another common pattern
+    /Â§/g,         // section sign mojibake
+    /Â /g,         // non-breaking space mojibake
+  ];
+  
+  mojibakePatterns.forEach(pattern => {
+    sanitized = sanitized.replace(pattern, '');
+  });
+  
+  // Remove ASCII control characters (0x00-0x1F) except newline (0x0A) and tab (0x09)
+  // eslint-disable-next-line no-control-regex
+  sanitized = sanitized.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '');
+  
+  // Collapse duplicated heading markers (e.g., "### ### Title" -> "### Title")
+  sanitized = sanitized.replace(/^(#{1,6})\s+\1+\s+/gm, '$1 ');
+  
+  return sanitized;
+}
 
 function Notes() {
   const navigate = useNavigate();
@@ -248,10 +285,11 @@ function Notes() {
 
   const handleDownloadPDF = async () => {
     try {
-      const html = marked(extractedText);
-      const element = document.createElement('div');
-      element.className = 'printable-light pdf-page';
+      // Sanitize text for PDF (only in this pipeline, not mutating state)
+      const sanitizedText = sanitizeForPdf(extractedText);
+      const html = marked(sanitizedText);
       
+      // Extract KaTeX CSS from stylesheets
       const katexCSS = Array.from(document.styleSheets)
         .filter(sheet => {
           try {
@@ -269,116 +307,177 @@ function Notes() {
         })
         .join('\n');
       
-      element.innerHTML = `
-        <style>
-          ${katexCSS}
-          @page { margin: 12mm; }
-          .pdf-page { padding: 8mm; position: relative; }
-          body, p, li, h1, h2, h3, h4, h5, h6 {
-            word-break: normal;
-            overflow-wrap: normal;
-            word-wrap: normal;
-            hyphens: none;
-            -webkit-hyphens: none;
-            -moz-hyphens: none;
-            -ms-hyphens: none;
-            text-align: justify;
-            text-justify: inter-word;
-          }
-          * {
-            word-break: normal !important;
-            overflow-wrap: normal !important;
-            word-wrap: normal !important;
-            hyphens: none !important;
-            -webkit-hyphens: none !important;
-            -moz-hyphens: none !important;
-            -ms-hyphens: none !important;
-          }
-          h1, h2, h3, h4, h5, h6, img, table, pre, blockquote {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            -webkit-column-break-inside: avoid;
-          }
-          h1, h2, h3, h4, h5, h6 {
-            break-after: avoid;
-            page-break-after: avoid;
-            -webkit-column-break-after: avoid;
-          }
-          .katex, .katex-display {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            -webkit-column-break-inside: avoid;
-          }
-          .katex-display { margin: 1em 0; text-align: center; }
-          p:has(.katex) {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            -webkit-column-break-inside: avoid;
-          }
-          p { orphans: 2; widows: 2; }
-          .printable-light {
-            max-width: none;
-            padding: 0;
-            color: #333;
-            background: #ffffff;
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            position: relative;
-          }
-          .printable-light h1, .printable-light h2, .printable-light h3 {
-            color: #333;
-            margin: 0 0 12px 0;
-            line-height: 1.25;
-            font-weight: 700;
-          }
-          .printable-light p, .printable-light li {
-            font-size: 12.5pt;
-            line-height: 1.6;
-            color: #333;
-          }
-        </style>
-        ${html}
-      `;
-
-      const opt = {
-        margin: [34, 34, 34, 34],
-        filename: `${fileName}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
-        pagebreak: { 
-          mode: ["css", "legacy"], 
-          avoid: ["h1", "h2", "h3", "img", "table", "pre", "blockquote", ".katex", ".katex-display"]
-        }
+      // Helper function to render PDF with specific font size
+      const renderPdfWithFontSize = async (baseFontSize) => {
+        const element = document.createElement('div');
+        element.className = 'printable-light pdf-page';
+        
+        element.innerHTML = `
+          <style>
+            ${katexCSS}
+            @page { 
+              margin: 12mm; 
+              size: A4;
+            }
+            .pdf-page { 
+              padding: 8mm; 
+              position: relative; 
+              padding-bottom: 20mm;
+            }
+            body, p, li, h1, h2, h3, h4, h5, h6 {
+              word-break: normal;
+              overflow-wrap: break-word;
+              word-wrap: break-word;
+              hyphens: none;
+              -webkit-hyphens: none;
+              -moz-hyphens: none;
+              -ms-hyphens: none;
+            }
+            p, li {
+              page-break-inside: avoid;
+              break-inside: avoid;
+              orphans: 2;
+              widows: 2;
+            }
+            h1, h2, h3, h4, h5, h6 {
+              page-break-inside: avoid;
+              break-inside: avoid;
+              page-break-after: avoid;
+              break-after: avoid;
+            }
+            img, table, pre, blockquote, code {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            .katex, .katex-display {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            .katex-display { 
+              margin: 1em 0; 
+              text-align: center; 
+            }
+            p:has(.katex) {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            .printable-light {
+              max-width: none;
+              padding: 0;
+              color: #333;
+              background: #ffffff;
+              font-family: 'Arial', sans-serif;
+              line-height: 1.6;
+              position: relative;
+            }
+            .printable-light::after {
+              content: "";
+              display: block;
+              height: 15mm;
+            }
+            .printable-light h1 {
+              color: #333;
+              margin: 0 0 12px 0;
+              line-height: 1.25;
+              font-weight: 700;
+              font-size: ${baseFontSize * 1.8}pt;
+            }
+            .printable-light h2 {
+              color: #333;
+              margin: 0 0 10px 0;
+              line-height: 1.25;
+              font-weight: 700;
+              font-size: ${baseFontSize * 1.5}pt;
+            }
+            .printable-light h3 {
+              color: #333;
+              margin: 0 0 8px 0;
+              line-height: 1.25;
+              font-weight: 700;
+              font-size: ${baseFontSize * 1.3}pt;
+            }
+            .printable-light h4, .printable-light h5, .printable-light h6 {
+              color: #333;
+              margin: 0 0 6px 0;
+              line-height: 1.25;
+              font-weight: 700;
+              font-size: ${baseFontSize * 1.1}pt;
+            }
+            .printable-light p, .printable-light li {
+              font-size: ${baseFontSize}pt;
+              line-height: 1.6;
+              color: #333;
+              margin-bottom: 0.5em;
+            }
+            .printable-light pre, .printable-light code {
+              font-size: ${baseFontSize * 0.9}pt;
+            }
+          </style>
+          ${html}
+        `;
+        
+        // Create PDF instance
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'pt',
+          format: 'a4'
+        });
+        
+        // Render HTML to PDF
+        await pdf.html(element, {
+          callback: function() {
+            // Callback will be handled after
+          },
+          x: 34,
+          y: 34,
+          width: 527, // A4 width (595pt) - margins (34pt * 2)
+          windowWidth: 794, // A4 width in pixels at 96 DPI
+          margin: [34, 34, 34, 34]
+        });
+        
+        // Clean up
+        element.remove();
+        
+        return pdf;
       };
-
-
-      const worker = html2pdf().set(opt).from(element).toPdf();
-      const pdf = await worker.get('pdf');
-
-      const [top, right, bottom, left] = Array.isArray(opt.margin)
-        ? opt.margin
-        : [opt.margin, opt.margin, opt.margin, opt.margin];
-
+      
+      // Initial render with base font size
+      let baseFontSize = 12.5;
+      const minFontSize = 10;
+      const maxPages = 25;
+      const maxIterations = 5;
+      let iteration = 0;
+      let pdf = await renderPdfWithFontSize(baseFontSize);
+      let pageCount = pdf.internal.getNumberOfPages();
+      
+      // Adaptive pagination: reduce font size if too many pages
+      while (pageCount > maxPages && baseFontSize > minFontSize && iteration < maxIterations) {
+        iteration++;
+        baseFontSize = Math.max(minFontSize, baseFontSize - 0.5);
+        pdf = await renderPdfWithFontSize(baseFontSize);
+        pageCount = pdf.internal.getNumberOfPages();
+      }
+      
+      // Add watermark to all pages
       const watermarkText = "~honeypot";
-      const pageCount = pdf.internal.getNumberOfPages();
-
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(10);
       pdf.setTextColor(120, 120, 120);
-
+      
       for (let i = 1; i <= pageCount; i++) {
         pdf.setPage(i);
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const textWidth = pdf.getTextWidth(watermarkText);
-        const x = pageWidth - textWidth - 6;
-        const y = pageHeight - 8;
+        const x = pageWidth - textWidth - 40; // Right margin
+        const y = pageHeight - 20; // Bottom margin
         pdf.text(watermarkText, x, y);
       }
-
-      await worker.save();
-    } catch {
+      
+      // Save the PDF
+      pdf.save(`${fileName}.pdf`);
+    } catch (err) {
+      console.error('PDF generation error:', err);
       setError('Failed to generate PDF.');
     }
   };
