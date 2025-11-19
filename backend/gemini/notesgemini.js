@@ -145,12 +145,47 @@ Include sections only if relevant from source content, except mandatory sections
 * No invented facts — use only content from provided files.
 
 ## 📐 LaTeX Formatting Rules (CRITICAL for Formulas/Definitions section)
-* **ALWAYS use proper LaTeX delimiters:**
-  - For inline math: Use single dollar signs like \`$formula$\`
-  - For display/block math: Use double dollar signs like \`$$formula$$\`
+* **ALWAYS use proper LaTeX delimiters with CORRECT formatting:**
+  - For **inline math** (within a sentence): Use single dollar signs like \`$formula$\`
+    * Example: "The equation $s = T(r)$ defines the transformation"
+  - For **display/block math** (standalone formulas): Use double dollar signs on SEPARATE lines
+    * MUST have a blank line before and after the formula
+    * Example format:
+      \`\`\`
+      Text before formula.
+      
+      $$formula$$
+      
+      Text after formula.
+      \`\`\`
+
+* **CRITICAL FORMATTING RULES FOR DISPLAY MATH:**
+  - ❌ WRONG: "Formula: $$F = ma$$ (Newton's law)"
+  - ✅ CORRECT: 
+    \`\`\`
+    Formula (Newton's law):
+    
+    $$F = ma$$
+    
+    Where F is force.
+    \`\`\`
+  - The \`$$\` delimiters MUST be on their own lines with blank lines surrounding them
+  - NEVER put text on the same line as \`$$\`
+  - ALWAYS include source citation like (slide#X) on a separate line after the formula
+
 * **Examples of CORRECT LaTeX formatting:**
-  - Inline: \`$s = T(r)$\` or \`$g(x,y) = T[f(x,y)]$\`
-  - Display: \`$$s = c \\cdot \\log(1+r)$$\` or \`$$p(r_k) = \\frac{n_k}{MN}$$\`
+  - Inline: "The transformation is $s = T(r)$ or function $g(x,y) = T[f(x,y)]$"
+  - Display: 
+    \`\`\`
+    Logarithmic transformation (slide#5):
+    
+    $$s = c \\cdot \\log(1+r)$$
+    
+    Probability function (slide#8):
+    
+    $$p(r_k) = \\frac{n_k}{MN}$$
+    \`\`\`
+
 * **Use proper LaTeX syntax:**
   - Multiplication: Use \`\\cdot\` for dot product (e.g., \`$c \\cdot r$\`)
   - Fractions: Use \`\\frac{numerator}{denominator}\` (e.g., \`$\\frac{a}{b}$\`)
@@ -159,8 +194,12 @@ Include sections only if relevant from source content, except mandatory sections
   - Greek letters: Use backslash (e.g., \`$\\gamma$\`, \`$\\theta$\`, \`$\\alpha$\`)
   - Integrals: Use \`\\int\` (e.g., \`$\\int_0^r f(x)dx$\`)
   - Summations: Use \`\\sum\` (e.g., \`$\\sum_{i=1}^{n} x_i$\`)
+  - Square roots: Use \`\\sqrt{}\` (e.g., \`$\\sqrt{x^2 + y^2}$\`)
+  - Cases/Piecewise: Use \`\\begin{cases}...\\end{cases}\` (e.g., \`$$H(x) = \\begin{cases} 1 & \\text{if } x > 0 \\\\ 0 & \\text{if } x \\le 0 \\end{cases}$$\`)
+
 * **NEVER write formulas as plain text** - always wrap them in LaTeX delimiters
 * **Each formula MUST be complete and valid LaTeX** - test mentally if it would render correctly
+* **Remember: Display math with $$...$$ requires blank lines before and after for proper rendering**
 
 ${retryInstruction ? `\n\nAdditional instruction: ${retryInstruction}` : ''}
 `;

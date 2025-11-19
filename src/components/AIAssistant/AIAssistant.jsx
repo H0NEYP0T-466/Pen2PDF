@@ -15,6 +15,7 @@ import './AIAssistant.css';
 
 marked.use(markedKatex({
   throwOnError: false,
+  output: 'html',
   nonStandard: true
 }));
 
