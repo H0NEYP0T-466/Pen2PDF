@@ -160,7 +160,7 @@ Include sections only if relevant from source content, except mandatory sections
       \`\`\`
 
 * **CRITICAL FORMATTING RULES FOR DISPLAY MATH:**
-  - ❌ WRONG: "Formula: $$F = ma$$ (Newton's law)"
+  - ❌ WRONG: "Formula: $$F = ma$$ (Newton's law)" || "$P \land Q$"
   - ✅ CORRECT: 
     \`\`\`
     Formula (Newton's law):
@@ -170,6 +170,7 @@ Include sections only if relevant from source content, except mandatory sections
     Where F is force.
     \`\`\`
   - The \`$$\` delimiters MUST be on their own lines with blank lines surrounding them
+  -donot use single $ for display math always use $$
   - NEVER put text on the same line as \`$$\`
   - ALWAYS include source citation like (slide#X) on a separate line after the formula
 
