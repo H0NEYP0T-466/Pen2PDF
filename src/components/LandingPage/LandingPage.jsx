@@ -36,7 +36,7 @@ function LandingPage() {
             className="card" 
             onClick={() => handleCardClick("pen2pdf")}
           >
-            <h3>Pen2PDF</h3>
+            <h3>Pen2PDF me shoaib ho</h3>
             <p>Convert handwritten notes to PDF documents with AI-powered text extraction</p>
           </div>
           
