@@ -158,7 +158,7 @@ function Notes() {
     try {
       const response = await axios.post('http://localhost:8000/notesGenerate', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120000,
+        timeout: 500000,
       });
 
       if (response.data.success) {
